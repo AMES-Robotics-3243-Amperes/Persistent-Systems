@@ -41,11 +41,11 @@ public class CommandSwerveTeleopDrive extends CommandBase {
     double xSpeed = -m_controller.getLeftY() * (reverse ? -1 : 1) * DriveConstants.kDrivingSpeedDamper;
     double ySpeed = -m_controller.getLeftX() * (reverse ? -1 : 1) * DriveConstants.kDrivingSpeedDamper;
 
-    // get rotation speed
+    // :3 get rotation speed
     double controllerRightX = m_controller.getRightX();
     double rotationSpeed = controllerRightX * DriveConstants.kAngularSpeedDamper;
 
-    // drive with those speeds
+    // :3 drive with those speeds
     m_SubsystemSwerveDrivetrain.drive(xSpeed, ySpeed, rotationSpeed, true);
   }
 
