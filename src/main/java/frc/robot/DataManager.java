@@ -1,6 +1,8 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 /** <b>Stores all of the data that is shared between systems, especially positions.</b>
@@ -80,8 +82,13 @@ public class DataManager {
      * 
      */
     public static class CurrentRobotPose implements FieldPose {
-        /** Creates a new {@link CurrentRobotPose} object
-         * 
+        /** The pose the robot's located at @author :3 */
+        protected Pose3d m_robotPose = new Pose3d();
+        /** The previous pose odometry read @author :3 */
+        protected Pose3d m_previousOdometryPose = new Pose3d();
+
+        /**
+         * Creates a new {@link CurrentRobotPose} object
          */
         public CurrentRobotPose() {
             // TODO add anything that is needed here
@@ -89,8 +96,25 @@ public class DataManager {
 
         @Override
         public Pose3d get() {
-            // TODO Auto-generated method stub
-            return null;
+            return m_robotPose;
+        }
+
+        /**
+         * Updates the robot's position using odometry.
+         * Should be run periodically.
+         * 
+         * @param odometryReading the current Pose2d reported by odometry
+         */
+        public void updateWithOdometry(Pose2d odometryReading) {
+            // get the Transform3d from the last odometry update
+            Pose3d odometryReading3d = new Pose3d(odometryReading);
+            Transform3d transformSinceLastUpdate = new Transform3d(m_previousOdometryPose, odometryReading3d);
+
+            // transform the robot pose and update the previous odometry
+            m_robotPose = m_robotPose.transformBy(transformSinceLastUpdate);
+            m_previousOdometryPose = odometryReading3d;
+
+            // :3 TODO: ignore odometry if there's a photonvision reading
         }
         
     }
@@ -99,7 +123,7 @@ public class DataManager {
     //                        ENTRIES
     //#########################################################
 
-    public static CurrentRobotPose currentRobotPose;
+    public static CurrentRobotPose currentRobotPose = new CurrentRobotPose();
 
     //#########################################################
     //               INITIALIZATION AND RUNTIME

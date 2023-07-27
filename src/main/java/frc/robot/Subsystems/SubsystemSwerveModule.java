@@ -16,6 +16,11 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Constants.DriveTrain.ModuleConstants;
 import frc.robot.Constants.DriveTrain.DriveConstants.TempConstants;
 
+/**
+ * Represents a single module of an {@link SubsystemSwerveDrivetrain}
+ * 
+ * @author :3
+ */
 public class SubsystemSwerveModule {
 
   private final CANSparkMax m_drivingSparkMax;
@@ -29,46 +34,51 @@ public class SubsystemSwerveModule {
 
   // :> Test
 
-  private final Rotation2d m_chassisAngularOffset;
-  private SwerveModuleState m_desiredState = new SwerveModuleState(0.0, new Rotation2d());
+  private final Rotation2d m_wheelOffset;
 
   /**
-   * <> construct a swerve module with a driving id, can id, and chassis angular offset
+   * Constructs a {@link SubsystemSwerveModule}
+   * 
+   * @param drivingCANId the id of the {@link CANSparkMax} for driving
+   * @param turningCANId the id of the {@link CANSparkMax} for turning
+   * @param wheelOffset the offset of the encoder's 0 state
+   * 
+   * @author :3
    */
-  public SubsystemSwerveModule(int drivingCANId, int turningCANId, Rotation2d chassisAngularOffset) {
-    // <> initialize spark maxes
+  public SubsystemSwerveModule(int drivingCANId, int turningCANId, Rotation2d wheelOffset) {
+    // :3 initialize spark maxes
     m_drivingSparkMax = new CANSparkMax(drivingCANId, MotorType.kBrushless);
     m_turningSparkMax = new CANSparkMax(turningCANId, MotorType.kBrushless);
 
-    // <> factory reset spark maxes to get them to a known state
+    // :3 factory reset spark maxes to get them to a known state
     m_drivingSparkMax.restoreFactoryDefaults();
     m_turningSparkMax.restoreFactoryDefaults();
 
-    // <> setup encoders
+    // :3 setup encoders
     m_drivingEncoder = m_drivingSparkMax.getEncoder();
     m_turningEncoder = m_turningSparkMax.getAbsoluteEncoder(Type.kDutyCycle);
 
-    // <> setup pid controllers
+    // :3 setup pid controllers
     m_drivingPIDController = m_drivingSparkMax.getPIDController();
     m_turningPIDController = m_turningSparkMax.getPIDController();
     m_drivingPIDController.setFeedbackDevice(m_drivingEncoder);
     m_turningPIDController.setFeedbackDevice(m_turningEncoder);
 
-    // <> apply position and velocity conversion factors
+    // :3 apply position and velocity conversion factors
     m_drivingEncoder.setPositionConversionFactor(ModuleConstants.EncoderFactors.kDrivingEncoderPositionFactor);
     m_drivingEncoder.setVelocityConversionFactor(ModuleConstants.EncoderFactors.kDrivingEncoderVelocityFactor);
     m_turningEncoder.setPositionConversionFactor(ModuleConstants.EncoderFactors.kTurningEncoderPositionFactor);
     m_turningEncoder.setVelocityConversionFactor(ModuleConstants.EncoderFactors.kTurningEncoderVelocityFactor);
 
-    // <> invert the turning encoder
+    // :3 invert the turning encoder
     m_turningEncoder.setInverted(ModuleConstants.PhysicalProperties.kTurningEncoderInverted);
 
-    // <> enable pid wrap on 0 to 2 pi, as the wheels rotate freely
+    // :3 enable pid wrap on 0 to 2 pi, as the wheels rotate freely
     m_turningPIDController.setPositionPIDWrappingEnabled(true);
     m_turningPIDController.setPositionPIDWrappingMinInput(ModuleConstants.kTurningEncoderPositionPIDMinInput);
     m_turningPIDController.setPositionPIDWrappingMaxInput(ModuleConstants.kTurningEncoderPositionPIDMaxInput);
 
-    // <> set p, i, and d terms for driving
+    // :3 set p, i, and d terms for driving
     m_drivingPIDController.setP(ModuleConstants.PIDF.kDrivingP);
     m_drivingPIDController.setI(ModuleConstants.PIDF.kDrivingI);
     m_drivingPIDController.setD(ModuleConstants.PIDF.kDrivingD);
@@ -76,7 +86,7 @@ public class SubsystemSwerveModule {
     m_drivingPIDController.setOutputRange(ModuleConstants.PIDF.kDrivingMinOutput,
       ModuleConstants.PIDF.kDrivingMaxOutput);
 
-    // <> set p, i, and d terms for turning
+    // :3 set p, i, and d terms for turning
     m_turningPIDController.setP(ModuleConstants.PIDF.kTurningP);
     m_turningPIDController.setI(ModuleConstants.PIDF.kTurningI);
     m_turningPIDController.setD(ModuleConstants.PIDF.kTurningD);
@@ -84,85 +94,74 @@ public class SubsystemSwerveModule {
     m_turningPIDController.setOutputRange(ModuleConstants.PIDF.kTurningMinOutput,
       ModuleConstants.PIDF.kTurningMaxOutput);
 
-    // <> set idle modes and current limits
+    // :3 set idle modes and current limits
     m_drivingSparkMax.setIdleMode(ModuleConstants.kDrivingMotorIdleMode);
     m_turningSparkMax.setIdleMode(ModuleConstants.kTurningMotorIdleMode);
     m_drivingSparkMax.setSmartCurrentLimit(ModuleConstants.kDrivingMotorCurrentLimit);
     m_turningSparkMax.setSmartCurrentLimit(ModuleConstants.kTurningMotorCurrentLimit);
 
-    // <> save configurations in case of a brown out
+    // :3 save configurations in case of a brown out
     m_drivingSparkMax.burnFlash();
     m_turningSparkMax.burnFlash();
 
-    // <> initialize desired state to the current state
-    m_chassisAngularOffset = chassisAngularOffset;
-    m_desiredState.angle = new Rotation2d(m_turningEncoder.getPosition());
+    // :3 reset driving encoder
+    resetEncoder();
 
-    // <> reset driving encoder
+    // :3 set wheel offset
+    m_wheelOffset = wheelOffset;
+  }
+
+  /**
+   * Sets the desired state of the module
+   *
+   * @param desiredState desired {@link SwerveModuleState}
+   * 
+   * @author :3
+   */
+  public void setDesiredState(SwerveModuleState desiredState) {
+    // :3 apply wheel angular offset
+    SwerveModuleState correctedDesiredState = new SwerveModuleState();
+
+    correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
+    correctedDesiredState.angle = desiredState.angle.plus(m_wheelOffset);
+
+    // :3 optimize state to avoid turning more than 90 degrees
+    Rotation2d currentAngle = new Rotation2d(m_turningEncoder.getPosition());
+    SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctedDesiredState, currentAngle);
+
+    // :3 command driving
+    m_drivingPIDController.setReference(optimizedDesiredState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity);
+    m_turningPIDController.setReference(optimizedDesiredState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
+  }
+
+  /**
+   * Resets the module's driving encoder
+   * 
+   * @author :3
+   */
+  public void resetEncoder() {
     m_drivingEncoder.setPosition(0);
   }
 
   /**
-   * <>
-   *
-   * @return current {@link SwerveModuleState} of the module
-   */
-  public SwerveModuleState getState() {
-    double velocity = m_drivingEncoder.getVelocity();
-    Rotation2d rotation = new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset.getRadians());
-
-    return new SwerveModuleState(velocity, rotation);
-  }
-
-  /**
-   * <>
-   *
    * @return the {@link SwerveModulePosition} of the module
+   * 
+   * @author :3
    */
   public SwerveModulePosition getPosition() {
     double position = m_drivingEncoder.getPosition();
-    Rotation2d rotation = new Rotation2d(m_turningEncoder.getPosition() - m_chassisAngularOffset.getRadians());
+    Rotation2d rotation = new Rotation2d(m_turningEncoder.getPosition() - m_wheelOffset.getRadians());
 
     return new SwerveModulePosition(position, rotation);
   }
 
   /**
-   * <> sets desired state of the module
-   *
-   * @param desiredState desired {@link SwerveModuleState}
-   */
-  public void setDesiredState(SwerveModuleState desiredState, boolean allowLowSpeedTurning) {
-    // <> apply chassis angular offset
-    SwerveModuleState correctedDesiredState = new SwerveModuleState();
-
-    correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
-    correctedDesiredState.angle = desiredState.angle.plus(m_chassisAngularOffset);
-
-    // <> optimize state to avoid turning more than 90 degrees
-    Rotation2d currentAngle = new Rotation2d(m_turningEncoder.getPosition());
-    SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctedDesiredState, currentAngle);
-
-    // <> command driving
-    m_drivingPIDController.setReference(optimizedDesiredState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity);
-    m_turningPIDController.setReference(optimizedDesiredState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
-
-    // <> set the desired state to the calculated desired state
-    m_desiredState = desiredState;
-  }
-
-  /**
-   * <> zeroes all encoders
-   */
-  public void resetEncoders() {
-    m_drivingEncoder.setPosition(0);
-  }
-
-  /**
-   * <>
-   *
    * @return if either of the motors are too hot
+   * 
+   * @author :3
    */
   public boolean isTooHot() {
-    return m_drivingSparkMax.getMotorTemperature() > TempConstants.max1650TempCelsius || m_turningSparkMax.getMotorTemperature() > TempConstants.max550TempCelsius;
+    return m_drivingSparkMax.getMotorTemperature() > TempConstants.max1650TempCelsius ||
+      m_turningSparkMax.getMotorTemperature() > TempConstants.max550TempCelsius;
   }
 }
