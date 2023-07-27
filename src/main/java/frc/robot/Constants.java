@@ -24,8 +24,27 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static class OperatorConstants {
-    public static final int kDriverControllerPort = 0;
+  public static class JoyUtilConstants {
+    // <> size of controller deadzone
+    public static final double kDeadzone = 0.12;
+
+    // <> max amount controller output can change per second
+    public static final double kRateLimitLeft = 4.3;
+    public static final double kRateLimitRight = 3.8;
+
+    // <> curve stuff
+    public static final int exponent1 = 1;
+    public static final int exponent2 = 3;
+    public static final double coeff1 = 0.4;
+    public static final double coeff2 = 0.6;
+
+    // <> fast and slow mode
+    public static final double leftTriggerSpeedMultiplier = 1.3;
+    public static final double rightTriggerSpeedMultiplier = 0.55;
+
+    // <> ports
+    public static int primaryControllerID = 0;
+    public static int secondaryControllerID = 1;
   }
 
   public static final class DriveTrain {
@@ -106,10 +125,10 @@ public final class Constants {
       // <> if the driving is field relative
       public static final boolean kFieldRelative = true;
       // <> speed damper (flat constant supplied speed is multiplied by)
-      public static final double kDrivingSpeedDamper = 1.8; // <> meters per second
-      public static final double kAngularSpeedDamper = 1 * Math.PI; // <> radians per second
+      public static final double kDrivingSpeedDamper = 1; // <> meters per second
+      public static final double kAngularSpeedDamper = 0.6 * Math.PI; // <> radians per second
       // <> max speed
-      public static final double kMaxMetersPerSecond = 5;
+      public static final double kMaxObtainableModuleSpeed = 3;
       // <> this should be true
       public static final boolean kGyroReversed = false;
 
