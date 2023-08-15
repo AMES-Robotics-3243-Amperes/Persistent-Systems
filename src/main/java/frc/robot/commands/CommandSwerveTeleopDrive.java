@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveTrain.DriveConstants;
 import frc.robot.JoyUtil;
@@ -46,7 +47,7 @@ public class CommandSwerveTeleopDrive extends CommandBase {
     double rotationSpeed = controllerRightX * DriveConstants.kAngularSpeedDamper;
 
     // :3 drive with those speeds
-    m_SubsystemSwerveDrivetrain.drive(xSpeed, ySpeed, rotationSpeed, true);
+    m_SubsystemSwerveDrivetrain.driveWithSpeeds(new Translation2d(xSpeed, ySpeed), rotationSpeed, true);
   }
 
   @Override
