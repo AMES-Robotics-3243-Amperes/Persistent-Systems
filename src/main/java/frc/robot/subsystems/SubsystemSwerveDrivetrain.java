@@ -110,7 +110,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
     double rawFieldRelativeYSpeed;
     if (!fieldRelative) {
       rawFieldRelativeXSpeed = rawXSpeed * getHeading().getCos() - rawYSpeed * getHeading().getSin();
-      rawFieldRelativeYSpeed = rawXSpeed * getHeading().getSin() + rawYSpeed * getHeading().getSin();
+      rawFieldRelativeYSpeed = rawXSpeed * getHeading().getSin() + rawYSpeed * getHeading().getCos();
     } else {
       rawFieldRelativeXSpeed = rawXSpeed;
       rawFieldRelativeYSpeed = rawYSpeed;
