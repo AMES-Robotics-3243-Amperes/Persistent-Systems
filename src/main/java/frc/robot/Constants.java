@@ -64,14 +64,14 @@ public final class Constants {
       // :3 pidf values / min and max outputs
       public static final class PIDF {
 
-        public static final double kDrivingP = 0.4;
+        public static final double kDrivingP = 0.2;
         public static final double kDrivingI = 0;
         public static final double kDrivingD = 0;
         public static final double kDrivingFF = 0;
         public static final double kDrivingMinOutput = -1;
         public static final double kDrivingMaxOutput = 1;
 
-        public static final double kTurningP = 0.45;
+        public static final double kTurningP = 0.225;
         public static final double kTurningI = 0;
         public static final double kTurningD = 0;
         public static final double kTurningFF = 0;
@@ -118,8 +118,8 @@ public final class Constants {
 
     public static final class DriveConstants {
       // :3 speed damper (flat constant supplied speed is multiplied by)
-      public static final double kDrivingSpeedDamper = 1; // :3 meters per second
-      public static final double kAngularSpeedDamper = 0.5 * Math.PI; // :3 radians per second
+      public static final double kDrivingSpeedDamper = 4.5; // :3 meters per second
+      public static final double kAngularSpeedDamper = 2.5 * Math.PI; // :3 radians per second
 
       // :3 the max physical speed of the modules
       // :3 THIS IS NOT THE MAX DRIVING SPEED
@@ -129,8 +129,8 @@ public final class Constants {
       // (generally, use controller and pid rate limiting
       // instead of this, this is mainly here to keep the transitions
       // between commands and/or input styles smooth)
-      public static final double kMaxRotationAcceleration = 1.5 * Math.PI;
-      public static final double kMaxDrivingAcceleration = 0.2;
+      public static final double kMaxRotationAcceleration = 5 * Math.PI;
+      public static final double kMaxDrivingAcceleration = 5;
 
       // :3 if the gyro is reversed
       public static final boolean kGyroReversed = false;
@@ -140,15 +140,15 @@ public final class Constants {
 
         // :3 driving ids
         public static final int kFrontLeftDrivingCanId = 3;
-        public static final int kRearLeftDrivingCanId = 9;
-        public static final int kFrontRightDrivingCanId = 5;
-        public static final int kRearRightDrivingCanId = 13;
+        public static final int kRearLeftDrivingCanId = 2;
+        public static final int kFrontRightDrivingCanId = 7;
+        public static final int kRearRightDrivingCanId = 6;
 
         // :3 turning ids
-        public static final int kFrontLeftTurningCanId = 11;
-        public static final int kRearLeftTurningCanId = 2;
+        public static final int kFrontLeftTurningCanId = 4;
+        public static final int kRearLeftTurningCanId = 1;
         public static final int kFrontRightTurningCanId = 8;
-        public static final int kRearRightTurningCanId = 15;
+        public static final int kRearRightTurningCanId = 5;
       }
 
       // :3 absolute encoder offsets (should be multiples of pi / 2
@@ -164,9 +164,9 @@ public final class Constants {
       public static final class ChassisKinematics {
 
         // :3 distance between centers of right and left wheels on robot
-        public static final double kRobotWidth = Units.inchesToMeters(27);
+        public static final double kRobotWidth = Units.inchesToMeters(15);
         // :3 distance between front and back wheels on robot
-        public static final double kRobotLength = Units.inchesToMeters(32);
+        public static final double kRobotLength = Units.inchesToMeters(15);
 
         // :3 kinematics (defined with above constants)
         public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
