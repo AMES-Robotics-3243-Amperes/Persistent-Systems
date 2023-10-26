@@ -83,7 +83,8 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
     m_odometry.update(m_imuWrapper.getYaw(), getModulePositions());
     DataManager.currentRobotPose.updateWithOdometry(m_odometry.getPoseMeters());
 
-    // :3 initialize speeds
+    // :3 these are the raw speeds of the robot,
+    // and will be assigned in the next 2 if statements
     double rawXSpeed = 0.0;
     double rawYSpeed = 0.0;
     double rawRotationSpeed = 0.0;
@@ -105,12 +106,13 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
       rawRotationSpeed = m_turnSpeedRadians;
     }
 
-    // :3 convert to field relative speeds
+    // :3 convert to field relative speeds for rate limiting
     double rawFieldRelativeXSpeed;
     double rawFieldRelativeYSpeed;
     if (!fieldRelative) {
-      rawFieldRelativeXSpeed = rawXSpeed * getHeading().getCos() - rawYSpeed * getHeading().getSin();
-      rawFieldRelativeYSpeed = rawXSpeed * getHeading().getSin() + rawYSpeed * getHeading().getCos();
+      Rotation2d negativeHeading = getHeading().times(-1);
+      rawFieldRelativeXSpeed = rawXSpeed * negativeHeading.getCos() - rawYSpeed * negativeHeading.getSin();
+      rawFieldRelativeYSpeed = rawXSpeed * negativeHeading.getSin() + rawYSpeed * negativeHeading.getCos();
     } else {
       rawFieldRelativeXSpeed = rawXSpeed;
       rawFieldRelativeYSpeed = rawYSpeed;
@@ -193,10 +195,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * @author :3
    */
   public void setX() {
-    m_frontLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
-    m_frontRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
-    m_rearLeft.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(-45)));
-    m_rearRight.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(45)));
+    // TODO: make this another "state" of the robot similar to setpoint/speeds
   }
 
   /**

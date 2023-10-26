@@ -19,7 +19,7 @@ public class CommandSwerveTeleopDrive extends CommandBase {
   private final JoyUtil m_controller;
 
   // :3 teleop driving should be reversed depending on field side
-  private boolean reverse = false;
+  private boolean reverse = true;
 
   /**
    * Creates a new SwerveTeleopCommand.
