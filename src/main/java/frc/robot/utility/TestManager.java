@@ -13,14 +13,23 @@ import java.util.Optional;
 /** Add your docs here. */
 public class TestManager {
 
-    public class TestResults {
-        public boolean didSucceed;
-        public Optional<String> message;
+    public static class TestResults {
+        public boolean m_didSucceed;
+        public String m_message;
+
+        public TestResults(boolean didSucceed, String message) {
+            m_didSucceed = didSucceed;
+            m_message = message;
+        }
+
+        public TestResults(boolean didSucceed) {
+            this(didSucceed, "");
+        }
     }
 
-    public Map<String, Map<String, TestResults>> results = new HashMap<String, Map<String, TestResults>>();
+    public static Map<String, Map<String, TestResults>> results = new HashMap<String, Map<String, TestResults>>();
 
-    protected enum TestState {
+    protected static enum TestState {
         setup,
         running,
         closedown
@@ -33,11 +42,14 @@ public class TestManager {
     }
 
     public static void init() {
-
+        subsystemsToTest.clear();
+        testIndex = 0;
+        testState = TestState.setup;
     }
 
     public static void periodic() {
         if (subsystemsToTest.size() > 0) {
+            results.putIfAbsent(subsystemsToTest.get(0).getName(), new HashMap<String, TestResults>());
             runTests(subsystemsToTest.get(0));
         }
     }
@@ -76,7 +88,8 @@ public class TestManager {
                     test.closedownPeriodic();
                     if (test.closedownIsDone()) {
                         testState = TestState.setup;
-
+                        testIndex++;
+                        results.get(subsystemsToTest.get(0).getName()).put(test.getName(), new TestResults(true));
                     }
                     break;
                 
@@ -84,7 +97,7 @@ public class TestManager {
                     break;
             }
         } catch (AssertionError e) {
-            //H! TODO figure out getting test results into the map structure, and when to display them
+            results.get(subsystemsToTest.get(0).getName()).put(test.getName(), new TestResults(false, e.getMessage()));
         }
     }
 }
