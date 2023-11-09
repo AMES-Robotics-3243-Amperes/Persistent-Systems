@@ -30,7 +30,7 @@ public class SubsystemBaseTestable extends SubsystemBase {
             isTesting = false;
         }
 
-
+        doPeriodic();
     }
 
     /** 
