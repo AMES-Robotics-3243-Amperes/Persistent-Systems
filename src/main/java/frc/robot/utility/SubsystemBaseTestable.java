@@ -7,15 +7,20 @@ package frc.robot.utility;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-/** Add your docs here. */
+/** Extend this class to have it automatically run tests in the integrated testing framework managed by {@link TestManager} @author H! */
 public class SubsystemBaseTestable extends SubsystemBase {
 
+    /** An array of test objects to be run when test mode is activated. Fill this on contruction or class initialization. @author H! */
     public Test[] tests;
 
     protected boolean isTesting = false;
 
+    
+    /** <h3>CANNOT BE EXTENDED</h3> <p>This is to force certain logic to always be used</p>
+     * {@inheritDoc}
+     */
     @Override
-    public void periodic() {
+    public final void periodic() {
         if (DriverStation.isTest()) {
             if (!isTesting) {
                 onTestStart();
@@ -24,7 +29,16 @@ public class SubsystemBaseTestable extends SubsystemBase {
         } else {
             isTesting = false;
         }
+
+
     }
+
+    /** 
+     * Used instead of periodic to ensure certain logic always runs periodically. 
+     * Override this instead of {@link #periodic()} @author H!
+     */
+    public void doPeriodic() {}
+
 
     public void onTestStart() {
         TestManager.queueSubsystemToTest(this);
