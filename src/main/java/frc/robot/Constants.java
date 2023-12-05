@@ -199,4 +199,12 @@ public final class Constants {
       }
     }
   }
+
+  public static final class LED {
+    //&& These are the constants for the LEDSubsystem.
+    //&& They can be moved to JSON later, I just don't know how to do that yet.
+
+    //&& TODO: Set the correct value for the PWM port, because I don't know if 0 is correct.
+    public static final int pwmPort = 0;
+  }
 }
