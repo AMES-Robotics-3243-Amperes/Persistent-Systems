@@ -8,8 +8,12 @@ import com.revrobotics.CANSparkMax.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -241,5 +245,16 @@ public final class Constants {
 
     //&& TODO: Set the correct value for the PWM port, because I don't know if 0 is correct.
     public static final int pwmPort = 0;
+  }
+  public static final class PhotonVision {
+    //TODO replace placeholders (maybe done H!)
+    public static final String cameraName = "Backward_Global_Camera";
+
+    // :> TODO Replace this with the 2024 field file when season starts
+    public static final String fieldLayoutPath = "./2023-JailbreakJamboree-AprilTagLayout.json";
+    // :> TODO Replace this position with the actual position on the new chassis once season starts
+    public static final Pose3d cameraPosition =
+      new Pose3d(new Translation3d(25.0 / 100, -.22, 14.4 / 100), new Rotation3d());
+    public static final Transform3d robotToCamera = new Transform3d(new Pose3d(), cameraPosition);
   }
 }

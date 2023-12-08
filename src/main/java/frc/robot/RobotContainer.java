@@ -6,7 +6,10 @@ package frc.robot;
 
 import frc.robot.Constants.JoyUtilConstants;
 import frc.robot.commands.CommandSwerveTeleopDrive;
+import frc.robot.subsystems.SubsystemPhotonvision;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
+
+import java.io.IOException;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -20,8 +23,8 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  */
 public class RobotContainer {
   // :3 Controler
-  private final JoyUtil primaryControler = new JoyUtil(JoyUtilConstants.primaryControllerID);
-
+  private final JoyUtil primaryController = new JoyUtil(JoyUtilConstants.primaryControllerID);
+  private final JoyUtil secondaryController = new JoyUtil(JoyUtilConstants.secondaryControllerID);
   //
   // :3 SUBSYSTEMS
   //
@@ -32,11 +35,17 @@ public class RobotContainer {
   // :3 COMMANDS
   //
 
-  private final CommandSwerveTeleopDrive m_CommandSwerveTeleopDrive = new CommandSwerveTeleopDrive(m_SubsystemSwerveDrivetrain, primaryControler);
+  private final CommandSwerveTeleopDrive m_CommandSwerveTeleopDrive = new CommandSwerveTeleopDrive(m_SubsystemSwerveDrivetrain, primaryController);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
     m_SubsystemSwerveDrivetrain.setDefaultCommand(m_CommandSwerveTeleopDrive);
+
+    try {
+      new SubsystemPhotonvision();
+    } catch (IOException e) {
+      System.out.println("ruh roh, camera moment");
+    }
 
     // Configure the trigger bindings
     configureBindings();
