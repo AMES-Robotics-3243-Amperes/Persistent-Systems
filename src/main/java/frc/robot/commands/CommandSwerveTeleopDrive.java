@@ -7,6 +7,7 @@ package frc.robot.commands;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.Constants.DriveTrain.DriveConstants;
+import frc.robot.DataManager;
 import frc.robot.JoyUtil;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
@@ -39,8 +40,8 @@ public class CommandSwerveTeleopDrive extends CommandBase {
   @Override
   public void execute() {
     // :3 get x and y speeds
-    double xSpeed = -m_controller.getLeftY() * (reverse ? -1 : 1) * DriveConstants.kDrivingSpeedDamper;
-    double ySpeed = -m_controller.getLeftX() * (reverse ? -1 : 1) * DriveConstants.kDrivingSpeedDamper;
+    double xSpeed = -m_controller.getLeftY() * (reverse ? -1 : 1) * DataManager.currentVelocityConstant.get();
+    double ySpeed = -m_controller.getLeftX() * (reverse ? -1 : 1) * DataManager.currentVelocityConstant.get();
 
     // :3 get rotation speed
     double controllerRightX = m_controller.getRightX();

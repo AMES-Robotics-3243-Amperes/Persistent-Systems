@@ -154,6 +154,17 @@ public class SubsystemSwerveModule {
   }
 
   /**
+   * @return Gets the output motor current of an inputted motor
+   * 
+   * @author :>
+   */
+  public double getMotorOutputCurrent() {
+
+    double outputCurrent = m_drivingSparkMax.getOutputCurrent();
+    return outputCurrent;
+  }
+
+  /**
    * @return if either of the motors are too hot
    * 
    * @author :3

@@ -43,4 +43,16 @@ public class TranslationRateLimiter {
   private double magnitude(Translation2d translation) {
     return Math.sqrt(translation.getX() * translation.getX() + translation.getY() * translation.getY());
   }
+  /**
+   * Resets the rate limited state of the {@link Translation2d}
+   * 
+   * @param state the new state of the internal rate limited {@link Translation2d}
+   */
+  public void reset(Translation2d state) {
+    m_previousTranslation = state;
+  }
+
+  public void changeLimit(double newLimit) {
+    m_limit = newLimit;
+  }
 }

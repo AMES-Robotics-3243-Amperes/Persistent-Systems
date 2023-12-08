@@ -3,7 +3,8 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
-
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.DataManager;
 import frc.robot.IMUWrapper;
+import frc.robot.utility.PowerManager;
 import frc.robot.Constants.DriveTrain.DriveConstants;
 import frc.robot.Constants.DriveTrain.DriveConstants.AutoConstants;
 import frc.robot.utility.TranslationRateLimiter;
@@ -39,7 +41,6 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
 
   private final SubsystemSwerveModule m_rearRight = new SubsystemSwerveModule(DriveConstants.IDs.kRearRightDrivingCanId,
     DriveConstants.IDs.kRearRightTurningCanId, DriveConstants.ModuleOffsets.kBackRightOffset);
-
   // :3 driving speeds/information
   private Translation2d m_speeds;
   private Boolean m_drivingFieldRelative;
@@ -49,13 +50,17 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
   private Rotation2d m_rotationSetpoint;
 
   // :3 rotation pid and rate limit
-  private ProfiledPIDController m_rotationPidController = AutoConstants.kTurningPID;
+  private ProfiledPIDController m_rotationPidControllerRadians = AutoConstants.kTurningPID;
   private SlewRateLimiter m_roatationLimiter =
     new SlewRateLimiter(DriveConstants.kMaxRotationAcceleration, -DriveConstants.kMaxRotationAcceleration, 0);
 
-  // :3 driving rate limiter
+  // :3 setpoint pid and driving rate limiter
+  private PIDController m_setpointXPidController = AutoConstants.kSetpointPID;
+  private PIDController m_setpointYPidController = AutoConstants.kSetpointPID;
+  private TranslationRateLimiter m_setpointPidGoalRateLimiter =
+    new TranslationRateLimiter(getPosition(), AutoConstants.kMaxSetpointVelocity);
   private TranslationRateLimiter m_drivingRateLimiter =
-    new TranslationRateLimiter(new Translation2d(), DriveConstants.kMaxDrivingAcceleration);
+    new TranslationRateLimiter(new Translation2d(), DataManager.currentAccelerationConstant.get());
 
   // :3 imu
   private final IMUWrapper m_imuWrapper = new IMUWrapper();
@@ -73,12 +78,22 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
     m_odometry = new SwerveDriveOdometry(DriveConstants.ChassisKinematics.kDriveKinematics,
       DataManager.currentRobotPose.get().getRotation().toRotation2d(), getModulePositions());
 
+    // :3 configure turning pid
+    m_rotationPidControllerRadians.enableContinuousInput(-Math.PI, Math.PI);
+    resetRotationPID();
+
+    // :3 configure setpoint pids
+    m_setpointXPidController.setIntegratorRange(AutoConstants.kSetpointMinIGain, AutoConstants.kSetpointMaxIGain);
+    m_setpointYPidController.setIntegratorRange(AutoConstants.kSetpointMinIGain, AutoConstants.kSetpointMaxIGain);
+
     // :3 reset module driving encoders
-    resetEncoders();
+    resetModuleDrivingEncoders();
   }
 
   @Override
   public void periodic() {
+    m_drivingRateLimiter.changeLimit(DataManager.currentAccelerationConstant.get());
+
     // :3 update odometry and feed that information into DataManager
     m_odometry.update(m_imuWrapper.getYaw(), getModulePositions());
     DataManager.currentRobotPose.updateWithOdometry(m_odometry.getPoseMeters());
@@ -92,7 +107,21 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
 
     // :3 initialize movement speeds
     if (m_fieldSetpoint != null) {
-      // TODO: write setpoint code
+      Translation2d fixedVelocitySetpoint =
+        m_setpointPidGoalRateLimiter.calculate(m_fieldSetpoint.minus(getPosition()));
+      double xGoal = fixedVelocitySetpoint.getX();
+      double yGoal = fixedVelocitySetpoint.getY();
+
+      rawXSpeed = m_setpointXPidController.calculate(getPosition().getX(), xGoal);
+      rawYSpeed = m_setpointYPidController.calculate(getPosition().getY(), yGoal);
+
+      double speed = rawXSpeed * rawXSpeed + rawXSpeed * rawXSpeed;
+      if (speed > AutoConstants.kMaxSetpointVelocity) {
+        rawXSpeed *= (AutoConstants.kMaxSetpointVelocity / speed);
+        rawYSpeed *= (AutoConstants.kMaxSetpointVelocity / speed);
+      }
+
+      fieldRelative = true;
     } else if (m_speeds != null && m_drivingFieldRelative != null) {
       rawXSpeed = m_speeds.getX();
       rawYSpeed = m_speeds.getY();
@@ -101,7 +130,11 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
 
     // :3 initialize rotation speeds
     if (m_rotationSetpoint != null) {
-      // TODO: write setpoint code
+      // This may be very wrong, the other version is commented below H!
+      m_rotationPidControllerRadians.setGoal(m_rotationSetpoint.getRadians());
+      rawRotationSpeed = m_rotationPidControllerRadians.calculate(getHeading().getRadians());
+      //rawRotationSpeed =
+      //  m_rotationPidControllerRadians.calculate(getHeading().getRadians(), m_rotationSetpoint.getRadians());
     } else if (m_turnSpeedRadians != null) {
       rawRotationSpeed = m_turnSpeedRadians;
     }
@@ -110,9 +143,8 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
     double rawFieldRelativeXSpeed;
     double rawFieldRelativeYSpeed;
     if (!fieldRelative) {
-      Rotation2d negativeHeading = getHeading().times(-1);
-      rawFieldRelativeXSpeed = rawXSpeed * negativeHeading.getCos() - rawYSpeed * negativeHeading.getSin();
-      rawFieldRelativeYSpeed = rawXSpeed * negativeHeading.getSin() + rawYSpeed * negativeHeading.getCos();
+      rawFieldRelativeXSpeed = rawXSpeed * getHeading().getCos() - rawYSpeed * getHeading().getSin();
+      rawFieldRelativeYSpeed = rawXSpeed * getHeading().getSin() + rawYSpeed * getHeading().getCos();
     } else {
       rawFieldRelativeXSpeed = rawXSpeed;
       rawFieldRelativeYSpeed = rawYSpeed;
@@ -127,10 +159,12 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
 
     // :3 reset pids
     if (m_rotationSetpoint == null) {
-      m_rotationPidController.reset(getHeading().getRadians(), rawRotationSpeed);
+      resetRotationPID();
     }
     if (m_fieldSetpoint == null) {
-      // TODO: reset driving pid
+      m_setpointXPidController.reset();
+      m_setpointYPidController.reset();
+      m_setpointPidGoalRateLimiter.reset(getPosition());
     }
 
     // :3 get module states
@@ -138,6 +172,13 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
       ChassisSpeeds.fromFieldRelativeSpeeds(rawFieldRelativeXSpeed, rawFieldRelativeYSpeed, rawRotationSpeed, getHeading()));
 
     setModuleStates(swerveModuleStates);
+
+    // :> Sets the power manager variables equal to the current current outputs
+    PowerManager.frontLeftDrivetrainMotorPresentCurrent = getDriveFrontLeftCurrent();
+    PowerManager.frontRightDrivetrainMotorPresentCurrent = getDriveFrontRightCurrent();
+    PowerManager.rearLeftDrivetrainMotorPresentCurrent = getDriveRearLeftCurrent();
+    PowerManager.rearRightDrivetrainMotorPresentCurrent = getDriveRearRightCurrent();
+
   }
 
   /**
@@ -190,15 +231,6 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
   }
 
   /**
-   * Set wheels into an x position to prevent movement
-   * 
-   * @author :3
-   */
-  public void setX() {
-    // TODO: make this another "state" of the robot similar to setpoint/speeds
-  }
-
-  /**
    * Set the swerve modules' desired states
    *
    * @param desiredStates the desired {@link SwerveModuleState}s
@@ -221,7 +253,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * 
    * @author :3
    */
-  public void resetEncoders() {
+  public void resetModuleDrivingEncoders() {
     m_frontLeft.resetEncoder();
     m_rearLeft.resetEncoder();
     m_frontRight.resetEncoder();
@@ -248,7 +280,19 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * @author :3
    */
   private Rotation2d getHeading() {
-    return DataManager.currentRobotPose.get().getRotation().toRotation2d();
+    double rawAngleRadians = DataManager.currentRobotPose.get().getRotation().toRotation2d().getRadians();
+    return Rotation2d.fromRadians(MathUtil.angleModulus(rawAngleRadians));
+  }
+
+  /**
+   * Private helper function
+   * 
+   * @return the robot's position
+   * 
+   * @author :3
+   */
+  private Translation2d getPosition() {
+    return DataManager.currentRobotPose.get().getTranslation().toTranslation2d();
   }
 
   /**
@@ -258,5 +302,53 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    */
   public boolean getMotorsOkTemperature() {
     return !(m_frontLeft.isTooHot() || m_frontRight.isTooHot() || m_rearLeft.isTooHot() || m_rearRight.isTooHot());
+  }
+
+  /**
+   * resets the rotation pid
+   * 
+   * @author :3
+   */
+  private void resetRotationPID() {
+    m_rotationPidControllerRadians.reset(getHeading().getRadians());
+  }
+
+  /*  :> The reason why I'm doing all of this is because only SubsystemSwerve has access to all the motors directly
+   *  I'll be using these in periodic to set motor currents in power manager to make fail safes and redirect current.
+  */
+  /**
+   * @return frontLeft Motors current output at a given moment
+   *
+   * @author :>
+  */
+  public double getDriveFrontLeftCurrent() {
+    return (m_frontLeft.getMotorOutputCurrent());
+  }
+
+  /**
+   * @return frontRight Motors current output at a given moment
+   *
+   * @author :>
+  */
+  public double getDriveFrontRightCurrent() {
+    return (m_frontRight.getMotorOutputCurrent());
+  }
+
+  /**
+   * @return rearLeft Motors current output at a given moment
+   *
+   * @author :>
+  */
+  public double getDriveRearLeftCurrent() {
+    return (m_rearLeft.getMotorOutputCurrent());
+  }
+
+  /**
+   * @return rearRight Motors current output at a given moment
+   *
+   * @author :>
+  */
+  public double getDriveRearRightCurrent() {
+    return (m_rearRight.getMotorOutputCurrent());
   }
 }

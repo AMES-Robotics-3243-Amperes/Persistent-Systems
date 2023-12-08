@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import edu.wpi.first.math.geometry.Translation3d;
-import frc.robot.JoyUtil;
 
 /** <h3>An example test using WPI's unit testing system.</h3>
  * 

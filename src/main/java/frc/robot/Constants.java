@@ -6,10 +6,12 @@ package frc.robot;
 
 import com.revrobotics.CANSparkMax.IdleMode;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 
@@ -43,6 +45,19 @@ public final class Constants {
     // :3 ports
     public static int primaryControllerID = 0;
     public static int secondaryControllerID = 1;
+  }
+
+  public static final class PowerManager {
+    /* :> This is the (conservative) estimate for the robot's resistance
+      *  The real resistance has been found empiracally and is somewhere within the realm of .019 ohms
+      *  The reason why we use the conservative estimate is because 
+      *  the battery as it ages will change the resistance and it's better to be safe than sorry
+    */ 
+    public static final double robotResistance = .025;
+
+    // :> These values dictate at what point the robot is at unsafe voltage draw
+    public static final double softVoltageCap = 8.5;
+    public static final double hardVoltageCap = 7.8;
   }
 
   public static final class DriveTrain {
@@ -117,20 +132,24 @@ public final class Constants {
     }
 
     public static final class DriveConstants {
+
+      // :> This entire next section is utilized by PowerManager to manage the robots speed/acceleration
       // :3 speed damper (flat constant supplied speed is multiplied by)
       public static final double kDrivingSpeedDamper = 4.5; // :3 meters per second
+      public static final double kSlowDrivingSpeedDamper = 4;
+      // :> Speed Damper for the rotation of the robot
       public static final double kAngularSpeedDamper = 2.5 * Math.PI; // :3 radians per second
 
       // :3 the max physical speed of the modules
       // :3 THIS IS NOT THE MAX DRIVING SPEED
       public static final double kMaxObtainableModuleSpeed = 10;
 
-      // :3 global rate limits
-      // (generally, use controller and pid rate limiting
-      // instead of this, this is mainly here to keep the transitions
-      // between commands and/or input styles smooth)
-      public static final double kMaxRotationAcceleration = 5 * Math.PI;
-      public static final double kMaxDrivingAcceleration = 5;
+      /* :> These control how fast the robot can accelerate
+        * Most times the problem/what you are looking for is messing with the controller/PIDs
+        * PowerManager uses these constants to control how much power the robot is drawing
+      */
+      public static final double kMaxRotationAcceleration = 3 * Math.PI; // (radians)
+      public static final double kMaxDrivingAcceleration = 9;
 
       // :3 if the gyro is reversed
       public static final boolean kGyroReversed = false;
@@ -184,10 +203,10 @@ public final class Constants {
       // :3 auto-movement configuration
       public static final class AutoConstants {
         // :3 turning stuff
-        public static final double kMaxAngularVelocityRadians = 3;
-        public static final double kMaxAngularAccelerationRadians = 2.5;
+        public static final double kMaxAngularVelocityRadians = 2;
+        public static final double kMaxAngularAccelerationRadians = 4;
 
-        public static final double kTuringP = 0.1;
+        public static final double kTuringP = 7;
         public static final double kTurningI = 0;
         public static final double kTurningD = 0;
 
@@ -196,6 +215,22 @@ public final class Constants {
 
         public static final ProfiledPIDController kTurningPID =
           new ProfiledPIDController(kTuringP, kTurningI, kTurningD, kTurningConfig);
+
+        // :3 driving setpoint stuff
+        public static final double kMaxSetpointVelocity = 0.8;
+        public static final double kMaxSetpointAcceleration = 0.6;
+
+        public static final double kSetpointP = 1.5;
+        public static final double kSetpointI = 0;
+        public static final double kSetpointD = 0;
+
+        public static final double kSetpointMaxIGain = 1;
+        public static final double kSetpointMinIGain = -kSetpointMaxIGain;
+
+        public static final PIDController kSetpointPID = new PIDController(kSetpointP, kSetpointI, kSetpointD);
+
+        public static final TrajectoryConfig kTrajectoryConfig =
+          new TrajectoryConfig(kMaxSetpointVelocity, kMaxSetpointAcceleration);
       }
     }
   }

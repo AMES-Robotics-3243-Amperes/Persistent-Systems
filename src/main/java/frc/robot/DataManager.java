@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import frc.robot.utility.PowerManager;
 
 /** <b>Stores all of the data that is shared between systems, especially positions.</b>
  * 
@@ -118,13 +119,23 @@ public class DataManager {
         }
         
     }
-
+    public static class AccelerationConstant implements Entry<Double> {
+        public Double get() {
+            return (PowerManager.getDriveAccelerationDampener());
+        }
+    }
+    public static class VelocityConstant implements Entry<Double> {
+        public Double get() {
+            return (PowerManager.getDriveSpeedDamper());
+        }
+    }
     //#########################################################
     //                        ENTRIES
     //#########################################################
 
     public static CurrentRobotPose currentRobotPose = new CurrentRobotPose();
-
+    public static AccelerationConstant currentAccelerationConstant = new AccelerationConstant();
+    public static VelocityConstant currentVelocityConstant = new VelocityConstant();
     //#########################################################
     //               INITIALIZATION AND RUNTIME
     //#########################################################
