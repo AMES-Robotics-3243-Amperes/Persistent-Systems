@@ -8,15 +8,22 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Extend this class to have it automatically run tests in the integrated testing framework managed by {@link TestManager} @author H! */
-public class SubsystemBaseTestable extends SubsystemBase {
+public class SubsystemBaseTestable extends SubsystemBase implements TestGroup {
 
     /** An array of test objects to be run when test mode is activated. Fill this on contruction or class initialization. @author H! */
     public Test[] tests;
 
+    @Override
+    public Test[] getTests() {
+        return tests;
+    }
+
+
     protected boolean isTesting = false;
 
     
-    /** <h3>CANNOT BE EXTENDED</h3> <p>This is to force certain logic to always be used</p>
+    /** <h3>CANNOT BE EXTENDED</h3> <p>This is to force certain logic to always be used. 
+     * Use {@link SubsystemBaseTestable#doPeriodic()} for things that must run periodically.</p>
      * {@inheritDoc}
      */
     @Override
@@ -41,6 +48,6 @@ public class SubsystemBaseTestable extends SubsystemBase {
 
 
     public void onTestStart() {
-        TestManager.queueSubsystemToTest(this);
+        TestManager.queueGroupToTest(this);
     }
 }
