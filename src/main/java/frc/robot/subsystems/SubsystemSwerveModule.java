@@ -159,7 +159,6 @@ public class SubsystemSwerveModule {
    * @author :>
    */
   public double getMotorOutputCurrent() {
-
     double outputCurrent = m_drivingSparkMax.getOutputCurrent();
     return outputCurrent;
   }

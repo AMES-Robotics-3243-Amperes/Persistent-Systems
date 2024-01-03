@@ -145,8 +145,10 @@ public final class Constants {
       public static final double kAngularSpeedDamper = 2.5 * Math.PI; // :3 radians per second
 
       // :3 the max physical speed of the modules
-      // :3 THIS IS NOT THE MAX DRIVING SPEED
-      public static final double kMaxObtainableModuleSpeed = 10;
+      // :3 THIS IS NOT THE MAX DRIVING SPEED (but it can and will limit it)
+      // :3 (for now, I really have no clue what this should
+      // be, so I have it set unreasonably high)
+      public static final double kMaxObtainableModuleSpeed = 100;
 
       /* :> These control how fast the robot can accelerate
         * Most times the problem/what you are looking for is messing with the controller/PIDs

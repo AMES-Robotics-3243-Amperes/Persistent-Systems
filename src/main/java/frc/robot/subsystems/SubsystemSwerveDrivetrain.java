@@ -115,7 +115,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
       rawXSpeed = m_setpointXPidController.calculate(getPosition().getX(), xGoal);
       rawYSpeed = m_setpointYPidController.calculate(getPosition().getY(), yGoal);
 
-      double speed = rawXSpeed * rawXSpeed + rawXSpeed * rawXSpeed;
+      double speed = Math.sqrt(rawXSpeed * rawXSpeed + rawYSpeed * rawYSpeed);
       if (speed > AutoConstants.kMaxSetpointVelocity) {
         rawXSpeed *= (AutoConstants.kMaxSetpointVelocity / speed);
         rawYSpeed *= (AutoConstants.kMaxSetpointVelocity / speed);
@@ -130,11 +130,8 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
 
     // :3 initialize rotation speeds
     if (m_rotationSetpoint != null) {
-      // This may be very wrong, the other version is commented below H!
-      m_rotationPidControllerRadians.setGoal(m_rotationSetpoint.getRadians());
-      rawRotationSpeed = m_rotationPidControllerRadians.calculate(getHeading().getRadians());
-      //rawRotationSpeed =
-      //  m_rotationPidControllerRadians.calculate(getHeading().getRadians(), m_rotationSetpoint.getRadians());
+      rawRotationSpeed =
+        m_rotationPidControllerRadians.calculate(getHeading().getRadians(), m_rotationSetpoint.getRadians());
     } else if (m_turnSpeedRadians != null) {
       rawRotationSpeed = m_turnSpeedRadians;
     }
