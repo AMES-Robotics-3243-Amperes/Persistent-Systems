@@ -5,19 +5,11 @@
 package frc.robot.utility;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 /** Extend this class to have it automatically run tests in the integrated testing framework managed by {@link TestManager} @author H! */
-public class SubsystemBaseTestable extends SubsystemBase implements TestGroup {
-
-    /** An array of test objects to be run when test mode is activated. Fill this on contruction or class initialization. @author H! */
-    public Test[] tests;
-
-    @Override
-    public Test[] getTests() {
-        return tests;
-    }
-
+public abstract class SubsystemBaseTestable extends SubsystemBase implements TestGroup {
 
     protected boolean isTesting = false;
 
@@ -28,9 +20,13 @@ public class SubsystemBaseTestable extends SubsystemBase implements TestGroup {
      */
     @Override
     public final void periodic() {
-        if (DriverStation.isTest()) {
+        SmartDashboard.putBoolean("IsInTestMode", DriverStation.isTest());
+        SmartDashboard.putBoolean("IsEnabled", DriverStation.isTestEnabled());
+        if (DriverStation.isTest() && DriverStation.isEnabled()) {
+            System.out.println("Good day!");
             if (!isTesting) {
                 onTestStart();
+                System.out.println("Hi there!");
             }
             isTesting = true;
         } else {

@@ -17,12 +17,12 @@ import javax.swing.JTextPane;
 import javax.swing.plaf.DimensionUIResource;
 import javax.swing.text.html.HTMLDocument;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Robot;
 
 /** A system which will run all tests queued to it and display their results. @author H! */
 public class TestManager {
     /* TODO:
-     * Implement dependencies
      * Make the test runner behave nicely if the testing is cut off halfway through
      * Add "Require enabled" method/abstract class
      * Other Utils
@@ -93,6 +93,7 @@ public class TestManager {
     protected static TestState testState = TestState.SETUP;
 
     public static boolean testsFinished = false;
+    public static boolean testsFinishedCompletely = false;
     public static boolean testStarted = false;
 
 
@@ -108,6 +109,7 @@ public class TestManager {
      * @author H!
      */
     public static void queueGroupToTest(TestGroup toTest) {
+        System.out.println("test Queued");
         groupsToTest.add(toTest);
     }
 
@@ -117,7 +119,8 @@ public class TestManager {
      * @author H!
      */
     public static void init() {
-        groupsToTest.clear();
+        System.out.println("init!");
+        //groupsToTest.clear();
         testIndex = 0;
         testState = TestState.SETUP;
         testsFinished = false;
@@ -129,14 +132,34 @@ public class TestManager {
      * @author H!
      */
     public static void periodic() {
+        //System.out.println("#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#");
+        String[] testGroupNames = new String[groupsToTest.size()];
+        for (int i = 0; i < groupsToTest.size(); i++) {
+            testGroupNames[i] = groupsToTest.get(i).getName();
+        }
+
+        SmartDashboard.putBoolean("TestManagerAlive", true);
+
+        SmartDashboard.putStringArray("TestGroupsQueued", testGroupNames);
+        try {
+            SmartDashboard.putString("FirstTestGroup", groupsToTest.get(0).getName());
+        } catch (Exception e) {
+            System.out.println("No test groups");
+        }
+        
+
         if (groupsToTest.size() > 0) {
             results.putIfAbsent(groupsToTest.get(0).getName(), new HashMap<String, TestResults>());
             runTests(groupsToTest.get(0));
-        } else {
-            if (!testsFinished) {
-                displayTestResults();
-            }
 
+        } else {
+            if (!testsFinished && testsFinishedCompletely) {
+                displayTestResults();
+                testsFinishedCompletely = false;
+            }
+            if (!testsFinished) {
+                testsFinishedCompletely = true;
+            }
             testsFinished = true;
         }
     }
