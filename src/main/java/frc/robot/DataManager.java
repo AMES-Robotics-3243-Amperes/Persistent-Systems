@@ -2,8 +2,10 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.utility.PowerManager;
 
 /** <b>Stores all of the data that is shared between systems, especially positions.</b>
@@ -82,11 +84,23 @@ public class DataManager {
     /** The entry for the positionn and orientation of the robot
      * 
      */
+    /** The entry for the positionn and orientation of the robot
+     * 
+     */
     public static class CurrentRobotPose implements FieldPose {
         /** The pose the robot's located at @author :3 */
         protected Pose3d m_robotPose = new Pose3d();
+
+        protected boolean m_robotPoseIsCurrent = false;
         /** The previous pose odometry read @author :3 */
         protected Pose3d m_previousOdometryPose = new Pose3d();
+
+
+        protected Pose3d m_latestOdometryPose = new Pose3d();
+
+        protected Pose3d m_latestPhotonPose = new Pose3d();
+
+        protected double m_latestAmbiguity = 0.0;
 
         /**
          * Creates a new {@link CurrentRobotPose} object
@@ -97,7 +111,36 @@ public class DataManager {
 
         @Override
         public Pose3d get() {
-            return m_robotPose;
+            if (!m_robotPoseIsCurrent) {
+                combineUpdateData();
+                m_robotPoseIsCurrent = true;
+            }
+
+            return new Pose3d(m_robotPose.getTranslation(), m_robotPose.getRotation().rotateBy(new Rotation3d(0, 0, Math.PI / 2)));
+        }
+
+        /*
+         * Find the new robot pose using the odometry and vision data
+         * @author H!
+         */
+        protected void combineUpdateData() {
+            // This seems to behave a little weird and alternate bettween using vision and not, but it's fine-ish for now (I hope) H!
+            SmartDashboard.putNumber("photonAmbiguity", m_latestAmbiguity);
+            if (m_latestAmbiguity > 0.15 || m_latestPhotonPose == null) {
+                Transform3d transformSinceLastUpdate = new Transform3d(m_previousOdometryPose, m_latestOdometryPose);
+
+                // transform the robot pose and update the previous odometry
+                m_robotPose = m_robotPose.transformBy(transformSinceLastUpdate);
+
+                m_previousOdometryPose = m_latestOdometryPose;
+                SmartDashboard.putBoolean("usingVision", false);
+            } else {
+                SmartDashboard.putNumber("photonPoseX", m_latestPhotonPose.getX());
+                SmartDashboard.putNumber("photonPoseY", m_latestPhotonPose.getY());
+                SmartDashboard.putNumber("photonPoseRotZ", m_latestPhotonPose.getRotation().getZ());
+                m_robotPose = m_latestPhotonPose;
+                SmartDashboard.putBoolean("usingVision", true);
+            }
         }
 
         /**
@@ -108,14 +151,16 @@ public class DataManager {
          */
         public void updateWithOdometry(Pose2d odometryReading) {
             // get the Transform3d from the last odometry update
-            Pose3d odometryReading3d = new Pose3d(odometryReading);
-            Transform3d transformSinceLastUpdate = new Transform3d(m_previousOdometryPose, odometryReading3d);
+            m_latestOdometryPose = new Pose3d(odometryReading);
 
-            // transform the robot pose and update the previous odometry
-            m_robotPose = m_robotPose.transformBy(transformSinceLastUpdate);
-            m_previousOdometryPose = odometryReading3d;
+            m_robotPoseIsCurrent = false;
+        }
 
-            // :3 TODO: ignore odometry if there's a photonvision reading
+        public void updateWithVision(Pose3d visionEstimate, double ambiguity) {
+            m_latestPhotonPose = visionEstimate;
+            m_latestAmbiguity = ambiguity;
+
+            m_robotPoseIsCurrent = false;
         }
         
     }
