@@ -7,7 +7,7 @@ package frc.robot;
 import frc.robot.Constants.JoyUtilConstants;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
-import frc.robot.utility.TestSubsystem;
+import frc.robot.test.TestSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;

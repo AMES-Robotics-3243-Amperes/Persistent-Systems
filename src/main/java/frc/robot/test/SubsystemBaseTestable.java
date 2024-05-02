@@ -2,11 +2,11 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.utility;
+package frc.robot.test;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 
 /** Extend this class to have it automatically run tests in the integrated testing framework managed by {@link TestManager} @author H! */
 public abstract class SubsystemBaseTestable extends SubsystemBase implements TestGroup {
@@ -20,13 +20,13 @@ public abstract class SubsystemBaseTestable extends SubsystemBase implements Tes
      */
     @Override
     public final void periodic() {
-        SmartDashboard.putBoolean("IsInTestMode", DriverStation.isTest());
-        SmartDashboard.putBoolean("IsEnabled", DriverStation.isTestEnabled());
+
         if (DriverStation.isTest() && DriverStation.isEnabled()) {
-            System.out.println("Good day!");
+            if (Robot.managerFirst == null) {
+                Robot.managerFirst = false;
+            }
             if (!isTesting) {
                 onTestStart();
-                System.out.println("Hi there!");
             }
             isTesting = true;
         } else {
