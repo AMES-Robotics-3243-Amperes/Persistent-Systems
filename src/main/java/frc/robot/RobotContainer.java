@@ -39,6 +39,7 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    DataManager.currentRobotPose.constructPoseEstimator(m_SubsystemSwerveDrivetrain);
     m_SubsystemSwerveDrivetrain.setDefaultCommand(m_CommandSwerveTeleopDrive);
 
     try {

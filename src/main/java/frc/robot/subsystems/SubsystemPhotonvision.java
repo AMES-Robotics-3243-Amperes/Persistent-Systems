@@ -50,9 +50,7 @@ public class SubsystemPhotonvision extends SubsystemBase {
       double adjustedAmbiguity = pipelineResult.getBestTarget().getPoseAmbiguity() / pipelineResult.targets.size();
       EstimatedRobotPose poseLatest = poseLatestOptional.get();
 
-      DataManager.currentRobotPose.updateWithVision(poseLatest.estimatedPose, adjustedAmbiguity);
-    } else {
-      DataManager.currentRobotPose.updateWithVision(null, 10000);
+      DataManager.currentRobotPose.updateWithVision(poseLatest.estimatedPose, poseLatest.timestampSeconds, adjustedAmbiguity);
     }
 }
 }

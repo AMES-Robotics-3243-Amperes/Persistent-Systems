@@ -1,11 +1,15 @@
 package frc.robot;
 
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import frc.robot.Constants.PhotonVision;
+import frc.robot.Constants.DriveTrain.DriveConstants.ChassisKinematics;
+import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.utility.PowerManager;
 
 /** <b>Stores all of the data that is shared between systems, especially positions.</b>
@@ -81,26 +85,12 @@ public class DataManager {
     //#########################################################
     
 
-    /** The entry for the positionn and orientation of the robot
-     * 
-     */
-    /** The entry for the positionn and orientation of the robot
+    /** The entry for the position and orientation of the robot
      * 
      */
     public static class CurrentRobotPose implements FieldPose {
-        /** The pose the robot's located at @author :3 */
-        protected Pose3d m_robotPose = new Pose3d();
-
-        protected boolean m_robotPoseIsCurrent = false;
-        /** The previous pose odometry read @author :3 */
-        protected Pose3d m_previousOdometryPose = new Pose3d();
-
-
-        protected Pose3d m_latestOdometryPose = new Pose3d();
-
-        protected Pose3d m_latestPhotonPose = new Pose3d();
-
-        protected double m_latestAmbiguity = 0.0;
+        /** Does the heavy lifting for keeping track of Pose @author :3 */
+        protected SwerveDrivePoseEstimator m_PoseEstimator;
 
         /**
          * Creates a new {@link CurrentRobotPose} object
@@ -109,38 +99,21 @@ public class DataManager {
             // TODO add anything that is needed here
         }
 
-        @Override
-        public Pose3d get() {
-            if (!m_robotPoseIsCurrent) {
-                combineUpdateData();
-                m_robotPoseIsCurrent = true;
-            }
-
-            return new Pose3d(m_robotPose.getTranslation(), m_robotPose.getRotation().rotateBy(new Rotation3d(0, 0, Math.PI / 2)));
+        /**
+         * Reconstructs the {@link SwerveDrivePoseEstimator} with the correct information
+         * Used since the static construction of the class makes certain things difficult in the main constructor
+         * 
+         * @author :3
+         */
+        public void constructPoseEstimator(SubsystemSwerveDrivetrain drivetrainSubsystem) {
+            // creates a pose estimator with provided information
+            m_PoseEstimator = new SwerveDrivePoseEstimator(ChassisKinematics.kDriveKinematics, drivetrainSubsystem.getIMUHeading(),
+                drivetrainSubsystem.getModulePositions(), new Pose2d());
         }
 
-        /*
-         * Find the new robot pose using the odometry and vision data
-         * @author H!
-         */
-        protected void combineUpdateData() {
-            // This seems to behave a little weird and alternate bettween using vision and not, but it's fine-ish for now (I hope) H!
-            SmartDashboard.putNumber("photonAmbiguity", m_latestAmbiguity);
-            if (m_latestAmbiguity > 0.15 || m_latestPhotonPose == null) {
-                Transform3d transformSinceLastUpdate = new Transform3d(m_previousOdometryPose, m_latestOdometryPose);
-
-                // transform the robot pose and update the previous odometry
-                m_robotPose = m_robotPose.transformBy(transformSinceLastUpdate);
-
-                m_previousOdometryPose = m_latestOdometryPose;
-                SmartDashboard.putBoolean("usingVision", false);
-            } else {
-                SmartDashboard.putNumber("photonPoseX", m_latestPhotonPose.getX());
-                SmartDashboard.putNumber("photonPoseY", m_latestPhotonPose.getY());
-                SmartDashboard.putNumber("photonPoseRotZ", m_latestPhotonPose.getRotation().getZ());
-                m_robotPose = m_latestPhotonPose;
-                SmartDashboard.putBoolean("usingVision", true);
-            }
+        @Override
+        public Pose3d get() {
+            return new Pose3d(m_PoseEstimator.getEstimatedPosition());
         }
 
         /**
@@ -149,31 +122,30 @@ public class DataManager {
          * 
          * @param odometryReading the current Pose2d reported by odometry
          */
-        public void updateWithOdometry(Pose2d odometryReading) {
-            // get the Transform3d from the last odometry update
-            m_latestOdometryPose = new Pose3d(odometryReading);
-
-            m_robotPoseIsCurrent = false;
+        public void updateWithOdometry(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions) {
+            // TODO: consider imu position data
+            m_PoseEstimator.update(gyroAngle, modulePositions);
         }
 
-        public void updateWithVision(Pose3d visionEstimate, double ambiguity) {
-            m_latestPhotonPose = visionEstimate;
-            m_latestAmbiguity = ambiguity;
-
-            m_robotPoseIsCurrent = false;
+        public void updateWithVision(Pose3d visionEstimate, double timestampSeconds, double ambiguity) {
+            double distrust = PhotonVision.visionDistrust * ambiguity;
+            m_PoseEstimator.addVisionMeasurement(visionEstimate.toPose2d(), timestampSeconds, VecBuilder.fill(distrust, distrust, distrust));
         }
         
     }
+
     public static class AccelerationConstant implements Entry<Double> {
         public Double get() {
             return (PowerManager.getDriveAccelerationDampener());
         }
     }
+
     public static class VelocityConstant implements Entry<Double> {
         public Double get() {
             return (PowerManager.getDriveSpeedDamper());
         }
     }
+
     //#########################################################
     //                        ENTRIES
     //#########################################################
@@ -181,6 +153,7 @@ public class DataManager {
     public static CurrentRobotPose currentRobotPose = new CurrentRobotPose();
     public static AccelerationConstant currentAccelerationConstant = new AccelerationConstant();
     public static VelocityConstant currentVelocityConstant = new VelocityConstant();
+
     //#########################################################
     //               INITIALIZATION AND RUNTIME
     //#########################################################
@@ -189,8 +162,8 @@ public class DataManager {
      * when the robot code is deployed.
      * 
      * Put all construction of entries here, instead of in the definition. This
-     * ensures we have control over when those entries aare constructed. You may want
-     * to put some further initialization in the folowing methods, called at different times.
+     * ensures we have control over when those entries are constructed. You may want
+     * to put some further initialization in the following methods, called at different times.
      */
     public static void onRobotInit() {
         currentRobotPose = new CurrentRobotPose();

@@ -51,7 +51,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
 
   // :3 rotation pid and rate limit
   private ProfiledPIDController m_rotationPidControllerRadians = AutoConstants.kTurningPID;
-  private SlewRateLimiter m_roatationLimiter =
+  private SlewRateLimiter m_rotationLimiter =
     new SlewRateLimiter(DriveConstants.kMaxRotationAcceleration, -DriveConstants.kMaxRotationAcceleration, 0);
 
   // :3 setpoint pid and driving rate limiter
@@ -74,10 +74,6 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * @author :3
    */
   public SubsystemSwerveDrivetrain() {
-    // :3 initialize odometry
-    m_odometry = new SwerveDriveOdometry(DriveConstants.ChassisKinematics.kDriveKinematics,
-      DataManager.currentRobotPose.get().getRotation().toRotation2d(), getModulePositions());
-
     // :3 configure turning pid
     m_rotationPidControllerRadians.enableContinuousInput(-Math.PI, Math.PI);
     resetRotationPID();
@@ -96,7 +92,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
 
     // :3 update odometry and feed that information into DataManager
     m_odometry.update(m_imuWrapper.getYaw(), getModulePositions());
-    DataManager.currentRobotPose.updateWithOdometry(m_odometry.getPoseMeters());
+    DataManager.currentRobotPose.updateWithOdometry(getIMUHeading(), getModulePositions());
 
     // :3 these are the raw speeds of the robot,
     // and will be assigned in the next 2 if statements
@@ -148,7 +144,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
     }
     
     // :3 rate limit
-    rawRotationSpeed = m_roatationLimiter.calculate(rawRotationSpeed);
+    rawRotationSpeed = m_rotationLimiter.calculate(rawRotationSpeed);
     Translation2d rawFieldRelativeSpeeds = 
       m_drivingRateLimiter.calculate(new Translation2d(rawFieldRelativeXSpeed, rawFieldRelativeYSpeed));
     rawFieldRelativeXSpeed = rawFieldRelativeSpeeds.getX();
@@ -262,7 +258,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * 
    * @author :3
    */
-  private SwerveModulePosition[] getModulePositions() {
+  public SwerveModulePosition[] getModulePositions() {
     return new SwerveModulePosition[]{
       m_frontLeft.getPosition(), m_frontRight.getPosition(),
       m_rearLeft.getPosition(), m_rearRight.getPosition()
@@ -290,6 +286,15 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    */
   private Translation2d getPosition() {
     return DataManager.currentRobotPose.get().getTranslation().toTranslation2d();
+  }
+
+  /**
+   * @return the rotation reported by the imu
+   * 
+   * @author :3
+   */
+  public Rotation2d getIMUHeading() {
+    return m_imuWrapper.getYaw();
   }
 
   /**
