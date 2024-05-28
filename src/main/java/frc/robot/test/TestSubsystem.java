@@ -4,6 +4,9 @@
 
 package frc.robot.test;
 
+import java.util.Random;
+import java.util.function.Supplier;
+
 public class TestSubsystem extends SubsystemBaseTestable {
 
   public double a = 1.3;
@@ -26,105 +29,76 @@ public class TestSubsystem extends SubsystemBaseTestable {
     double timer = 0;
 
     @Override
-    public void testPeriodic() {
+    public void periodic() {
       timer++;
       a++;
       assert a == timer;
     }
 
     @Override
-    public boolean testIsDone() {
+    public boolean isDone() {
       return timer == 10;
     }
 
     @Override
-    public void setupPeriodic() {
+    public void setup() {
       a = 0;
       timer = 0;
-    }
-
-    @Override
-    public boolean setupIsDone() {
-      return true;
-    }
-
-    @Override
-    public void closedownPeriodic() {}
-
-    @Override
-    public boolean closedownIsDone() {
-      return true;
     }
 
     @Override
     public String getName() {
       return "ExampleTest1";
     }
-
-    @Override
-    public Test[] getDependencies() {
-      // Auto-generated method stub
-      return null; // add dependencies and such
-    }
-    
   }
 
-  public class ExampleTest2 implements Test {
-
-    @Override
-    public void testPeriodic() {
-      // Auto-generated method stub
-      
-    }
-
-    @Override
-    public boolean testIsDone() {
-      // Auto-generated method stub
-      return false;
-    }
-
-    @Override
-    public void setupPeriodic() {
-      // Auto-generated method stub
-      
-    }
-
-    @Override
-    public boolean setupIsDone() {
-      // Auto-generated method stub
-      return false;
-    }
-
-    @Override
-    public void closedownPeriodic() {
-      // Auto-generated method stub
-      
-    }
-
-    @Override
-    public boolean closedownIsDone() {
-      // Auto-generated method stub
-      return false;
-    }
-
-    @Override
-    public String getName() {
-      // Auto-generated method stub
-      return null;
-    }
-
-    @Override
-    public Test[] getDependencies() {
-      // Auto-generated method stub
-      return null;
-    }
-    
+  
+  protected void exampleTest2() {
+    TestUtil.assertEquals(1+1, 2);
   }
+
+  protected Test exampleSinglePhaseTest = new TestUtil.OnePhaseTest(
+    this::exampleSinglePhaseTestMainLoop, 
+    this::exampleSinglePhaseTestIsDone, 
+    "Example One Phase Test"
+  );
+  protected void exampleSinglePhaseTestMainLoop() {
+    a = new Random().nextInt(1, 7);
+  }
+  protected boolean exampleSinglePhaseTestIsDone() {
+    return a==3;
+  }
+
+  protected Test multiphaseTest = new TestUtil.MultiphaseTest(
+    new Runnable[] {this::phaseOneMain, this::phaseTwoMain}, 
+    new Supplier[] {this::phaseOneDone, this::phaseTwoDone}, 
+    "Multiphase Test"
+  );
+  protected void phaseOneMain() {
+    a = new Random().nextInt(1, 11);
+  }
+  protected void phaseTwoMain() {
+    a = new Random().nextInt(1, 5);
+    throw new AssertionError("Problem!");
+  }
+  protected boolean phaseOneDone() {
+    return a==9;
+  }
+  protected boolean phaseTwoDone() {
+    return a==1;
+  }
+
+  protected Test exampleTest2 = new TestUtil.InstantTest(
+    this::exampleTest2, 
+    "Example Test 2",
+    new Test[] {exampleSinglePhaseTest, multiphaseTest}
+  );
 
   @Override
   public Test[] getTests() {
     return new Test[] {
-      new ExampleTest1()
+      new ExampleTest1(),
+      exampleTest2
     };
   }
 }

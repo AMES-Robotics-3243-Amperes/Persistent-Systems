@@ -6,19 +6,24 @@ package frc.robot.test;
 
 /** Add your docs here. */
 public interface Test {
-    public void testPeriodic();
+    /** The main body of the test. This will run periodically until the test throws an assertion error, 
+     * or the {@link Test#isDone()} condition is met.
+     */
+    public void periodic();
 
-    public boolean testIsDone();
+    /** 
+     * A function which outputs true when the test is finished. If no error is thrown before this method
+     * returns true, the test succeeds. Called periodically. Runs immediately after {@link Test#periodic()}
+     */
+    public boolean isDone();
 
-    public void setupPeriodic();
+    public default void setup() {}
 
-    public boolean setupIsDone();
-
-    public void closedownPeriodic();
-
-    public boolean closedownIsDone();
+    public default void closedown() {}
 
     public String getName();
+
+    
 
     /** 
      * <p><b>This method must always return the same thing, down to the refrences. That means
@@ -29,7 +34,7 @@ public interface Test {
      * If you wish to change this behavior, see {@link Test#getDependencySuccessRequirements()}.</p>
      * 
      */
-    public Test[] getDependencies();
+    public default Test[] getDependencies() {return new Test[0];};
 
     /**
      * Should return an array corresponding to whether each test listed returned by {@link Test#getDependencies()}

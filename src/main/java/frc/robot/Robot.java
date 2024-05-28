@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.test.ExampleTestGroup;
 import frc.robot.test.TestManager;
 
 /**
@@ -95,6 +96,7 @@ public class Robot extends TimedRobot {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
     TestManager.init();
+    TestManager.queueGroupToTest(new ExampleTestGroup()); // USED FOR TESTING, REMOVE IF THIS IS IN PRODUCTION CODE
   }
 
   /** This function is called periodically during test mode. */

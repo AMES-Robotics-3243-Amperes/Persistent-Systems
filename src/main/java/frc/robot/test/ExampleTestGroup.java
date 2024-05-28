@@ -13,12 +13,8 @@ public class ExampleTestGroup extends SubsystemBaseTestable {
   }
 
   protected class ExampleTest implements Test {
-  @Override public void testPeriodic() {/*TestUtil.assertEquals(2,3);*/}
-    @Override public boolean testIsDone() {return true;}
-    @Override public void setupPeriodic() {}
-    @Override public boolean setupIsDone() {return true;}
-    @Override public void closedownPeriodic() {}
-    @Override public boolean closedownIsDone() {return true;}
+  @Override public void periodic() {/*TestUtil.assertEquals(2,3);*/}
+    @Override public boolean isDone() {return true;}
 
     @Override public String getName() {return "Example Test";}
 
@@ -27,12 +23,8 @@ public class ExampleTestGroup extends SubsystemBaseTestable {
 
   protected class ExampleFailingTest implements Test {
 
-    @Override public void testPeriodic() {TestUtil.assertEquals(2+2,7);}
-    @Override public boolean testIsDone() {return true;}
-    @Override public void setupPeriodic() {}
-    @Override public boolean setupIsDone() {return true;}
-    @Override public void closedownPeriodic() {}
-    @Override public boolean closedownIsDone() {return true;}
+    @Override public void periodic() {TestUtil.assertEquals(2+2,7);}
+    @Override public boolean isDone() {return true;}
 
     @Override public String getName() {return "Example Failing Test";}
 
@@ -41,12 +33,8 @@ public class ExampleTestGroup extends SubsystemBaseTestable {
   public ExampleFailingTest instanceExampleFailingTest = new ExampleFailingTest();
 
   protected class ExampleDependentTest implements Test {
-    @Override public void testPeriodic() {}
-    @Override public boolean testIsDone() {return true;}
-    @Override public void setupPeriodic() {}
-    @Override public boolean setupIsDone() {return true;}
-    @Override public void closedownPeriodic() {}
-    @Override public boolean closedownIsDone() {return true;}
+    @Override public void periodic() {}
+    @Override public boolean isDone() {return true;}
 
     @Override public String getName() {return "Example Dependent Test";}
 
@@ -59,12 +47,8 @@ public class ExampleTestGroup extends SubsystemBaseTestable {
   }
 
   protected class ExampleSuperDependentTest implements Test {
-    @Override public void testPeriodic() {}
-    @Override public boolean testIsDone() {return true;}
-    @Override public void setupPeriodic() {}
-    @Override public boolean setupIsDone() {return true;}
-    @Override public void closedownPeriodic() {}
-    @Override public boolean closedownIsDone() {return true;}
+    @Override public void periodic() {}
+    @Override public boolean isDone() {return true;}
 
     @Override public String getName() {return "Example Super Dependent Test";}
 

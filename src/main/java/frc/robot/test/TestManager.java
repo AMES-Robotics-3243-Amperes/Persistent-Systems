@@ -11,7 +11,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
+import java.awt.ScrollPane;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
@@ -86,11 +97,12 @@ public class TestManager {
 
 
     protected static int testIndex = 0;
-    protected static TestState testState = TestState.SETUP;
 
     public static boolean testsFinished = false;
     public static boolean testStarted = false;
-    private static boolean inInitialPause = true;
+    private static int initialPauseLength = 5;
+    private static int initialPauseTimer = 0;
+    protected static boolean testSelectionMade = false;
 
     protected static int cyclesRun = 0;
 
@@ -120,9 +132,9 @@ public class TestManager {
         //System.out.println("init!");
         groupsToTest.clear();
         testIndex = 0;
-        testState = TestState.SETUP;
-        inInitialPause = true;
+        initialPauseTimer = initialPauseLength;
         testsFinished = false;
+        testSelectionMade = false;
     }
 
     /**
@@ -135,8 +147,18 @@ public class TestManager {
             Robot.managerFirst = true;
         }
 
-        if (inInitialPause) {
-            inInitialPause = false;
+
+
+        if (initialPauseTimer > 0) {
+            initialPauseTimer--;
+            return;
+        } else if (initialPauseTimer == 0) {
+            showTestGroupSelection();
+            initialPauseTimer--;
+            return;
+        }
+
+        if (!testSelectionMade) {
             return;
         }
         
@@ -224,16 +246,16 @@ public class TestManager {
                 testsToTest.add(testsToTest.remove(0));
                 return; // Return to this method next cycle now that the test list has been updated
             }
+            testsToTest.get(0).setup();
         }
-        
         runTest(testsToTest.get(0));
     }
 
     /** Runs all logic that must run when a tests finishes.
      * This invloves managing reseting counters and preparing the next tests.
      */
-    public static void onTestDone() {
-        testState = TestState.SETUP;
+    public static void onTestDone(Test test) {
+        test.closedown();
         testsToTest.remove(0);
         if (testsToTest.size() == 0) {
             groupsToTest.remove(0);
@@ -250,39 +272,19 @@ public class TestManager {
      * @author H!
      */
     protected static void runTest(Test test) {
+        testStarted = true;
         try {
-            switch (testState) {
-                case SETUP:
-                    test.setupPeriodic();
-                    if (test.setupIsDone()) {
-                        testState = TestState.RUNNING;
-                    }
-                    break;
-            
-                case RUNNING:
-                    test.testPeriodic();
-                    if (test.testIsDone()) {
-                        testState = TestState.CLOSEDOWN;
-                    }
-                    break;
-                
-                case CLOSEDOWN:
-                    test.closedownPeriodic();
-                    if (test.closedownIsDone()) {
-                        results.get(groupsToTest.get(0).getName()).put(test.getName(), new TestResults(TestSuccess.SUCCESS));
-                        testsRun.put(test, TestSuccess.SUCCESS);
-                        onTestDone();
-                    }
-                    break;
-                
-                default:
-                    break;
+            test.periodic();
+            if (test.isDone()) {
+                results.get(groupsToTest.get(0).getName()).put(test.getName(), new TestResults(TestSuccess.SUCCESS));
+                testsRun.put(test, TestSuccess.SUCCESS);
+                onTestDone(test);
             }
         } catch (AssertionError e) {
             //System.out.println("\n\n\n\n\n\nFAILURE\n\n\n\n\n\n\n");
             results.get(groupsToTest.get(0).getName()).put(test.getName(), new TestResults(TestSuccess.FAIL, e.getMessage()));
             testsRun.put(test, TestSuccess.FAIL);
-            onTestDone();
+            onTestDone(test);
         }
     }
 
@@ -392,5 +394,68 @@ public class TestManager {
             "Integrated Test Results",
             JOptionPane.PLAIN_MESSAGE
         );
+    }
+
+
+    public static void showTestGroupSelection() {
+        // Incoming data
+        String[] testGroupNames = new String[groupsToTest.size()];
+        for (int i = 0; i < groupsToTest.size(); i++) {
+            testGroupNames[i] = groupsToTest.get(i).getName();
+        }
+
+        // Root component
+        JFrame frame = new JFrame();
+        frame.setLayout(new GridBagLayout());
+        // Constraints to be used to arrange the button and list properly
+        GridBagConstraints constraints = new GridBagConstraints();
+
+        // Holds the checkboxes
+        Container groupList = new Container();
+        groupList.setLayout(new GridLayout(testGroupNames.length, 1));
+        ScrollPane groupListPane = new ScrollPane();
+        groupListPane.add(groupList);
+        // Add all checkboxes
+        for (String name : testGroupNames) {
+        JCheckBox checkBox = new JCheckBox(name, true);
+        groupList.add(checkBox);
+        }
+
+        // Confirm button
+        JButton button = new JButton("Start Tests");
+        button.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int numberRemoved = 0;
+                //System.err.println(groupList.getComponentCount());
+                //System.err.println(groupsToTest.size());
+                for (int i = 0; i < groupList.getComponentCount(); i++) {
+                    if (!((JCheckBox) groupList.getComponent(i)).isSelected()) {
+                        groupsToTest.remove(i - numberRemoved);
+                    }
+                }
+                testSelectionMade = true;
+                frame.dispose();
+            }
+        });
+        
+        // Assemble components into frame
+        constraints.fill = GridBagConstraints.BOTH;
+        constraints.gridx = 0;
+        constraints.gridy = 0;
+        constraints.weightx = 1;
+        constraints.weighty = 9;
+        frame.add(groupListPane, constraints);
+
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.gridx = 0;
+        constraints.gridy = 1;
+        constraints.weightx = 1;
+        constraints.weighty = 1;
+        frame.add(button, constraints);
+
+        frame.pack();
+
+        frame.setVisible(true);
     }
 }

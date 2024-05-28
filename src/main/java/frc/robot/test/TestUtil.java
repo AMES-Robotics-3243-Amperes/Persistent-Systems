@@ -7,6 +7,8 @@ package frc.robot.test;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Supplier;
+
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
@@ -148,5 +150,225 @@ public class TestUtil {
      */
     public static void assertBool(boolean shouldBeTrue) {  assertBool(shouldBeTrue, "Assertion failed");  }
 
+
+    /** A test that runs once and ends immediately. Intended to be created from a preexisting function. */
+    protected static class InstantTest implements Test {
+
+        protected Runnable execute;
+        protected String name;
+        protected Test[] dependencies;
+        protected boolean[] successRequirements;
+
+        /**
+         * Creates an InstantTest.
+         * @param execute The function to run.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         */
+        public InstantTest(Runnable execute, String name, Test[] dependencies, boolean[] successRequirements) {
+            this.execute = execute;
+            this.name = name;
+            this.dependencies = dependencies;
+            this.successRequirements = successRequirements;
+        }
+
+        /**
+         * Creates an InstantTest. This overload assummes all dependencies are required to succeed.
+         * @param execute The function to run.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         */
+        public InstantTest(Runnable execute, String name, Test[] dependencies) {
+            this(execute, name, dependencies, generateBoolArray(dependencies));
+        }
+
+        /**
+         * Creates an InstantTest. This overload assumes there are no dependencies.
+         * @param execute The function to run.
+         * @param name The name of the test.
+         */
+        public InstantTest(Runnable execute, String name) {
+            this(execute, name, new Test[0], new boolean[0]);
+        }
+
+        protected static boolean[] generateBoolArray(Test[] list) {
+            boolean[] out = new boolean[list.length];
+            for (int i = 0; i < out.length; i++) {
+                out[i] = true;
+            }
+            return out;
+        }
+
+
+
+        @Override
+        public void periodic() { execute.run(); }
+        @Override
+        public boolean isDone() { return true; }
+        @Override
+        public String getName() { return name; }
+        @Override
+        public Test[] getDependencies() { return dependencies; }
+        @Override
+        public boolean[] getDependencySuccessRequirements() { return successRequirements; }
+    }
+
+
+    /** A test that runs until a specified condition is met. Intended to be created from two existing functions. */
+    protected static class OnePhaseTest implements Test {
+
+        protected Runnable periodicFunc;
+        protected String name;
+        protected Test[] dependencies;
+        protected boolean[] successRequirements;
+        protected Supplier<Boolean> isDoneFunc;
+
+        /**
+         * Creates a OnePhaseTest.
+         * @param execute The function to run.
+         * @param isDone A function returning whether the test is over yet.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         */
+        public OnePhaseTest(Runnable periodic, Supplier<Boolean> isDone, String name, Test[] dependencies, boolean[] successRequirements) {
+            this.periodicFunc = periodic;
+            this.isDoneFunc = isDone;
+            this.name = name;
+            this.dependencies = dependencies;
+            this.successRequirements = successRequirements;
+        }
+
+        /**
+         * Creates a OnePhaseTest. This overload assummes all dependencies are required to succeed.
+         * @param execute The function to run.
+         * @param isDone A function returning whether the test is over yet.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         */
+        public OnePhaseTest(Runnable execute, Supplier<Boolean> isDone, String name, Test[] dependencies) {
+            this(execute, isDone, name, dependencies, generateBoolArray(dependencies));
+        }
+
+        /**
+         * Creates a OnePhaseTest. This overload assumes there are no dependencies.
+         * @param execute The function to run.
+         * @param isDone A function returning whether the test is over yet.
+         * @param name The name of the test.
+         */
+        public OnePhaseTest(Runnable execute, Supplier<Boolean> isDone, String name) {
+            this(execute, isDone, name, new Test[0], new boolean[0]);
+        }
+
+        protected static boolean[] generateBoolArray(Test[] list) {
+            boolean[] out = new boolean[list.length];
+            for (int i = 0; i < out.length; i++) {
+                out[i] = true;
+            }
+            return out;
+        }
+
+
+
+        @Override
+        public void periodic() { periodicFunc.run(); }
+        @Override
+        public boolean isDone() { return isDoneFunc.get(); }
+        @Override
+        public String getName() { return name; }
+        @Override
+        public Test[] getDependencies() { return dependencies; }
+        @Override
+        public boolean[] getDependencySuccessRequirements() { return successRequirements; }
+    }
+
+
+
+     /** A test that runs until a specified condition is met. Intended to be created from two existing functions. */
+    protected static class MultiphaseTest implements Test {
+
+        protected Runnable[] phases;
+        protected String name;
+        protected Test[] dependencies;
+        protected boolean[] successRequirements;
+        protected Supplier<Boolean>[] phaseEndConditions;
+        protected int phase = 0;
+        protected final int phaseCount;
+
+        /**
+         * Creates a MultiphaseTest.
+         * @param execute The function to run.
+         * @param isDone A function returning whether the test is over yet.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         */
+        public MultiphaseTest(Runnable[] phases, Supplier<Boolean>[] phaseEndConditions, String name, Test[] dependencies, boolean[] successRequirements) {
+            this.phases = phases;
+            this.phaseEndConditions = phaseEndConditions;
+            this.name = name;
+            this.dependencies = dependencies;
+            this.successRequirements = successRequirements;
+            phaseCount = phases.length;
+            
+            if (phaseEndConditions.length != phaseCount) {
+                throw new IllegalArgumentException("Number of phases must equal number of phase end conditions");
+            }
+        }
+
+        /**
+         * Creates a MultiphaseTest. This overload assummes all dependencies are required to succeed.
+         * @param execute The function to run.
+         * @param isDone A function returning whether the test is over yet.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         */
+        public MultiphaseTest(Runnable[] phases, Supplier<Boolean>[] phaseEndConditions, String name, Test[] dependencies) {
+            this(phases, phaseEndConditions, name, dependencies, generateBoolArray(dependencies));
+        }
+
+        /**
+         * Creates a MultiphaseTest. This overload assumes there are no dependencies.
+         * @param execute The function to run.
+         * @param isDone A function returning whether the test is over yet.
+         * @param name The name of the test.
+         */
+        public MultiphaseTest(Runnable[] phases, Supplier<Boolean>[] phaseEndConditions, String name) {
+            this(phases, phaseEndConditions, name, new Test[0], new boolean[0]);
+        }
+
+        protected static boolean[] generateBoolArray(Test[] list) {
+            boolean[] out = new boolean[list.length];
+            for (int i = 0; i < out.length; i++) {
+                out[i] = true;
+            }
+            return out;
+        }
+
+
+
+        @Override
+        public void periodic() { 
+            phases[phase].run();
+            if (phaseEndConditions[phase].get()) {
+                phase++;
+            }
+        }
+
+        @Override
+        public boolean isDone() { 
+            return phase == phaseCount;
+        }
+
+
+
+        @Override
+        public String getName() { return name; }
+        @Override
+        public Test[] getDependencies() { return dependencies; }
+        @Override
+        public boolean[] getDependencySuccessRequirements() { return successRequirements; }
+    }
 
 }
