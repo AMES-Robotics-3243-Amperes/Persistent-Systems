@@ -20,6 +20,7 @@ import frc.robot.IMUWrapper;
 import frc.robot.utility.PowerManager;
 import frc.robot.Constants.DriveTrain.DriveConstants;
 import frc.robot.Constants.DriveTrain.DriveConstants.AutoConstants;
+import frc.robot.Constants.DriveTrain.DriveConstants.ChassisKinematics;
 import frc.robot.utility.TranslationRateLimiter;
 
 /**
@@ -65,9 +66,6 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
   // :3 imu
   private final IMUWrapper m_imuWrapper = new IMUWrapper();
 
-  /** :3 odometry for tracking robot pose */
-  SwerveDriveOdometry m_odometry;
-
   /**
    * Creates a new DriveSubsystem.
    * 
@@ -91,7 +89,6 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
     m_drivingRateLimiter.changeLimit(DataManager.currentAccelerationConstant.get());
 
     // :3 update odometry and feed that information into DataManager
-    m_odometry.update(m_imuWrapper.getYaw(), getModulePositions());
     DataManager.currentRobotPose.updateWithOdometry(getIMUHeading(), getModulePositions());
 
     // :3 these are the raw speeds of the robot,

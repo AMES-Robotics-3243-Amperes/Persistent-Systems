@@ -7,6 +7,7 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.DataManager;
 
@@ -31,7 +32,7 @@ public class SubsystemPhotonvision extends SubsystemBase {
   /** Creates a new SubsystemPhotonVision. */
   public SubsystemPhotonvision() throws IOException {
     camera = new PhotonCamera(cameraName);
-    fieldLayout = new AprilTagFieldLayout(fieldLayoutPath);
+    fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
 
     //AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, Units.inchesToMeters(480), Units.inchesToMeters(288));
     poseEstimator = new PhotonPoseEstimator(fieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, camera, robotToCamera);
@@ -40,7 +41,6 @@ public class SubsystemPhotonvision extends SubsystemBase {
 
   @Override
   public void periodic() {
-    
     Optional<EstimatedRobotPose> poseLatestOptional = poseEstimator.update();
     PhotonPipelineResult pipelineResult = camera.getLatestResult();
 

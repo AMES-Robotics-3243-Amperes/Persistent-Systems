@@ -7,6 +7,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.PhotonVision;
 import frc.robot.Constants.DriveTrain.DriveConstants.ChassisKinematics;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -92,6 +94,8 @@ public class DataManager {
         /** Does the heavy lifting for keeping track of Pose @author :3 */
         protected SwerveDrivePoseEstimator m_PoseEstimator;
 
+        protected Field2d field2d = new Field2d();
+
         /**
          * Creates a new {@link CurrentRobotPose} object
          */
@@ -113,7 +117,16 @@ public class DataManager {
 
         @Override
         public Pose3d get() {
+            if (m_PoseEstimator == null) {
+                return new Pose3d();
+            }
+
             return new Pose3d(m_PoseEstimator.getEstimatedPosition());
+        }
+
+        public void updateSmartDashboard() {
+            field2d.setRobotPose(this.get().toPose2d());
+            SmartDashboard.putData(field2d);
         }
 
         /**
@@ -124,6 +137,10 @@ public class DataManager {
          */
         public void updateWithOdometry(Rotation2d gyroAngle, SwerveModulePosition[] modulePositions) {
             // TODO: consider imu position data
+            if (m_PoseEstimator == null) {
+                return;
+            }
+            
             m_PoseEstimator.update(gyroAngle, modulePositions);
         }
 
@@ -197,5 +214,7 @@ public class DataManager {
      * if you can, there's a decent chance if you're using it this is really something that should
      * be done by a subsystem or command.
      */
-    public static void periodic() {}
+    public static void periodic() {
+        currentRobotPose.updateSmartDashboard();
+    }
 }
