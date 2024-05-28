@@ -11,6 +11,9 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 import java.io.IOException;
 
+import frc.robot.subsystems.SubsystemLED;
+import frc.robot.subsystems.SubsystemSwerveDrivetrain;
+import frc.robot.test.TestSubsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -30,6 +33,8 @@ public class RobotContainer {
   //
 
   private final SubsystemSwerveDrivetrain m_SubsystemSwerveDrivetrain = new SubsystemSwerveDrivetrain();
+  private final TestSubsystem m_TestSubsystem = new TestSubsystem();
+  private final SubsystemLED m_SubsystemLED = new SubsystemLED();
 
   //
   // :3 COMMANDS

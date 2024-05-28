@@ -7,6 +7,8 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.test.ExampleTestGroup;
+import frc.robot.test.TestManager;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -15,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  * project.
  */
 public class Robot extends TimedRobot {
+  public static Boolean managerFirst = null;
   private Command m_autonomousCommand;
 
   private RobotContainer m_robotContainer;
@@ -54,7 +57,9 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    managerFirst = null;
+  }
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
@@ -90,11 +95,15 @@ public class Robot extends TimedRobot {
   public void testInit() {
     // Cancels all running commands at the start of test mode.
     CommandScheduler.getInstance().cancelAll();
+    TestManager.init();
+    TestManager.queueGroupToTest(new ExampleTestGroup()); // USED FOR TESTING, REMOVE IF THIS IS IN PRODUCTION CODE
   }
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    TestManager.periodic();
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override

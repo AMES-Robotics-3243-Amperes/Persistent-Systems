@@ -5,13 +5,13 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveTrain.DriveConstants;
 import frc.robot.DataManager;
 import frc.robot.JoyUtil;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
-public class CommandSwerveTeleopDrive extends CommandBase {
+public class CommandSwerveTeleopDrive extends Command {
 
   // :3 subsystem
   private final SubsystemSwerveDrivetrain m_SubsystemSwerveDrivetrain;
