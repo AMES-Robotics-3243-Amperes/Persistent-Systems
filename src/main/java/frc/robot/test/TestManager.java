@@ -7,10 +7,13 @@ package frc.robot.test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.BiFunction;
+import java.util.stream.Stream;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
@@ -19,6 +22,16 @@ import java.awt.GridLayout;
 import java.awt.ScrollPane;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -30,6 +43,8 @@ import javax.swing.plaf.DimensionUIResource;
 import javax.swing.text.html.HTMLDocument;
 
 import frc.robot.Robot;
+import frc.robot.test.TestUtil.InstantTest;
+import frc.robot.test.TestUtil.InstantTestMethod;
 
 /** A system which will run all tests queued to it and display their results. @author H! */
 public class TestManager {
@@ -123,6 +138,38 @@ public class TestManager {
         groupsToTest.add(toTest);
     }
 
+    protected static Test[] getTestsFromGroup(TestGroup group) {
+        // WARNING: terribly cursed reflection, keep out
+        List<Test> annotatedTests = new ArrayList<Test>();
+        try {
+            for (Method method : group.getClass().getMethods()) {
+                if (method.isAnnotationPresent(InstantTestMethod.class)) {
+                    InstantTestMethod testAnnotation = method.getAnnotation(InstantTestMethod.class);
+                    annotatedTests.add(new InstantTest(
+                        () -> {
+                            try {
+                                method.invoke(group);
+                            } catch (InvocationTargetException e) {
+                                if (e.getCause() instanceof AssertionError) {
+                                    throw (AssertionError) e.getCause();
+                                } else {
+                                    throw new RuntimeException(e.toString());
+                                }
+                            } catch (IllegalAccessException | IllegalArgumentException e) {
+                                throw new RuntimeException(e.toString());
+                            }
+                        }, 
+                        testAnnotation.name().length() > 0 ? testAnnotation.name() : method.getName()
+                    ));
+                }
+            }
+        } catch (IllegalArgumentException | SecurityException e) {
+            throw new RuntimeException(e.toString());
+        }
+        // This part is fine
+        return addListToArray(group.getTests(), annotatedTests);
+    }
+
     /**
      * Should be run when test mode is started by {@link Robot#testInit()}. Resets everything and clears the test queue.
      * 
@@ -131,10 +178,14 @@ public class TestManager {
     public static void init() {
         //System.out.println("init!");
         groupsToTest.clear();
+        testsToTest.clear();
         testIndex = 0;
         initialPauseTimer = initialPauseLength;
         testsFinished = false;
         testSelectionMade = false;
+        cyclesRun = 0;
+        results = new HashMap<String, Map<String, TestResults>>();
+        testsRun = new HashMap<Test, TestSuccess>();
     }
 
     /**
@@ -161,7 +212,12 @@ public class TestManager {
         if (!testSelectionMade) {
             return;
         }
-        
+
+        /*if (cyclesRun == 0) {
+            // DEBUG
+            //System.err.println("Tests Started");
+        }*/
+
         cyclesRun++;
         //System.out.println("#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#");
         String[] testGroupNames = new String[groupsToTest.size()];
@@ -191,12 +247,12 @@ public class TestManager {
      */
     protected static void runTests(TestGroup testGroup) {
         if (testsToTest.size() == 0) {
-            testsToTest = new LinkedList<Test>(Arrays.asList(testGroup.getTests()));
+            testsToTest = new ArrayList<Test>(Arrays.asList(getTestsFromGroup(testGroup)));
         }
 
-        if (testsToTest.get(0).getName() == "Example Dependent Test") {
+        /*if (testsToTest.get(0).getName() == "Example Dependent Test") {
             System.out.println("it's time");
-        }
+        }*/
 
         if (!testStarted) {
             /* DEPENDENCY LOGIC:
@@ -427,11 +483,12 @@ public class TestManager {
             @Override
             public void actionPerformed(ActionEvent e) {
                 int numberRemoved = 0;
-                //System.err.println(groupList.getComponentCount());
-                //System.err.println(groupsToTest.size());
+                // System.err.println(groupList.getComponentCount());
+                // System.err.println(groupsToTest.size());
                 for (int i = 0; i < groupList.getComponentCount(); i++) {
                     if (!((JCheckBox) groupList.getComponent(i)).isSelected()) {
                         groupsToTest.remove(i - numberRemoved);
+                        numberRemoved++;
                     }
                 }
                 testSelectionMade = true;
@@ -457,5 +514,17 @@ public class TestManager {
         frame.pack();
 
         frame.setVisible(true);
+    }
+
+
+
+    private static <T> T[] addListToArray(T[] array, List<T> list) {
+        T[] out = Arrays.copyOf(array, array.length + list.size());
+        Iterator<T> iterator = list.iterator();
+        for (int i = array.length; i < out.length; i++) {
+            out[i] = iterator.next();
+        }
+
+        return out;
     }
 }
