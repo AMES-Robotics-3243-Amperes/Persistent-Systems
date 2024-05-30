@@ -44,4 +44,11 @@ public final class Constants {
                 new Translation2d(-kRobotLength / 2, -kRobotWidth / 2));
       }
     }
+
+    public static final class DataManagerConstants {
+        /** Takes photon ambiguity and turns it into pose estimator ambiguity @author :3 */
+        public static final double photonPoseEstimatorAmbiguity(Double photonAmbiguity) {
+            return 10 * photonAmbiguity * photonAmbiguity;
+        }
+    }
 }

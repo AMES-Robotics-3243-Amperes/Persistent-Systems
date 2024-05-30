@@ -1,10 +1,10 @@
-package frc.robot.subsystems;
+package frc.robot;
 
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
 
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.math.Pair;
 
 /**
  * A subsystem for using a camera to find the robot's position. This
@@ -13,10 +13,10 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
  * 
  * @author H!
  */
-public class SubsystemPhotonvision extends SubsystemBase {
-    public SubsystemPhotonvision() {};
+public class Photonvision {
+    public Photonvision() {};
 
-    public Optional<EstimatedRobotPose> getPhotonPose() {
+    public Optional<Pair<EstimatedRobotPose, Double>> getPhotonPose() {
         throw new UnsupportedOperationException("SubsystemPhotonvision.getPhotonPose() not implemented");
     }
 }

@@ -7,7 +7,6 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.subsystems.SubsystemPhotonvision;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -25,7 +24,7 @@ public class RobotContainer {
   //
 
   public SubsystemSwerveDrivetrain subsystemSwerveDrivetrain = new SubsystemSwerveDrivetrain();
-  public SubsystemPhotonvision subsystemPhotonvision = new SubsystemPhotonvision();
+  public Photonvision photonvision = new Photonvision();
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {

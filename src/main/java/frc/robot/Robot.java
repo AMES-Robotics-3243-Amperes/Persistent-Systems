@@ -46,6 +46,10 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    // :3 now that all commands have finished, update DataManger.
+    // this ordering helps avoid race conditions. not called statically
+    // to ensure that the the singleton has been constructed
     m_robotContainer.dataManager.update();
   }
 
