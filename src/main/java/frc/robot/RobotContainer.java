@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -19,17 +20,37 @@ public class RobotContainer {
   /** :3 Used as a reference for Robot to call periodically */
   public DataManager dataManager;
 
+  // :3 controllers
+  private JoyUtil primaryController = new JoyUtil(0);
+
   //
   // Subsystems
   //
 
   public SubsystemSwerveDrivetrain subsystemSwerveDrivetrain = new SubsystemSwerveDrivetrain();
-  public Photonvision photonvision = new Photonvision();
+  public Photonvision photonvision;
+
+  //
+  // Commands
+  //
+
+  private CommandSwerveTeleopDrive commandSwerveTeleopDrive =
+    new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain, primaryController);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
+    try {
+      photonvision = new Photonvision();
+    } catch (Exception e) {
+      System.err.println("Photonvision initialization failed: " + e);
+      System.err.println("Failed to construct Photonvision, expect null exceptions...");
+    }
+
     // :3 constructs a DataManager instance using runtime-initialized RobotContainer members
     new DataManager(this);
+
+    // :3 set sensible default commands
+    subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
 
     // Configure the trigger bindings
     configureBindings();
