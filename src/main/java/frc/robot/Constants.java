@@ -32,7 +32,7 @@ public final class Constants {
     public static final double kDeadzone = 0.05;
     public static final double kRateLimitLeft = 0;
     public static final double kRateLimitRight = 0;
-    public static final double exponent1 = 2;
+    public static final double exponent1 = 3;
     public static final double exponent2 = 1;
     public static final double coeff1 = 0.4;
     public static final double coeff2 = 0.6;
@@ -63,22 +63,22 @@ public final class Constants {
 
     public static final class DriveTrainConstants {
       public static final class IDs {
-        public static final int kFrontLeftDrivingCanId = 3;
+        public static final int kFrontLeftDrivingCanId = 8;
         public static final int kRearLeftDrivingCanId = 2;
-        public static final int kFrontRightDrivingCanId = 7;
+        public static final int kFrontRightDrivingCanId = 4;
         public static final int kRearRightDrivingCanId = 6;
 
-        public static final int kFrontLeftTurningCanId = 4;
+        public static final int kFrontLeftTurningCanId = 7;
         public static final int kRearLeftTurningCanId = 1;
-        public static final int kFrontRightTurningCanId = 8;
+        public static final int kFrontRightTurningCanId = 3;
         public static final int kRearRightTurningCanId = 5;
       }
 
       public static final class ModuleOffsets {
-        public static final Rotation2d kFrontLeftOffset = Rotation2d.fromRadians(Math.PI * 0.5);
-        public static final Rotation2d kFrontRightOffset = Rotation2d.fromRadians(Math.PI);
-        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(0);
-        public static final Rotation2d kBackRightOffset = Rotation2d.fromRadians(Math.PI * 1.5);
+        public static final Rotation2d kFrontLeftOffset = Rotation2d.fromRadians(-Math.PI * 0.5);
+        public static final Rotation2d kFrontRightOffset = Rotation2d.fromRadians(0);
+        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(Math.PI);
+        public static final Rotation2d kBackRightOffset = Rotation2d.fromRadians(Math.PI * 0.5);
       }
     }
 
