@@ -4,6 +4,11 @@
 
 package frc.robot.test;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -212,6 +217,13 @@ public class TestUtil {
         public Test[] getDependencies() { return dependencies; }
         @Override
         public boolean[] getDependencySuccessRequirements() { return successRequirements; }
+    }
+
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @Inherited
+    @interface InstantTestMethod {
+        String name() default "";
     }
 
 

@@ -1,6 +1,6 @@
 package frc.robot.test;
 
-public class ExampleTestGroup extends SubsystemBaseTestable {
+public class ExampleTestGroup implements TestGroup {
 
   @Override
   public String getName() {

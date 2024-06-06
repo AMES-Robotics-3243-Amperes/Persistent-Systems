@@ -7,6 +7,8 @@ package frc.robot.test;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import frc.robot.test.TestUtil.InstantTestMethod;
+
 public class TestSubsystem extends SubsystemBaseTestable {
 
   public double a = 1.3;
@@ -93,6 +95,17 @@ public class TestSubsystem extends SubsystemBaseTestable {
     "Example Test 2",
     new Test[] {exampleSinglePhaseTest, multiphaseTest}
   );
+
+
+  @InstantTestMethod(name = "exampleAnnotationTestNamed")
+  public void exampleAnnotationTest() {
+    TestUtil.assertEquals(1+1+1, 2);
+  }
+
+  @InstantTestMethod()
+  public void exampleAnnotationTestUnnamed() {
+    TestUtil.assertEquals(1+1, 2);
+  }
 
   @Override
   public Test[] getTests() {
