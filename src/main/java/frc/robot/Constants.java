@@ -155,11 +155,7 @@ public final class Constants {
     }
   }
 
-  public static final class PIDTuningConstants {
-    public static final double overshootAdjustRatio = 0.75;
-    public static final double progressCheckProportionConstant = 0.6;
-    public static final double progressCheckDelay = 0.3;
-    public static final double KpIncreaseBase = 1.2;
-    public static final double KpIncreaseProportion = 2;
+  public static final class CurveConstants {
+    public static final int newtonIterations = 4;
   }
 }
