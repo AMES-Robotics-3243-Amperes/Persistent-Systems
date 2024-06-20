@@ -5,9 +5,9 @@ import frc.robot.Curves.SplineSegment;
 import frc.robot.Curves.SplineSegmentFactory;
 
 public class C1CubicBezierSegmentFactory extends SplineSegmentFactory {
-  public Translation2d P1;
-  public Translation2d P2;
-  public Translation2d P3;
+  private Translation2d P1;
+  private Translation2d P2;
+  private Translation2d P3;
 
   /**
    * Takes in the final three control points. The first control point

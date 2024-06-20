@@ -15,6 +15,8 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.MotorLog;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
 
 /**
@@ -173,5 +175,26 @@ public class SubsystemSwerveModule {
   public double getMotorOutputCurrent() {
     double outputCurrent = m_drivingSparkMax.getOutputCurrent();
     return outputCurrent;
+  }
+
+  /**
+   * Drives the module with the specified voltage for the drive motor,
+   * and 0 voltage for the turning motor.
+   * @param voltage
+   */
+  public void driveVoltage(double voltage) {
+    m_drivingSparkMax.setVoltage(voltage);
+    m_turningSparkMax.setVoltage(0);
+  }
+
+  /**
+   * Logs all info for this motor.
+   * @param motorLog
+   */
+  public void driveLog(MotorLog motorLog) {
+    motorLog.current(Units.Amps.of(m_drivingSparkMax.getOutputCurrent()));
+    motorLog.linearPosition(Units.Meters.of(m_drivingEncoder.getPosition()));
+    motorLog.linearVelocity(Units.MetersPerSecond.of(m_drivingEncoder.getVelocity()));
+    motorLog.voltage(Units.Volts.of(m_drivingSparkMax.getBusVoltage()));
   }
 }

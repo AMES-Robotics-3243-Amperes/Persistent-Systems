@@ -4,9 +4,17 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Curves.Spline;
+import frc.robot.Curves.SplineSegment;
+import frc.robot.Curves.CubicSegments.BezierSegment;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
@@ -47,10 +55,23 @@ public class RobotContainer {
     }
 
     // :3 constructs a DataManager instance using runtime-initialized RobotContainer members
-    new DataManager(this);
+    dataManager = new DataManager(this);
 
     // :3 set sensible default commands
     subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
+
+    Translation2d zero = new Translation2d(0, 0);
+    Translation2d one = new Translation2d(1, 1);
+    BezierSegment segment = new BezierSegment(zero, zero, one, one);
+    BezierSegment segment2 = new BezierSegment(one, one, one.times(2), one.times(2));
+    ArrayList<SplineSegment> list = new ArrayList<SplineSegment>();
+    list.add(segment);
+    list.add(segment2);
+    Spline spline = new Spline(list);
+    System.out.println(spline.sample(1.5));
+    System.out.println(spline.derivative(1.5));
+    System.out.println(spline.arcLength(1.5));
+    System.out.println(spline.timeAtArcLength(Math.sqrt(2) * 3 / 2));
 
     // Configure the trigger bindings
     configureBindings();
@@ -65,7 +86,15 @@ public class RobotContainer {
    * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
-  private void configureBindings() {}
+  private void configureBindings() {
+    SequentialCommandGroup drivetrainSysIdCommand = new SequentialCommandGroup(
+      subsystemSwerveDrivetrain.sysIdQuasistatic(Direction.kForward),
+      subsystemSwerveDrivetrain.sysIdQuasistatic(Direction.kReverse),
+      subsystemSwerveDrivetrain.sysIdDynamic(Direction.kForward),
+      subsystemSwerveDrivetrain.sysIdDynamic(Direction.kReverse)
+    );
+    primaryController.start().whileTrue(drivetrainSysIdCommand);
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -73,6 +102,11 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return null;
+    return new SequentialCommandGroup(
+      subsystemSwerveDrivetrain.sysIdQuasistatic(Direction.kForward),
+      subsystemSwerveDrivetrain.sysIdQuasistatic(Direction.kReverse),
+      subsystemSwerveDrivetrain.sysIdDynamic(Direction.kForward),
+      subsystemSwerveDrivetrain.sysIdDynamic(Direction.kReverse)
+    );
   }
 }

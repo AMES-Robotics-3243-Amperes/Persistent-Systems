@@ -5,9 +5,9 @@ import frc.robot.Curves.SplineSegment;
 import frc.robot.Curves.SplineSegmentFactory;
 
 public class C1HermiteSegmentFactory extends SplineSegmentFactory {
-  public Translation2d V0;
-  public Translation2d P1;
-  public Translation2d V1;
+  private Translation2d V0;
+  private Translation2d P1;
+  private Translation2d V1;
 
   /**
    * Takes in the final three control points. The first control point
