@@ -2,6 +2,11 @@ package frc.robot.Curves.CubicSegments;
 
 import edu.wpi.first.math.geometry.Translation2d;
 
+/**
+ * A specific type of cubic segment.
+ * 
+ * @author :3
+ */
 public class BezierSegment extends CubicSegment {
   public BezierSegment(Translation2d P0,
       Translation2d P1,
