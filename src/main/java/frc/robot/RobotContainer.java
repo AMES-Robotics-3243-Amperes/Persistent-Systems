@@ -28,6 +28,10 @@ public class RobotContainer {
   // :3 Controler
   private final JoyUtil primaryController = new JoyUtil(JoyUtilConstants.primaryControllerID);
   private final JoyUtil secondaryController = new JoyUtil(JoyUtilConstants.secondaryControllerID);
+
+  // H! Auto Selector
+  AutoSelector autoSelector;
+
   //
   // :3 SUBSYSTEMS
   //
@@ -55,6 +59,14 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
+
+    autoSelector = new AutoSelector(
+      new AutoSelector.Preset(m_CommandSwerveTeleopDrive, "Command A"),
+      new AutoSelector.Preset(m_CommandSwerveTeleopDrive, "Command B"),
+      new AutoSelector.Preset(m_CommandSwerveTeleopDrive, "Command C")
+    );
+    autoSelector.loadConfig();
+    autoSelector.selectPreset();
   }
 
   /**
