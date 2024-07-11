@@ -4,7 +4,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Curves.SplineSegment;
 
 /**
- * {@link SplineSegment SplineSegments} that can be expressed as third-degree polynomials.
+ * {@link SplineSegment SplineSegments} that can be expressed as third-degree polynomial.
  * <a href="https://www.youtube.com/watch?v=jvPPXbo87ds">This video</a>
  * is a particularly good first introduction to cubic splines.
  * 

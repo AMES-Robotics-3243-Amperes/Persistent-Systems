@@ -30,8 +30,8 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
   public static final class JoyUtilConstants {
     public static final double kDeadzone = 0.05;
-    public static final double kRateLimitLeft = 0;
-    public static final double kRateLimitRight = 0;
+    public static final double kRateLimitLeft = 1;
+    public static final double kRateLimitRight = 1;
     public static final double exponent1 = 3;
     public static final double exponent2 = 1;
     public static final double coeff1 = 0.4;
@@ -43,8 +43,8 @@ public final class Constants {
 
   public static final class SwerveConstants {
     public static final class ControlConstants {
-      public static final double movingSpeed = 1;
-      public static final double rotationSpeed = 1;
+      public static final double movingSpeed = 1.5;
+      public static final double rotationSpeed = 1.5 * Math.PI;
     }
 
     public static final class ChassisKinematics {
@@ -99,7 +99,7 @@ public final class Constants {
       public static final int kTurningMotorCurrentLimit = 20;
 
       public static final class PhysicalProperties {
-        public static final int kDrivingMotorPinionTeeth = 13;
+        public static final int kDrivingMotorPinionTeeth = 14;
         public static final boolean kTurningEncoderInverted = true;
         public static final double kWheelDiameterMeters = 0.0762;
       }
@@ -115,6 +115,7 @@ public final class Constants {
           / kDrivingMotorReduction;
         public static final double kDrivingEncoderVelocityFactor = ((PhysicalProperties.kWheelDiameterMeters * Math.PI)
           / kDrivingMotorReduction) / 60.0;
+          public static final double test = 1 / kDrivingEncoderVelocityFactor / 60;
 
         public static final double kTurningEncoderPositionFactor = (2 * Math.PI);
         public static final double kTurningEncoderVelocityFactor = (2 * Math.PI) / 60.0;
@@ -156,6 +157,16 @@ public final class Constants {
   }
 
   public static final class CurveConstants {
+    /** As the robot drifts from the spline, the speed at
+     * which the setpoint travels across the spline decreases.
+     * This function determines the speed multiplier as a function
+     * of robot offset from the spline. @author :3
+     */
+    public static final double splineOffsetVelocityDampen(double offset) {
+      return 1 / (1 + 1.5 * offset * offset);
+    }
+
+    public static final double halfLoopTime = 0.01;
     public static final int newtonIterations = 4;
   }
 }

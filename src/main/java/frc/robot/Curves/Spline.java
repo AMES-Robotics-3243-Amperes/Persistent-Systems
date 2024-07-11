@@ -119,6 +119,9 @@ public class Spline {
    * @author :3
    */
   public double timeAtArcLength(double arcLength) {
+    // :3 while it would be possible to do this as a call
+    // to the initial guess version, it's best to just leave
+    // the initial guess to the spline segment
     double totalLength = 0;
     ListIterator<SplineSegment> iterator = segments.listIterator();
 
@@ -128,6 +131,33 @@ public class Spline {
         totalLength += nextSegment.totalArcLength();
       } else {
         return iterator.previousIndex() + nextSegment.timeAtArcLength(arcLength - totalLength);
+      }
+    }
+
+    return (double) segments.size();
+  }
+
+  /**
+   * Works the same as {@link timeAtArcLength}, but uses an explicit
+   * first guess for potentially more accurate results.
+   * 
+   * @param arcLength The arcLength to find the parameterization of
+   * @param initialGuess The initial guess of the final parameterization
+   * @return The parameterization that has arc length of the input
+   * 
+   * @author :3
+   */
+  public double timeAtArcLength(double arcLength, double initialGuess) {
+    double totalLength = 0;
+    ListIterator<SplineSegment> iterator = segments.listIterator();
+
+    while (iterator.hasNext()) {
+      SplineSegment nextSegment = iterator.next();
+      if (arcLength >= (double) totalLength + nextSegment.totalArcLength()) {
+        totalLength += nextSegment.totalArcLength();
+      } else {
+        return iterator.previousIndex() +
+          nextSegment.timeAtArcLength(arcLength - totalLength, initialGuess - Math.floor(initialGuess));
       }
     }
 

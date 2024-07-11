@@ -31,7 +31,7 @@ public class SubsystemSwerveModule {
   private final RelativeEncoder m_drivingEncoder;
   private final AbsoluteEncoder m_turningEncoder;
 
-  private final boolean m_useFeedForward = true;
+  private final boolean m_useFeedForward = false;
   private final SimpleMotorFeedforward m_drivingFeedforwardController;
 
   private final SparkPIDController m_drivingPIDController;
@@ -70,6 +70,7 @@ public class SubsystemSwerveModule {
       m_drivingFeedforwardController = null;
       m_drivingPIDController.setFeedbackDevice(m_drivingEncoder);
     }
+
     m_turningPIDController = m_turningSparkMax.getPIDController();
     m_turningPIDController.setFeedbackDevice(m_turningEncoder);
 
@@ -143,7 +144,21 @@ public class SubsystemSwerveModule {
       m_drivingSparkMax.set(m_drivingFeedforwardController.calculate(optimizedState.speedMetersPerSecond));
     else 
       m_drivingPIDController.setReference(optimizedState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity);
+
     m_turningPIDController.setReference(optimizedState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
+  }
+
+  /**
+   * Sets the desired state of the module. Does not optimize states.
+   *
+   * @param desiredState desired {@link SwerveModuleState}
+   * 
+   * @author :3
+   */
+  public void setDesiredRotation(Rotation2d desiredRotation) {
+    Rotation2d offsetRotation = desiredRotation.plus(m_wheelOffset);
+
+    m_turningPIDController.setReference(offsetRotation.getRadians(), CANSparkMax.ControlType.kPosition);
   }
 
   /**
@@ -173,28 +188,29 @@ public class SubsystemSwerveModule {
    * @author :>
    */
   public double getMotorOutputCurrent() {
-    double outputCurrent = m_drivingSparkMax.getOutputCurrent();
-    return outputCurrent;
+    return m_drivingSparkMax.getOutputCurrent();
   }
 
   /**
    * Drives the module with the specified voltage for the drive motor,
-   * and 0 voltage for the turning motor.
-   * @param voltage
+   * and sets the target rotation for the pivot motor to 0.
+   * 
+   * @param voltage The voltage to set the drive motor to
    */
   public void driveVoltage(double voltage) {
     m_drivingSparkMax.setVoltage(voltage);
-    m_turningSparkMax.setVoltage(0);
+    setDesiredRotation(new Rotation2d(0));
   }
 
   /**
-   * Logs all info for this motor.
-   * @param motorLog
+   * Logs all info for this motor. For use with SysID.
+   * 
+   * @param motorLog The {@link MotorLog} to log with
    */
   public void driveLog(MotorLog motorLog) {
     motorLog.current(Units.Amps.of(m_drivingSparkMax.getOutputCurrent()));
     motorLog.linearPosition(Units.Meters.of(m_drivingEncoder.getPosition()));
     motorLog.linearVelocity(Units.MetersPerSecond.of(m_drivingEncoder.getVelocity()));
-    motorLog.voltage(Units.Volts.of(m_drivingSparkMax.getBusVoltage()));
+    motorLog.voltage(Units.Volts.of(m_drivingSparkMax.getBusVoltage() * m_drivingSparkMax.getAppliedOutput()));
   }
 }

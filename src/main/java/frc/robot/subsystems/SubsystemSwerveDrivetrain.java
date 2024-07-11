@@ -1,8 +1,10 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.BaseUnits;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Voltage;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
@@ -51,6 +53,21 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
   }
 
   /**
+   * Set the swerve modules' desired rotations. Does not optimize rotations.
+   *
+   * @param desiredStates the desired {@link SwerveModuleState}s
+   * 
+   * @author :3
+   */
+  public void setModuleRotations(Rotation2d[] desiredRotations) {
+    // :3 set the desired states
+    m_frontLeft.setDesiredRotation(desiredRotations[0]);
+    m_frontRight.setDesiredRotation(desiredRotations[1]);
+    m_rearLeft.setDesiredRotation(desiredRotations[2]);
+    m_rearRight.setDesiredRotation(desiredRotations[3]);
+  }
+
+  /**
    * Used for pose estimation.
    * 
    * @author :3
@@ -64,14 +81,22 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
   }
 
   public SysIdRoutine routine = new SysIdRoutine(
-    new Config(),
+    new Config(BaseUnits.Voltage.of(0.75).per(BaseUnits.Time.of(1)),
+      BaseUnits.Voltage.of(3.5),
+      BaseUnits.Time.of(5),
+      null),
     new Mechanism(
       this::sysIdDrive, 
-      this::sysIdLog, 
+      this::sysIdDriveLog, 
       this
     )
   );
 
+  /**
+   * Sets the modules' drive voltages to a specific value
+   * 
+   * @param voltage the value to set the drive voltages to
+   */
   public void sysIdDrive(Measure<Voltage> voltage) {
     m_frontLeft.driveVoltage(voltage.baseUnitMagnitude());
     m_frontRight.driveVoltage(voltage.baseUnitMagnitude());
@@ -79,18 +104,31 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
     m_rearRight.driveVoltage(voltage.baseUnitMagnitude());
   }
 
-  public void sysIdLog(SysIdRoutineLog log) {
-    m_frontLeft.driveLog(log.motor("front_left"));
-    m_frontRight.driveLog(log.motor("front_right"));
-    m_rearLeft.driveLog(log.motor("rear_left"));
-    m_rearRight.driveLog(log.motor("rear_right"));
+  /**
+   * Logs the motors' info. For use with SysID.
+   * 
+   * @param log The {@link SysIdRoutineLog} to log to
+   */
+  public void sysIdDriveLog(SysIdRoutineLog log) {
+    m_frontLeft.driveLog(log.motor("front_left_drive"));
+    m_frontRight.driveLog(log.motor("front_right_drive"));
+    m_rearLeft.driveLog(log.motor("rear_left_drive"));
+    m_rearRight.driveLog(log.motor("rear_right_drive"));
   }
 
-  public Command sysIdQuasistatic(SysIdRoutine.Direction direction) {
+  /**
+   * @param direction The direction for a quasistatic routine to run
+   * @return A quasistatic routine
+   */
+  public Command sysIdDriveQuasistatic(SysIdRoutine.Direction direction) {
     return routine.quasistatic(direction);
   }
 
-  public Command sysIdDynamic(SysIdRoutine.Direction direction) {
+  /**
+   * @param direction The direction for a dynamic routine to run
+   * @return A dynamic routine
+   */
+  public Command sysIdDriveDynamic(SysIdRoutine.Direction direction) {
     return routine.dynamic(direction);
   }
 }

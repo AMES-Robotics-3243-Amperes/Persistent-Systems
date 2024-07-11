@@ -49,7 +49,9 @@ public abstract class SplineSegment {
    * 
    * @author :3
    */
-  public abstract double totalArcLength();
+  public double totalArcLength() {
+    return arcLength(1);
+  }
 
   /**
    * Given some arc length L, finds the parameterization t at which arcLength(t) = L.
