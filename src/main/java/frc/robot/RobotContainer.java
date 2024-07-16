@@ -4,12 +4,15 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-import frc.robot.commands.CommandSwerveModulesForward;
+import frc.robot.Curves.Spline;
+import frc.robot.Curves.CubicSegments.C0CubicBezierSegmentFactory;
+import frc.robot.Curves.CubicSegments.C2HermiteSegmentFactory;
+import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
@@ -69,15 +72,25 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    SequentialCommandGroup drivetrainSysIdCommand = new SequentialCommandGroup(
-      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kForward),
-      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kReverse),
-      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kForward),
-      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kReverse)
-    );
-    primaryController.start().onTrue(drivetrainSysIdCommand);
+    C0CubicBezierSegmentFactory segment1 = new C0CubicBezierSegmentFactory(new Translation2d(0, 0),
+      new Translation2d(0.1, 0), new Translation2d(0.1, 0), new Translation2d(1, 0));
+    C2HermiteSegmentFactory segment2 = new C2HermiteSegmentFactory(new Translation2d(1, 1),
+      new Translation2d(-1, -1));
+    C2HermiteSegmentFactory segment3 = new C2HermiteSegmentFactory(new Translation2d(0, 0),
+      new Translation2d(-1, -1));
+      
+    Spline spline = new Spline();
+    spline.addSegment(segment1);
+    spline.addSegment(segment2);
+    spline.addSegment(segment3);
 
-    primaryController.back().whileTrue(new CommandSwerveModulesForward(subsystemSwerveDrivetrain));
+    PIDController xController = new PIDController(1, 0, 0);
+    PIDController yController = new PIDController(1, 0, 0);
+
+    CommandSwerveFollowSpline splineCommand = new CommandSwerveFollowSpline(subsystemSwerveDrivetrain,
+      spline, 1, xController, yController);
+
+    primaryController.b().whileTrue(splineCommand);
   }
 
   /**
@@ -86,11 +99,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return new SequentialCommandGroup(
-      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kForward),
-      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kReverse),
-      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kForward),
-      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kReverse)
-    );
+    return null;
   }
 }

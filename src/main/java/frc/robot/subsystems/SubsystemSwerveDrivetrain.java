@@ -80,10 +80,18 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
     };
   }
 
-  public SysIdRoutine routine = new SysIdRoutine(
+  @Override
+  public void periodic() {
+    m_frontLeft.update();
+    m_frontRight.update();
+    m_rearLeft.update();
+    m_rearRight.update();
+  }
+
+  public SysIdRoutine driveRoutine = new SysIdRoutine(
     new Config(BaseUnits.Voltage.of(0.75).per(BaseUnits.Time.of(1)),
-      BaseUnits.Voltage.of(3.5),
-      BaseUnits.Time.of(5),
+      BaseUnits.Voltage.of(3),
+      BaseUnits.Time.of(8),
       null),
     new Mechanism(
       this::sysIdDrive, 
@@ -121,7 +129,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * @return A quasistatic routine
    */
   public Command sysIdDriveQuasistatic(SysIdRoutine.Direction direction) {
-    return routine.quasistatic(direction);
+    return driveRoutine.quasistatic(direction);
   }
 
   /**
@@ -129,6 +137,6 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * @return A dynamic routine
    */
   public Command sysIdDriveDynamic(SysIdRoutine.Direction direction) {
-    return routine.dynamic(direction);
+    return driveRoutine.dynamic(direction);
   }
 }

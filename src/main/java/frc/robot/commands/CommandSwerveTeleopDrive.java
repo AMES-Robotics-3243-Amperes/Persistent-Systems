@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.JoyUtil;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 import frc.robot.Constants.SwerveConstants.ControlConstants;
+import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 public class CommandSwerveTeleopDrive extends Command {
@@ -44,8 +45,7 @@ public class CommandSwerveTeleopDrive extends Command {
     double xSpeed = -controller.getLeftY() * (reverse ? -1 : 1) * ControlConstants.movingSpeed;
     double ySpeed = -controller.getLeftX() * (reverse ? -1 : 1) * ControlConstants.movingSpeed;
     Translation2d speeds = new Translation2d(xSpeed, ySpeed);
-    // :3 sysid testing
-    //speeds = speeds.rotateBy(DataManager.instance().robotPosition.get().getRotation().times(-1));
+    speeds = speeds.rotateBy(DataManager.instance().robotPosition.get().getRotation().times(-1));
 
     double controllerRightX = controller.getRightX();
     double rotationSpeed = -controllerRightX * ControlConstants.rotationSpeed;

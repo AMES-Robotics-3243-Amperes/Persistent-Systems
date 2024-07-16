@@ -14,7 +14,7 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 public class CommandSwerveFollowSpline extends Command {
   private SubsystemSwerveDrivetrain drivetrain;
-  private Timer timer;
+  private Timer timer = new Timer();
 
   private Spline spline;
   private double velocity;
@@ -31,8 +31,14 @@ public class CommandSwerveFollowSpline extends Command {
       PIDController yController) {
     this.spline = spline;
     this.velocity = velocity;
+    this.xController = xController;
+    this.yController = yController;
+    this.drivetrain = drivetrain;
+
     currentArcLength = 0;
     previousArcLength = 0;
+
+    addRequirements(drivetrain);
   }
 
   @Override
@@ -61,11 +67,11 @@ public class CommandSwerveFollowSpline extends Command {
     // along the spline when the robot finds itself far off of the curve.
     double trueVelocity = velocity * CurveConstants.splineOffsetVelocityDampen(robotPosition.getDistance(goalPosition));
 
-    double xValue = xController.calculate(goalPosition.getX() - robotPosition.getX());
-    double yValue = yController.calculate(goalPosition.getY() - robotPosition.getY());
+    double xValue = xController.calculate(robotPosition.getX() - goalPosition.getX());
+    double yValue = yController.calculate(robotPosition.getY() - goalPosition.getY());
     Translation2d pidAdjustment = new Translation2d(xValue, yValue);
     
-    Translation2d splineVelocityAdjusted = splineVelocity.times(splineVelocity.getNorm() * trueVelocity);
+    Translation2d splineVelocityAdjusted = splineVelocity.times(trueVelocity / splineVelocity.getNorm());
     Translation2d targetRobotVelocity = splineVelocityAdjusted.plus(pidAdjustment);
 
     Translation2d speeds = targetRobotVelocity.rotateBy(DataManager.instance().robotPosition.get().getRotation().times(-1));
@@ -76,5 +82,10 @@ public class CommandSwerveFollowSpline extends Command {
     previousArcLength = currentArcLength;
     currentArcLength += trueVelocity * timer.get();
     timer.restart();
+  }
+
+  @Override
+  public boolean isFinished() {
+    return currentArcLength >= spline.totalArcLength();
   }
 }

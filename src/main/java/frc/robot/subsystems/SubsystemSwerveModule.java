@@ -11,6 +11,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 import com.revrobotics.SparkPIDController;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -18,6 +19,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.MotorLog;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
+import frc.robot.Constants.SwerveConstants.ModuleConstants.PIDF;
 
 /**
  * Represents a single module of an {@link SubsystemSwerveDrivetrain}
@@ -31,10 +33,10 @@ public class SubsystemSwerveModule {
   private final RelativeEncoder m_drivingEncoder;
   private final AbsoluteEncoder m_turningEncoder;
 
-  private final boolean m_useFeedForward = false;
   private final SimpleMotorFeedforward m_drivingFeedforwardController;
+  private final PIDController m_drivingPIDController;
+  private double m_drivingVelocitySetpoint = 0;
 
-  private final SparkPIDController m_drivingPIDController;
   private final SparkPIDController m_turningPIDController;
 
   private final Rotation2d m_wheelOffset;
@@ -61,15 +63,9 @@ public class SubsystemSwerveModule {
     m_drivingEncoder = m_drivingSparkMax.getEncoder();
     m_turningEncoder = m_turningSparkMax.getAbsoluteEncoder(Type.kDutyCycle);
 
-    // :3 setup pid controllers H! and feedforward controller
-    if (m_useFeedForward) {
-      m_drivingFeedforwardController = new SimpleMotorFeedforward(0, 0, 0); // TODO Sysid
-      m_drivingPIDController = null;
-    } else {
-      m_drivingPIDController = m_drivingSparkMax.getPIDController();
-      m_drivingFeedforwardController = null;
-      m_drivingPIDController.setFeedbackDevice(m_drivingEncoder);
-    }
+    // :3 setup pid and feedforward controllers
+    m_drivingFeedforwardController = new SimpleMotorFeedforward(PIDF.kDrivingKs, PIDF.kDrivingKv, PIDF.kDrivingKv);
+    m_drivingPIDController = new PIDController(PIDF.kDrivingP, PIDF.kDrivingI, PIDF.kDrivingD);
 
     m_turningPIDController = m_turningSparkMax.getPIDController();
     m_turningPIDController.setFeedbackDevice(m_turningEncoder);
@@ -88,15 +84,6 @@ public class SubsystemSwerveModule {
     m_turningPIDController.setPositionPIDWrappingMinInput(ModuleConstants.kTurningEncoderPositionPIDMinInput);
     m_turningPIDController.setPositionPIDWrappingMaxInput(ModuleConstants.kTurningEncoderPositionPIDMaxInput);
 
-    // :3 set p, i, and d terms for driving
-    if (!m_useFeedForward) {
-      m_drivingPIDController.setP(ModuleConstants.PIDF.kDrivingP);
-      m_drivingPIDController.setI(ModuleConstants.PIDF.kDrivingI);
-      m_drivingPIDController.setD(ModuleConstants.PIDF.kDrivingD);
-      m_drivingPIDController.setFF(ModuleConstants.PIDF.kDrivingFF);
-      m_drivingPIDController.setOutputRange(ModuleConstants.PIDF.kDrivingMinOutput, ModuleConstants.PIDF.kDrivingMaxOutput);
-    }
-
     // :3 set p, i, and d terms for turning
     m_turningPIDController.setP(ModuleConstants.PIDF.kTurningP);
     m_turningPIDController.setI(ModuleConstants.PIDF.kTurningI);
@@ -109,6 +96,10 @@ public class SubsystemSwerveModule {
     m_turningSparkMax.setIdleMode(ModuleConstants.kTurningMotorIdleMode);
     m_drivingSparkMax.setSmartCurrentLimit(ModuleConstants.kDrivingMotorCurrentLimit);
     m_turningSparkMax.setSmartCurrentLimit(ModuleConstants.kTurningMotorCurrentLimit);
+
+    m_drivingEncoder.setAverageDepth(8);
+    m_drivingEncoder.setMeasurementPeriod(8);
+    m_turningEncoder.setAverageDepth(8);
 
     // :3 save configurations in case of a brown out
     m_drivingSparkMax.burnFlash();
@@ -140,11 +131,7 @@ public class SubsystemSwerveModule {
     SwerveModuleState optimizedState = SwerveModuleState.optimize(offsetState, currentAngle);
 
     // :3 command driving
-    if (m_useFeedForward)
-      m_drivingSparkMax.set(m_drivingFeedforwardController.calculate(optimizedState.speedMetersPerSecond));
-    else 
-      m_drivingPIDController.setReference(optimizedState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity);
-
+    m_drivingVelocitySetpoint = optimizedState.speedMetersPerSecond;
     m_turningPIDController.setReference(optimizedState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
   }
 
@@ -157,8 +144,16 @@ public class SubsystemSwerveModule {
    */
   public void setDesiredRotation(Rotation2d desiredRotation) {
     Rotation2d offsetRotation = desiredRotation.plus(m_wheelOffset);
-
     m_turningPIDController.setReference(offsetRotation.getRadians(), CANSparkMax.ControlType.kPosition);
+  }
+
+  /**
+   * Updates the feedforward and PID controllers of the module.
+   */
+  public void update() {
+    double drivingPIDOutput = m_drivingPIDController.calculate(m_drivingEncoder.getVelocity(), m_drivingVelocitySetpoint);
+    double drivingFFOutput = m_drivingFeedforwardController.calculate(m_drivingVelocitySetpoint);
+    m_drivingSparkMax.setVoltage(drivingPIDOutput + drivingFFOutput);
   }
 
   /**

@@ -30,8 +30,8 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
   public static final class JoyUtilConstants {
     public static final double kDeadzone = 0.05;
-    public static final double kRateLimitLeft = 1;
-    public static final double kRateLimitRight = 1;
+    public static final double kRateLimitLeft = 5;
+    public static final double kRateLimitRight = 5;
     public static final double exponent1 = 3;
     public static final double exponent2 = 1;
     public static final double coeff1 = 0.4;
@@ -95,8 +95,8 @@ public final class Constants {
       public static final IdleMode kDrivingMotorIdleMode = IdleMode.kBrake;
       public static final IdleMode kTurningMotorIdleMode = IdleMode.kBrake;
 
-      public static final int kDrivingMotorCurrentLimit = 50;
-      public static final int kTurningMotorCurrentLimit = 20;
+      public static final int kDrivingMotorCurrentLimit = 60;
+      public static final int kTurningMotorCurrentLimit = 25;
 
       public static final class PhysicalProperties {
         public static final int kDrivingMotorPinionTeeth = 14;
@@ -122,14 +122,15 @@ public final class Constants {
       }
 
       public static final class PIDF {
-        public static final double kDrivingP = 0.2;
+        public static final double kDrivingP = 0.21485;
         public static final double kDrivingI = 0;
         public static final double kDrivingD = 0;
-        public static final double kDrivingFF = 0;
-        public static final double kDrivingMinOutput = -1;
-        public static final double kDrivingMaxOutput = 1;
 
-        public static final double kTurningP = 0.225;
+        public static final double kDrivingKs = 0.10469;
+        public static final double kDrivingKv = 2.4783;
+        public static final double kDrivingKa = 0.36003;
+
+        public static final double kTurningP = 0.23;
         public static final double kTurningI = 0;
         public static final double kTurningD = 0;
         public static final double kTurningFF = 0;

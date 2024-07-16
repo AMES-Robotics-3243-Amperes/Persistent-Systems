@@ -4,6 +4,8 @@ import org.photonvision.EstimatedRobotPose;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DataManagerConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -34,6 +36,8 @@ public class DataManager {
     private Photonvision photonvision;
     private IMU imu = new AHRS_IMU();
 
+    private Field2d field2d = new Field2d();
+
     public RobotPosition(RobotContainer robotContainer) {
       subsystemSwerveDrivetrain = robotContainer.subsystemSwerveDrivetrain;
       photonvision = robotContainer.photonvision;
@@ -56,6 +60,9 @@ public class DataManager {
           poseLatest.timestampSeconds,
           VecBuilder.fill(distrust, distrust, distrust));
       }
+
+      field2d.setRobotPose(get());
+      SmartDashboard.putData(field2d);
     }
 
     public Pose2d get() {

@@ -66,6 +66,9 @@ public class Spline {
    */
   public Translation2d sample(double t) {
     int index = (int) t;
+    if (index >= segments.size())
+      index = segments.size() - 1;
+
     SplineSegment segment = segments.get(index);
     return segment.sample(t - Math.floor(t));
   }
@@ -81,6 +84,9 @@ public class Spline {
    */
   public Translation2d derivative(double t) {
     int index = (int) t;
+    if (index >= segments.size())
+      index = segments.size() - 1;
+
     SplineSegment segment = segments.get(index);
     return segment.derivative(t - Math.floor(t));
   }
@@ -108,6 +114,21 @@ public class Spline {
     }
 
     return length;
+  }
+
+  /**
+   * Finds the total arc length of the spline
+   * 
+   * @return The total arc length of the spline
+   * 
+   * @author :3
+   */
+  public double totalArcLength() {
+    double total = 0;
+    for (SplineSegment segment : segments) 
+      total += segment.totalArcLength();
+
+    return total;
   }
 
   /**
