@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.CurveConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
-import frc.robot.Curves.Spline;
+import frc.robot.splines.Spline;
 import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 

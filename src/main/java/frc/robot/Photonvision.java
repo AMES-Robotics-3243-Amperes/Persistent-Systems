@@ -28,25 +28,25 @@ public class Photonvision {
 
   /** Creates a new SubsystemPhotonVision. */
   public Photonvision() throws IOException {
-    /*camera = new PhotonCamera(PhotonvisionConstants.cameraName);
+    camera = new PhotonCamera(PhotonvisionConstants.cameraName);
     fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+    //fieldLayout = new AprilTagFieldLayout(tags, Units.inchesToMeters(480), Units.inchesToMeters(288));
 
-    //AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, Units.inchesToMeters(480), Units.inchesToMeters(288));
     poseEstimator = new PhotonPoseEstimator(fieldLayout,
       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       camera,
       PhotonvisionConstants.robotToCamera);
-    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);*/
+    poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
   }
 
   public Optional<Pair<EstimatedRobotPose, Double>> getPhotonPose() {
-    /*var poseLatestOptional = poseEstimator.update();
+    var poseLatestOptional = poseEstimator.update();
     PhotonPipelineResult pipelineResult = camera.getLatestResult();
     
     if (poseLatestOptional.isPresent() && pipelineResult.targets.size() != 0) {
       EstimatedRobotPose poseLatest = poseLatestOptional.get();
       return Optional.of(new Pair<EstimatedRobotPose, Double>(poseLatest, pipelineResult.getBestTarget().getPoseAmbiguity()));
-    }*/
+    }
 
     return Optional.empty();
   }

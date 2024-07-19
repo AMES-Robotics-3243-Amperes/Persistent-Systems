@@ -1,7 +1,7 @@
-package frc.robot.Curves.CubicSegments;
+package frc.robot.splines.cubicsegments;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.Curves.SplineSegment;
+import frc.robot.splines.SplineSegment;
 
 /**
  * {@link SplineSegment SplineSegments} that can be expressed as third-degree polynomial.

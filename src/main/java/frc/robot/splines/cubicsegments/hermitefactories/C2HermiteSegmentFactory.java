@@ -1,8 +1,9 @@
-package frc.robot.Curves.CubicSegments;
+package frc.robot.splines.cubicsegments.hermitefactories;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.Curves.SplineSegment;
-import frc.robot.Curves.SplineSegmentFactory;
+import frc.robot.splines.SplineSegment;
+import frc.robot.splines.SplineSegmentFactory;
+import frc.robot.splines.cubicsegments.BezierSegment;
 
 /**
  * A factory that creates C2 continuous spline segments.

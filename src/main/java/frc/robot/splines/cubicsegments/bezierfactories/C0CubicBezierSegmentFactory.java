@@ -1,8 +1,9 @@
-package frc.robot.Curves.CubicSegments;
+package frc.robot.splines.cubicsegments.bezierfactories;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.Curves.SplineSegment;
-import frc.robot.Curves.SplineSegmentFactory;
+import frc.robot.splines.SplineSegment;
+import frc.robot.splines.SplineSegmentFactory;
+import frc.robot.splines.cubicsegments.BezierSegment;
 
 /**
  * A factory that creates C0 continuous spline segments.
@@ -16,8 +17,7 @@ public class C0CubicBezierSegmentFactory extends SplineSegmentFactory {
   private Translation2d P3;
 
   /**
-   * Takes in the final three control points. The first control point
-   * is extrapolated from the previous segment. @author :3
+   * Creates a bezier segment from four control points. @author :3
    */
   public C0CubicBezierSegmentFactory(Translation2d P0,
       Translation2d P1,

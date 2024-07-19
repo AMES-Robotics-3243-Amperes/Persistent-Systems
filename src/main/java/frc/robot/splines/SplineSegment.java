@@ -1,10 +1,12 @@
-package frc.robot.Curves;
+package frc.robot.splines;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants.CurveConstants;
 
 /**
- * A single segment of a {@link Spline}.
+ * A single segment of a {@link Spline}. Functions that take in
+ * a parameterization have undefined behavior for t disobeying
+ * 0 <= t <= 1.
  * 
  * @author :3
  */

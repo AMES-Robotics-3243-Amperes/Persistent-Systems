@@ -1,4 +1,4 @@
-package frc.robot.Curves;
+package frc.robot.splines;
 
 import java.util.ArrayList;
 import java.util.ListIterator;

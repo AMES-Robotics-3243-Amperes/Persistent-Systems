@@ -54,11 +54,11 @@ public class DataManager {
       var poseLatestOptional = photonvision.getPhotonPose();
       if (poseLatestOptional.isPresent()) {
         EstimatedRobotPose poseLatest = poseLatestOptional.get().getFirst();
-        double distrust = DataManagerConstants.photonPoseEstimatorAmbiguity(poseLatestOptional.get().getSecond());
+        double ambiguity = DataManagerConstants.photonPoseEstimatorAmbiguity(poseLatestOptional.get().getSecond());
 
         poseEstimator.addVisionMeasurement(poseLatest.estimatedPose.toPose2d(),
           poseLatest.timestampSeconds,
-          VecBuilder.fill(distrust, distrust, distrust));
+          VecBuilder.fill(ambiguity, ambiguity, ambiguity));
       }
 
       field2d.setRobotPose(get());

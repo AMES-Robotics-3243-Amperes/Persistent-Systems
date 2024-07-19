@@ -1,4 +1,4 @@
-package frc.robot.Curves;
+package frc.robot.splines;
 
 /**
  * Used in the construction of {@link SplineSegment SplineSegments} and

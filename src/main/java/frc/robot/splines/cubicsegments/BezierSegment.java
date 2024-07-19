@@ -1,4 +1,4 @@
-package frc.robot.Curves.CubicSegments;
+package frc.robot.splines.cubicsegments;
 
 import edu.wpi.first.math.geometry.Translation2d;
 

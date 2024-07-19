@@ -83,8 +83,8 @@ public final class Constants {
     }
 
     public static final class ModuleConstants {
-      // :3 the max physical speed of the modules
-      // :3 (for now, I really have no clue what this should
+      // :3 the max physical speed of the modules. NOT drive speed
+      // (for now, I really have no clue what this should
       // be, so I have it set unreasonably high)
       public static final double kMaxObtainableModuleSpeed = 100;
 
@@ -105,7 +105,6 @@ public final class Constants {
       }
 
       public static final class EncoderFactors {
-
         // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
         // teeth on the bevel pinion
         public static final double kDrivingMotorReduction = (45.0 * 22)
@@ -141,7 +140,7 @@ public final class Constants {
   }
 
   public static final class PhotonvisionConstants {
-    public static final String cameraName = "Backward_Global_Camera";
+    public static final String cameraName = "Global_Shutter_Camera";
 
     public static final Pose3d cameraPosition =
       new Pose3d(new Translation3d(25.0 / 100, -.22, 14.4 / 100), new Rotation3d());
@@ -153,12 +152,13 @@ public final class Constants {
      * Takes photon ambiguity and turns it into pose estimator ambiguity @author :3
      */
     public static final double photonPoseEstimatorAmbiguity(Double photonAmbiguity) {
-      return 10 * photonAmbiguity * photonAmbiguity;
+      return 5 * photonAmbiguity * photonAmbiguity;
     }
   }
 
   public static final class CurveConstants {
-    /** As the robot drifts from the spline, the speed at
+    /**
+     * As the robot drifts from the spline, the speed at
      * which the setpoint travels across the spline decreases.
      * This function determines the speed multiplier as a function
      * of robot offset from the spline. @author :3
