@@ -60,13 +60,10 @@ public class RobotContainer {
     // Configure the trigger bindings
     configureBindings();
 
-    autoSelector = new AutoSelector(
-      new AutoSelector.Preset(m_CommandSwerveTeleopDrive, "Command A"),
-      new AutoSelector.Preset(m_CommandSwerveTeleopDrive, "Command B"),
-      new AutoSelector.Preset(m_CommandSwerveTeleopDrive, "Command C")
-    );
-    autoSelector.loadConfig();
-    autoSelector.selectPreset();
+    autoSelector = new AutoSelector()
+      .add(m_CommandSwerveTeleopDrive, "Command A")
+      .add(m_CommandSwerveTeleopDrive, "Command B")
+      .add(m_CommandSwerveTeleopDrive, "Command C");
   }
 
   /**
@@ -86,6 +83,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return null;
+    return autoSelector.get();
   }
 }
