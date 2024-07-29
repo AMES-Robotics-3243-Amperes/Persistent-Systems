@@ -79,9 +79,9 @@ public class RobotContainer {
     SplineSegmentFactory segment3 = new C2HermiteSegmentFactory(new Translation2d(0, -0.5),
       new Translation2d(-1, 0));
     SplineSegmentFactory segment4 = new C2HermiteSegmentFactory(new Translation2d(0, 0.5),
-      new Translation2d(0, -2));
+      new Translation2d(1, 0));
     SplineSegmentFactory segment5 = new C2HermiteSegmentFactory(new Translation2d(0, 0),
-      new Translation2d(0.5, 0));
+      new Translation2d(-1, 0));
       
     Spline spline = new Spline();
     spline.addSegment(segment1);
@@ -94,7 +94,7 @@ public class RobotContainer {
     PIDController yController = new PIDController(1, 0, 0);
 
     CommandSwerveFollowSpline splineCommand = new CommandSwerveFollowSpline(subsystemSwerveDrivetrain,
-      spline, 0.3, xController, yController);
+      spline, 0.5, xController, yController);
 
     primaryController.b().whileTrue(splineCommand);
   }

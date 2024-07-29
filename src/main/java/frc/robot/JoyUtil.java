@@ -25,9 +25,7 @@ public class JoyUtil extends CommandXboxController {
   private final double leftTriggerRightStickMultiplier, rightTriggerRightStickMultiplier;
   private final SlewRateLimiter leftXRateLimiter, leftYRateLimiter, rightXRateLimiter, rightYRateLimiter;
 
-  // :3 these are here so that Triggers aren't being created periodically (every 20 ms)
-  private final Trigger povDownLeftTrigger = povDownLeft();
-  private final Trigger povDownRightTrigger = povDownRight();
+  // :3 these are here so that triggers aren't being created every time one is requested
   private final Trigger aTrigger = a();
   private final Trigger bTrigger = b();
   private final Trigger xTrigger = x();
@@ -42,6 +40,8 @@ public class JoyUtil extends CommandXboxController {
   private final Trigger povDownTrigger = povDown();
   private final Trigger povUpLeftTrigger = povUpLeft();
   private final Trigger povUpRightTrigger = povUpRight();
+  private final Trigger povDownLeftTrigger = povDownLeft();
+  private final Trigger povDownRightTrigger = povDownRight();
   private final Trigger startTrigger = start();
   private final Trigger backTrigger = back();
 
@@ -88,10 +88,12 @@ public class JoyUtil extends CommandXboxController {
     this.leftTriggerRightStickMultiplier = leftTriggerRightStickMultiplier;
     this.rightTriggerRightStickMultiplier = rightTriggerRightStickMultiplier;
 
-    // :3 even exponents make for very weird behaviour so provide
-    // a one-time warning in the rio log if there are even exponents
-    if (exponent1 % 2 == 0 || exponent2 % 2 == 0) {
-      System.out.println("Exponents of joystick curve aren't odd!");
+    // :3 even exponents make driving backwards inconvenient so put
+    // a one-time warning in the rio log if there are any
+    if (exponent1 % 2 != 1 || exponent2 % 2 != 1) {
+      System.out.println("-------------------------------------");
+      System.out.println("Joystick curve exponents are not odd!");
+      System.out.println("-------------------------------------");
     }
   }
 
@@ -353,33 +355,6 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * :3 applies a deadzone to an input using the deadzone
-   * specified in the object
-   *
-   * <p> the output of this functions can still be any number
-   * from 0 to 1 to allow very small outputs to still be achieved </p>
-   *
-   * @param value the value to apply the deadzone to
-   * @return the value with the deadzone applied
-   */
-  private double applyDeadzone(double value) {
-    // :3 apply the raw deadzone
-    double deadzoned = MathUtil.applyDeadband(value, deadzone);
-
-    // :3 if raw deadzoning outputs 0, return 0 now
-    if (deadzoned == 0) {
-      return 0;
-    }
-
-    // :3 the code now needs to take the output with an absolute value between the
-    // deadzone and 1 and remap it so that its absolute value can be between 0
-    // and 1. this looks complicated but that's just because the ranges have to be in the
-    // negative numbers if the deadzoned value is negative
-    int multiplier = deadzoned > 0 ? 1 : -1;
-    return remap(deadzoned, deadzone * multiplier, multiplier, 0, multiplier);
-  }
-
-  /**
    * :3 curves a given input
    *
    * @param value the value before the curve
@@ -401,10 +376,9 @@ public class JoyUtil extends CommandXboxController {
    * @return the value with trigger multipliers applied
    */
   private double applyTriggerMultipliers(double value, double leftTriggerMultiplier, double rightTriggerMultiplier) {
-    // get the amounts we need to multiply the raw value by (take the trigger input and
-    // use it to linearly interpolate between 1 and the multiplier for the trigger)
-    double realLeftTriggerMultiplier = remap(getLeftTriggerAxis(), 0, 1, 1, leftTriggerMultiplier);
-    double realRightTriggerMultiplier = remap(getRightTriggerAxis(), 0, 1, 1, rightTriggerMultiplier);
+    // linearly interpolate from 1 to the trigger multiplier by the trigger value
+    double realLeftTriggerMultiplier = (leftTriggerMultiplier - 1) * getLeftTriggerAxis() + 1;
+    double realRightTriggerMultiplier = (rightTriggerMultiplier - 1) * getRightTriggerAxis() + 1;
 
     return value * realLeftTriggerMultiplier * realRightTriggerMultiplier;
   }
@@ -419,29 +393,10 @@ public class JoyUtil extends CommandXboxController {
    * @apiNote does not do any rate limiting
    */
   private double composeJoystickFunctions(double value, double leftTriggerMultiplier, double rightTriggerMultiplier) {
-    double withDeadzone = applyDeadzone(value);
+    double withDeadzone = MathUtil.applyDeadband(value, deadzone);
     double withCurve = applyCurve(withDeadzone);
     double withMultipliers = applyTriggerMultipliers(withCurve, leftTriggerMultiplier, rightTriggerMultiplier);
 
     return withMultipliers;
-  }
-
-  /**
-   * :3 simple (but very useful) math function that remaps a value from
-   * one range of numbers to another range of numbers
-   *
-   * @param value the value to remap
-   * @param low1  the lower bound of the range to map from
-   * @param high1 the upper bound of the range to map from
-   * @param low2  the lower bound of the range to map to
-   * @param high2 the upper bound of the range to map to
-   * @return the remapped value
-   */
-  private double remap(double value, double low1, double high1, double low2, double high2) {
-    double range1Size = high1 - low1;
-    double range2Size = high2 - low2;
-    double percentIntoRange1 = (value - low1) / range1Size;
-
-    return low2 + range2Size * percentIntoRange1;
   }
 }
