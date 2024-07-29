@@ -64,11 +64,6 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
-
-    autoSelector = new AutoSelector()
-      .add(m_CommandSwerveTeleopDrive, "Command A")
-      .add(m_CommandSwerveTeleopDrive, "Command B")
-      .add(m_CommandSwerveTeleopDrive, "Command C");
   }
 
   /**
