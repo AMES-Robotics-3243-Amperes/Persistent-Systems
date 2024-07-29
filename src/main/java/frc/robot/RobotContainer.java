@@ -24,6 +24,9 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+  // H! Auto Selector
+  AutoSelector autoSelector;
+  
   /** :3 Used as a reference for Robot to call periodically */
   public DataManager dataManager;
 
@@ -61,6 +64,11 @@ public class RobotContainer {
 
     // Configure the trigger bindings
     configureBindings();
+
+    autoSelector = new AutoSelector()
+      .add(m_CommandSwerveTeleopDrive, "Command A")
+      .add(m_CommandSwerveTeleopDrive, "Command B")
+      .add(m_CommandSwerveTeleopDrive, "Command C");
   }
 
   /**
@@ -105,6 +113,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return null;
+    return autoSelector.get();
   }
 }

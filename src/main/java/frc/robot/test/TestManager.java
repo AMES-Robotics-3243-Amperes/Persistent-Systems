@@ -465,7 +465,7 @@ public class TestManager {
         frame.setLayout(new GridBagLayout());
         // Constraints to be used to arrange the button and list properly
         GridBagConstraints constraints = new GridBagConstraints();
-
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
         // Holds the checkboxes
         Container groupList = new Container();
         groupList.setLayout(new GridLayout(testGroupNames.length, 1));
@@ -473,8 +473,8 @@ public class TestManager {
         groupListPane.add(groupList);
         // Add all checkboxes
         for (String name : testGroupNames) {
-        JCheckBox checkBox = new JCheckBox(name, true);
-        groupList.add(checkBox);
+            JCheckBox checkBox = new JCheckBox(name, true);
+            groupList.add(checkBox);
         }
 
         // Confirm button
