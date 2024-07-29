@@ -4,19 +4,18 @@
 
 package frc.robot;
 
-import frc.robot.Constants.JoyUtilConstants;
-import frc.robot.commands.CommandSwerveTeleopDrive;
-import frc.robot.subsystems.SubsystemPhotonvision;
-import frc.robot.subsystems.SubsystemSwerveDrivetrain;
-
-import java.io.IOException;
-
-import frc.robot.subsystems.SubsystemLED;
-import frc.robot.subsystems.SubsystemSwerveDrivetrain;
-import frc.robot.test.TestSubsystem;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.commands.CommandSwerveFollowSpline;
+import frc.robot.commands.CommandSwerveTeleopDrive;
+import frc.robot.splines.Spline;
+import frc.robot.splines.SplineSegmentFactory;
+import frc.robot.splines.cubicsegments.hermitefactories.C2HermiteSegmentFactory;
+import frc.robot.splines.linearsegments.LinearSegmentFactory;
+import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -25,33 +24,40 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  // :3 Controler
-  private final JoyUtil primaryController = new JoyUtil(JoyUtilConstants.primaryControllerID);
-  private final JoyUtil secondaryController = new JoyUtil(JoyUtilConstants.secondaryControllerID);
-  //
-  // :3 SUBSYSTEMS
-  //
+  /** :3 Used as a reference for Robot to call periodically */
+  public DataManager dataManager;
 
-  private final SubsystemSwerveDrivetrain m_SubsystemSwerveDrivetrain = new SubsystemSwerveDrivetrain();
-  private final TestSubsystem m_TestSubsystem = new TestSubsystem();
-  private final SubsystemLED m_SubsystemLED = new SubsystemLED();
+  // :3 controllers
+  private JoyUtil primaryController = new JoyUtil(0);
 
   //
-  // :3 COMMANDS
+  // Subsystems
   //
 
-  private final CommandSwerveTeleopDrive m_CommandSwerveTeleopDrive = new CommandSwerveTeleopDrive(m_SubsystemSwerveDrivetrain, primaryController);
+  public SubsystemSwerveDrivetrain subsystemSwerveDrivetrain = new SubsystemSwerveDrivetrain();
+  public Photonvision photonvision;
+
+  //
+  // Commands
+  //
+
+  private CommandSwerveTeleopDrive commandSwerveTeleopDrive =
+    new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain, primaryController);
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    DataManager.currentRobotPose.constructPoseEstimator(m_SubsystemSwerveDrivetrain);
-    m_SubsystemSwerveDrivetrain.setDefaultCommand(m_CommandSwerveTeleopDrive);
-
     try {
-      new SubsystemPhotonvision();
-    } catch (IOException e) {
-      System.out.println("ruh roh, camera moment");
+      photonvision = new Photonvision();
+    } catch (Exception e) {
+      System.err.println("Photonvision initialization failed: " + e);
+      System.err.println("Failed to construct Photonvision, expect null exceptions...");
     }
+
+    // :3 constructs a DataManager instance using runtime-initialized RobotContainer members
+    dataManager = new DataManager(this);
+
+    // :3 set sensible default commands
+    subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
 
     // Configure the trigger bindings
     configureBindings();
@@ -66,7 +72,32 @@ public class RobotContainer {
    * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
    * joysticks}.
    */
-  private void configureBindings() {}
+  private void configureBindings() {
+    SplineSegmentFactory segment1 = new LinearSegmentFactory(new Translation2d(0, 0), new Translation2d(1, -0.5));
+    SplineSegmentFactory segment2 = new C2HermiteSegmentFactory(new Translation2d(1, 0.5),
+      new Translation2d(-1, 0));
+    SplineSegmentFactory segment3 = new C2HermiteSegmentFactory(new Translation2d(0, -0.5),
+      new Translation2d(-1, 0));
+    SplineSegmentFactory segment4 = new C2HermiteSegmentFactory(new Translation2d(0, 0.5),
+      new Translation2d(1, 0));
+    SplineSegmentFactory segment5 = new C2HermiteSegmentFactory(new Translation2d(0, 0),
+      new Translation2d(-1, 0));
+      
+    Spline spline = new Spline();
+    spline.addSegment(segment1);
+    spline.addSegment(segment2);
+    spline.addSegment(segment3);
+    spline.addSegment(segment4);
+    spline.addSegment(segment5);
+
+    PIDController xController = new PIDController(1, 0, 0);
+    PIDController yController = new PIDController(1, 0, 0);
+
+    CommandSwerveFollowSpline splineCommand = new CommandSwerveFollowSpline(subsystemSwerveDrivetrain,
+      spline, 0.5, xController, yController);
+
+    primaryController.b().whileTrue(splineCommand);
+  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.

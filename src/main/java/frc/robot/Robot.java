@@ -19,7 +19,6 @@ import frc.robot.test.TestManager;
 public class Robot extends TimedRobot {
   public static Boolean managerFirst = null;
   private Command m_autonomousCommand;
-
   private RobotContainer m_robotContainer;
 
   /**
@@ -31,8 +30,6 @@ public class Robot extends TimedRobot {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
     m_robotContainer = new RobotContainer();
-
-    DataManager.onRobotInit();
   }
 
   /**
@@ -44,12 +41,17 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
+    // :3 before commands run, update DataManger. separated from
+    // the command scheduler in order to avoid coupling and race conditions.
+    // run before commands as opposed to after to avoid using 20ms old data.
+    // not called statically to ensure that the the singleton has been constructed
+    m_robotContainer.dataManager.update();
+
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
-    DataManager.periodic();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */

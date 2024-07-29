@@ -5,16 +5,21 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkAbsoluteEncoder.Type;
+import com.revrobotics.SparkPIDController;
+
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import frc.robot.Constants.DriveTrain.ModuleConstants;
-import frc.robot.Constants.DriveTrain.DriveConstants.TempConstants;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.MotorLog;
+import frc.robot.Constants.SwerveConstants.ModuleConstants;
+import frc.robot.Constants.SwerveConstants.ModuleConstants.PIDF;
 
 /**
  * Represents a single module of an {@link SubsystemSwerveDrivetrain}
@@ -22,15 +27,17 @@ import frc.robot.Constants.DriveTrain.DriveConstants.TempConstants;
  * @author :3
  */
 public class SubsystemSwerveModule {
-
   private final CANSparkMax m_drivingSparkMax;
   private final CANSparkMax m_turningSparkMax;
 
   private final RelativeEncoder m_drivingEncoder;
   private final AbsoluteEncoder m_turningEncoder;
 
-  private final SparkMaxPIDController m_drivingPIDController;
-  private final SparkMaxPIDController m_turningPIDController;
+  private final SimpleMotorFeedforward m_drivingFeedforwardController;
+  private final PIDController m_drivingPIDController;
+  private double m_drivingVelocitySetpoint = 0;
+
+  private final SparkPIDController m_turningPIDController;
 
   private final Rotation2d m_wheelOffset;
 
@@ -39,7 +46,7 @@ public class SubsystemSwerveModule {
    * 
    * @param drivingCANId the id of the {@link CANSparkMax} for driving
    * @param turningCANId the id of the {@link CANSparkMax} for turning
-   * @param wheelOffset the offset of the encoder's 0 state
+   * @param wheelOffset  the offset of the encoder's 0 state
    * 
    * @author :3
    */
@@ -56,10 +63,11 @@ public class SubsystemSwerveModule {
     m_drivingEncoder = m_drivingSparkMax.getEncoder();
     m_turningEncoder = m_turningSparkMax.getAbsoluteEncoder(Type.kDutyCycle);
 
-    // :3 setup pid controllers
-    m_drivingPIDController = m_drivingSparkMax.getPIDController();
+    // :3 setup pid and feedforward controllers
+    m_drivingFeedforwardController = new SimpleMotorFeedforward(PIDF.kDrivingKs, PIDF.kDrivingKv, PIDF.kDrivingKv);
+    m_drivingPIDController = new PIDController(PIDF.kDrivingP, PIDF.kDrivingI, PIDF.kDrivingD);
+
     m_turningPIDController = m_turningSparkMax.getPIDController();
-    m_drivingPIDController.setFeedbackDevice(m_drivingEncoder);
     m_turningPIDController.setFeedbackDevice(m_turningEncoder);
 
     // :3 apply position and velocity conversion factors
@@ -76,27 +84,22 @@ public class SubsystemSwerveModule {
     m_turningPIDController.setPositionPIDWrappingMinInput(ModuleConstants.kTurningEncoderPositionPIDMinInput);
     m_turningPIDController.setPositionPIDWrappingMaxInput(ModuleConstants.kTurningEncoderPositionPIDMaxInput);
 
-    // :3 set p, i, and d terms for driving
-    m_drivingPIDController.setP(ModuleConstants.PIDF.kDrivingP);
-    m_drivingPIDController.setI(ModuleConstants.PIDF.kDrivingI);
-    m_drivingPIDController.setD(ModuleConstants.PIDF.kDrivingD);
-    m_drivingPIDController.setFF(ModuleConstants.PIDF.kDrivingFF);
-    m_drivingPIDController.setOutputRange(ModuleConstants.PIDF.kDrivingMinOutput,
-      ModuleConstants.PIDF.kDrivingMaxOutput);
-
     // :3 set p, i, and d terms for turning
     m_turningPIDController.setP(ModuleConstants.PIDF.kTurningP);
     m_turningPIDController.setI(ModuleConstants.PIDF.kTurningI);
     m_turningPIDController.setD(ModuleConstants.PIDF.kTurningD);
     m_turningPIDController.setFF(ModuleConstants.PIDF.kTurningFF);
-    m_turningPIDController.setOutputRange(ModuleConstants.PIDF.kTurningMinOutput,
-      ModuleConstants.PIDF.kTurningMaxOutput);
+    m_turningPIDController.setOutputRange(ModuleConstants.PIDF.kTurningMinOutput, ModuleConstants.PIDF.kTurningMaxOutput);
 
     // :3 set idle modes and current limits
     m_drivingSparkMax.setIdleMode(ModuleConstants.kDrivingMotorIdleMode);
     m_turningSparkMax.setIdleMode(ModuleConstants.kTurningMotorIdleMode);
     m_drivingSparkMax.setSmartCurrentLimit(ModuleConstants.kDrivingMotorCurrentLimit);
     m_turningSparkMax.setSmartCurrentLimit(ModuleConstants.kTurningMotorCurrentLimit);
+
+    m_drivingEncoder.setAverageDepth(8);
+    m_drivingEncoder.setMeasurementPeriod(8);
+    m_turningEncoder.setAverageDepth(8);
 
     // :3 save configurations in case of a brown out
     m_drivingSparkMax.burnFlash();
@@ -118,18 +121,39 @@ public class SubsystemSwerveModule {
    */
   public void setDesiredState(SwerveModuleState desiredState) {
     // :3 apply wheel angular offset
-    SwerveModuleState correctedDesiredState = new SwerveModuleState();
+    SwerveModuleState offsetState = new SwerveModuleState();
 
-    correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
-    correctedDesiredState.angle = desiredState.angle.plus(m_wheelOffset);
+    offsetState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
+    offsetState.angle = desiredState.angle.plus(m_wheelOffset);
 
     // :3 optimize state to avoid turning more than 90 degrees
     Rotation2d currentAngle = new Rotation2d(m_turningEncoder.getPosition());
-    SwerveModuleState optimizedDesiredState = SwerveModuleState.optimize(correctedDesiredState, currentAngle);
+    SwerveModuleState optimizedState = SwerveModuleState.optimize(offsetState, currentAngle);
 
     // :3 command driving
-    m_drivingPIDController.setReference(optimizedDesiredState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity);
-    m_turningPIDController.setReference(optimizedDesiredState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
+    m_drivingVelocitySetpoint = optimizedState.speedMetersPerSecond;
+    m_turningPIDController.setReference(optimizedState.angle.getRadians(), CANSparkMax.ControlType.kPosition);
+  }
+
+  /**
+   * Sets the desired state of the module. Does not optimize states.
+   *
+   * @param desiredState desired {@link SwerveModuleState}
+   * 
+   * @author :3
+   */
+  public void setDesiredRotation(Rotation2d desiredRotation) {
+    Rotation2d offsetRotation = desiredRotation.plus(m_wheelOffset);
+    m_turningPIDController.setReference(offsetRotation.getRadians(), CANSparkMax.ControlType.kPosition);
+  }
+
+  /**
+   * Updates the feedforward and PID controllers of the module.
+   */
+  public void update() {
+    double drivingPIDOutput = m_drivingPIDController.calculate(m_drivingEncoder.getVelocity(), m_drivingVelocitySetpoint);
+    double drivingFFOutput = m_drivingFeedforwardController.calculate(m_drivingVelocitySetpoint);
+    m_drivingSparkMax.setVoltage(drivingPIDOutput + drivingFFOutput);
   }
 
   /**
@@ -159,17 +183,29 @@ public class SubsystemSwerveModule {
    * @author :>
    */
   public double getMotorOutputCurrent() {
-    double outputCurrent = m_drivingSparkMax.getOutputCurrent();
-    return outputCurrent;
+    return m_drivingSparkMax.getOutputCurrent();
   }
 
   /**
-   * @return if either of the motors are too hot
+   * Drives the module with the specified voltage for the drive motor,
+   * and sets the target rotation for the pivot motor to 0.
    * 
-   * @author :3
+   * @param voltage The voltage to set the drive motor to
    */
-  public boolean isTooHot() {
-    return m_drivingSparkMax.getMotorTemperature() > TempConstants.max1650TempCelsius ||
-      m_turningSparkMax.getMotorTemperature() > TempConstants.max550TempCelsius;
+  public void driveVoltage(double voltage) {
+    m_drivingSparkMax.setVoltage(voltage);
+    setDesiredRotation(new Rotation2d(0));
+  }
+
+  /**
+   * Logs all info for this motor. For use with SysID.
+   * 
+   * @param motorLog The {@link MotorLog} to log with
+   */
+  public void driveLog(MotorLog motorLog) {
+    motorLog.current(Units.Amps.of(m_drivingSparkMax.getOutputCurrent()));
+    motorLog.linearPosition(Units.Meters.of(m_drivingEncoder.getPosition()));
+    motorLog.linearVelocity(Units.MetersPerSecond.of(m_drivingEncoder.getVelocity()));
+    motorLog.voltage(Units.Volts.of(m_drivingSparkMax.getBusVoltage() * m_drivingSparkMax.getAppliedOutput()));
   }
 }
