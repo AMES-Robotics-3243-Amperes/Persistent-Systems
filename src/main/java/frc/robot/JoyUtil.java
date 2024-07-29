@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.JoyUtilConstants;
 
 /**
- * <> {@link CommandXboxController} with many joystick tweaks in addition
+ * :3 {@link CommandXboxController} with many joystick tweaks in addition
  * to various other helper functions. All around a swell time :)
  *
  * <p> Raw joystick output goes through deadzoning, curving, trigger
@@ -25,9 +25,7 @@ public class JoyUtil extends CommandXboxController {
   private final double leftTriggerRightStickMultiplier, rightTriggerRightStickMultiplier;
   private final SlewRateLimiter leftXRateLimiter, leftYRateLimiter, rightXRateLimiter, rightYRateLimiter;
 
-  // <> these are here so that Triggers aren't being created periodically (every 20 ms)
-  private final Trigger povDownLeftTrigger = povDownLeft();
-  private final Trigger povDownRightTrigger = povDownRight();
+  // :3 these are here so that triggers aren't being created every time one is requested
   private final Trigger aTrigger = a();
   private final Trigger bTrigger = b();
   private final Trigger xTrigger = x();
@@ -42,12 +40,16 @@ public class JoyUtil extends CommandXboxController {
   private final Trigger povDownTrigger = povDown();
   private final Trigger povUpLeftTrigger = povUpLeft();
   private final Trigger povUpRightTrigger = povUpRight();
+  private final Trigger povDownLeftTrigger = povDownLeft();
+  private final Trigger povDownRightTrigger = povDownRight();
+  private final Trigger startTrigger = start();
+  private final Trigger backTrigger = back();
 
   /**
-   * <> creates a new {@link JoyUtil} with the provided values
+   * :3 creates a new {@link JoyUtil} with the provided values
    *
    * @param port                             the assigned DriverStation port
-   * @param deadzone                         the deadzone size for both axis of both joysticks
+   * @param deadzone                         the deadzone size for x and y axis of both joysticks
    * @param rateLimitLeft                    the max output change that can occur in one second for the left joystick
    * @param rateLimitRight                   the max output change that can occur in one second for the right joystick
    * @param exponent1                        the first exponent of the joystick curve
@@ -86,15 +88,17 @@ public class JoyUtil extends CommandXboxController {
     this.leftTriggerRightStickMultiplier = leftTriggerRightStickMultiplier;
     this.rightTriggerRightStickMultiplier = rightTriggerRightStickMultiplier;
 
-    // <> even exponents make for very weird behaviour so provide
-    // a one-time warning in the rio log if there are even exponents
-    if (exponent1 % 2 == 0 || exponent2 % 2 == 0) {
-      System.out.println("Exponents of joystick curve aren't odd!");
+    // :3 even exponents make driving backwards inconvenient so put
+    // a one-time warning in the rio log if there are any
+    if (exponent1 % 2 != 1 || exponent2 % 2 != 1) {
+      System.out.println("-------------------------------------");
+      System.out.println("Joystick curve exponents are not odd!");
+      System.out.println("-------------------------------------");
     }
   }
 
   /**
-   * <> creates a new {@link JoyUtil} with the values in constants
+   * :3 creates a new {@link JoyUtil} with the values in constants
    *
    * @param port the port of the controller
    */
@@ -142,7 +146,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get value of A button as a boolean
+   * :3 get value of A button as a boolean
    *
    * @return the value of the A button
    */
@@ -151,7 +155,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get value of B button as a boolean
+   * :3 get value of B button as a boolean
    *
    * @return the value of the B button
    */
@@ -160,7 +164,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get value of X button as a boolean
+   * :3 get value of X button as a boolean
    *
    * @return the value of the X button
    */
@@ -169,7 +173,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get value of Y button as a boolean
+   * :3 get value of Y button as a boolean
    *
    * @return the value of the Y button
    */
@@ -178,7 +182,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get value of left bumper as a boolean
+   * :3 get value of left bumper as a boolean
    *
    * @return the value of the left bumper
    */
@@ -187,7 +191,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get value of right bumper as a boolean
+   * :3 get value of right bumper as a boolean
    *
    * @return the value of the right bumper
    */
@@ -196,7 +200,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get value of left stick pressed in as boolean
+   * :3 get value of left stick pressed in as boolean
    *
    * @return the value of the left stick
    */
@@ -205,7 +209,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get value of right stick pressed in as boolean
+   * :3 get value of right stick pressed in as boolean
    *
    * @return the value of the right stick
    */
@@ -214,7 +218,25 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad is pointed left
+   * :3 get value of start as boolean
+   *
+   * @return the value of the right stick
+   */
+  public boolean getStart() {
+    return startTrigger.getAsBoolean();
+  }
+
+  /**
+   * :3 get value of back as boolean
+   *
+   * @return the value of the right stick
+   */
+  public boolean getBack() {
+    return backTrigger.getAsBoolean();
+  }
+
+  /**
+   * :3 get if the d-pad is pointed left
    *
    * @return if the d-pad is facing left
    */
@@ -223,7 +245,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad is pointed right
+   * :3 get if the d-pad is pointed right
    *
    * @return if the d-pad is facing right
    */
@@ -232,7 +254,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad is pointed up
+   * :3 get if the d-pad is pointed up
    *
    * @return if the d-pad is facing up
    */
@@ -241,7 +263,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad is pointed down
+   * :3 get if the d-pad is pointed down
    *
    * @return if the d-pad is facing down
    */
@@ -250,7 +272,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad is pointed up left
+   * :3 get if the d-pad is pointed up left
    *
    * @return if the d-pad is facing up left
    */
@@ -259,7 +281,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad is pointed up right
+   * :3 get if the d-pad is pointed up right
    *
    * @return if the d-pad is facing up right
    */
@@ -268,7 +290,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad is pointed down left
+   * :3 get if the d-pad is pointed down left
    *
    * @return if the d-pad is facing down left
    */
@@ -277,7 +299,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad is pointed down right
+   * :3 get if the d-pad is pointed down right
    *
    * @return if the d-pad is facing down right
    */
@@ -286,7 +308,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> get if the d-pad isn't pressed
+   * :3 get if the d-pad isn't pressed
    *
    * @return if the d-pad isn't pressed
    */
@@ -295,7 +317,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> gets the value of the d-pad y-axis (sin of pov angle)
+   * :3 gets the value of the d-pad y-axis (sin of pov angle)
    *
    * @return the value
    */
@@ -314,7 +336,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> gets the value of the d-pad x-axis (cos of pov angle)
+   * :3 gets the value of the d-pad x-axis (cos of pov angle)
    *
    * @return the value
    */
@@ -333,34 +355,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> applies a deadzone to an input using the deadzone
-   * specified in the object
-   *
-   * <p> the output of this functions can still be any number
-   * from 0 to 1 to allow very small outputs to still be achieved </p>
-   *
-   * @param value the value to apply the deadzone to
-   * @return the value with the deadzone applied
-   */
-  private double applyDeadzone(double value) {
-    // <> apply the raw deadzone
-    double deadzoned = MathUtil.applyDeadband(value, deadzone);
-
-    // <> if raw deadzoning outputs 0, return 0 now
-    if (deadzoned == 0) {
-      return 0;
-    }
-
-    // <> the code now needs to take the output with an absolute value between the
-    // deadzone and 1 and remap it so that its absolute value can be between 0
-    // and 1. this looks complicated but that's just because the ranges have to be in the
-    // negative numbers if the deadzoned value is negative
-    int multiplier = deadzoned > 0 ? 1 : -1;
-    return remap(deadzoned, deadzone * multiplier, multiplier, 0, multiplier);
-  }
-
-  /**
-   * <> curves a given input
+   * :3 curves a given input
    *
    * @param value the value before the curve
    * @return the value curved
@@ -373,7 +368,7 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
-   * <> apply the left and right trigger multipliers
+   * :3 apply the left and right trigger multipliers
    *
    * @param value                  the value before having the multipliers applied
    * @param leftTriggerMultiplier  the multiplier that will be applied if the left trigger is pressed fully
@@ -381,16 +376,15 @@ public class JoyUtil extends CommandXboxController {
    * @return the value with trigger multipliers applied
    */
   private double applyTriggerMultipliers(double value, double leftTriggerMultiplier, double rightTriggerMultiplier) {
-    // get the amounts we need to multiply the raw value by (take the trigger input and
-    // use it to linearly interpolate between 1 and the multiplier for the trigger)
-    double realLeftTriggerMultiplier = remap(getLeftTriggerAxis(), 0, 1, 1, leftTriggerMultiplier);
-    double realRightTriggerMultiplier = remap(getRightTriggerAxis(), 0, 1, 1, rightTriggerMultiplier);
+    // linearly interpolate from 1 to the trigger multiplier by the trigger value
+    double realLeftTriggerMultiplier = (leftTriggerMultiplier - 1) * getLeftTriggerAxis() + 1;
+    double realRightTriggerMultiplier = (rightTriggerMultiplier - 1) * getRightTriggerAxis() + 1;
 
     return value * realLeftTriggerMultiplier * realRightTriggerMultiplier;
   }
 
   /**
-   * <> applies deadzoning, curve, and trigger multipliers to a raw input
+   * :3 applies deadzoning, curve, and trigger multipliers to a raw input
    *
    * @param value                  the raw input from the joystick
    * @param leftTriggerMultiplier  the left trigger output multiplier for the axis being calculated
@@ -399,29 +393,10 @@ public class JoyUtil extends CommandXboxController {
    * @apiNote does not do any rate limiting
    */
   private double composeJoystickFunctions(double value, double leftTriggerMultiplier, double rightTriggerMultiplier) {
-    double withDeadzone = applyDeadzone(value);
+    double withDeadzone = MathUtil.applyDeadband(value, deadzone);
     double withCurve = applyCurve(withDeadzone);
     double withMultipliers = applyTriggerMultipliers(withCurve, leftTriggerMultiplier, rightTriggerMultiplier);
 
     return withMultipliers;
-  }
-
-  /**
-   * <> simple (but very useful) math function that remaps a value from
-   * one range of numbers to another range of numbers
-   *
-   * @param value the value to remap
-   * @param low1  the lower bound of the range to map from
-   * @param high1 the upper bound of the range to map from
-   * @param low2  the lower bound of the range to map to
-   * @param high2 the upper bound of the range to map to
-   * @return the remapped value
-   */
-  private double remap(double value, double low1, double high1, double low2, double high2) {
-    double range1Size = high1 - low1;
-    double range2Size = high2 - low2;
-    double percentIntoRange1 = (value - low1) / range1Size;
-
-    return low2 + range2Size * percentIntoRange1;
   }
 }
