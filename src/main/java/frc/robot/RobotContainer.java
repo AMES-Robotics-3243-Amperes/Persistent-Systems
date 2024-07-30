@@ -13,7 +13,6 @@ import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.splines.Spline;
 import frc.robot.splines.SplineSegmentFactory;
-import frc.robot.splines.cubicsegments.hermitefactories.C2HermiteSegmentFactory;
 import frc.robot.splines.linearsegments.LinearSegmentFactory;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
@@ -76,22 +75,10 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    SplineSegmentFactory segment1 = new LinearSegmentFactory(new Translation2d(0, 0), new Translation2d(1, -0.5));
-    SplineSegmentFactory segment2 = new C2HermiteSegmentFactory(new Translation2d(1, 0.5),
-      new Translation2d(-1, 0));
-    SplineSegmentFactory segment3 = new C2HermiteSegmentFactory(new Translation2d(0, -0.5),
-      new Translation2d(-1, 0));
-    SplineSegmentFactory segment4 = new C2HermiteSegmentFactory(new Translation2d(0, 0.5),
-      new Translation2d(1, 0));
-    SplineSegmentFactory segment5 = new C2HermiteSegmentFactory(new Translation2d(0, 0),
-      new Translation2d(-1, 0));
+    SplineSegmentFactory segment1 = new LinearSegmentFactory(new Translation2d(0.5, 0), new Translation2d(0, 0));
       
     Spline spline = new Spline();
     spline.addSegment(segment1);
-    spline.addSegment(segment2);
-    spline.addSegment(segment3);
-    spline.addSegment(segment4);
-    spline.addSegment(segment5);
 
     PIDController xController = new PIDController(1, 0, 0);
     PIDController yController = new PIDController(1, 0, 0);
