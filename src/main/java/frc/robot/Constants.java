@@ -34,11 +34,11 @@ public final class Constants {
     public static final double kRateLimitRight = 5;
     public static final double exponent1 = 3;
     public static final double exponent2 = 1;
-    public static final double coeff1 = 0.6;
-    public static final double coeff2 = 0.4;
+    public static final double coeff1 = 0;
+    public static final double coeff2 = 1;
 
-    public static final double leftTriggerSpeedMultiplier = 1.5;
-    public static final double rightTriggerSpeedMultiplier = 0.75;
+    public static final double leftTriggerSpeedMultiplier = 1.6;
+    public static final double rightTriggerSpeedMultiplier = 0.4;
   }
 
   public static final class SwerveConstants {
@@ -172,5 +172,6 @@ public final class Constants {
 
     public static final double halfLoopTime = 0.01;
     public static final int newtonIterations = 4;
+    public static final double maxCentrifugalAcceleration = 2.2;
   }
 }

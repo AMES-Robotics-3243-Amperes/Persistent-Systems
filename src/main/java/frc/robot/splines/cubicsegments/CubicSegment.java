@@ -49,6 +49,24 @@ public class CubicSegment extends SplineSegment {
   }
 
   @Override
+  public double curvature(double t) {
+    Translation2d derivative = derivative(t);
+    Translation2d second_derivative = degreeTwoTerm.times(2)
+      .plus(degreeThreeTerm.times(6 * t));
+
+    double x1 = derivative.getX();
+    double y1 = derivative.getY();
+    double x2 = second_derivative.getX();
+    double y2 = second_derivative.getY();
+
+    double numerator = x1 * y2 - y1 * x2;
+    double denominator_base = derivative.getNorm();
+    double denominator = denominator_base * denominator_base * denominator_base;
+  
+    return Math.abs(numerator) / denominator;
+  }
+
+  @Override
   public double arcLength(double t) {
     /*
      * Uses gaussian quadrature with n = 5. (This is computationally

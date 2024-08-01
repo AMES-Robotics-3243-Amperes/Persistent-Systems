@@ -1,5 +1,6 @@
 package frc.robot.splines;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants.CurveConstants;
 
@@ -31,6 +32,16 @@ public abstract class SplineSegment {
    * @author :3
    */
   public abstract Translation2d derivative(double t);
+
+  /**
+   * Samples the segment's curvature at a specific parameterization.
+   * 
+   * @param t The parameterization to sample at; should be between 0 and 1
+   * @return The curvature at the parameterization, with respect to t
+   * 
+   * @author :3
+   */
+  public abstract double curvature(double t);
 
   /**
    * Samples the segments's total arc length at a specific parameterization.
@@ -82,7 +93,7 @@ public abstract class SplineSegment {
     // apply newton's method to approximate the zero of
     // f(t) = arcLength(t) - length, where f'(t) is of course
     // the magnitude of the curve's derivative
-    double guess = initialGuess;
+    double guess = MathUtil.clamp(initialGuess, 0, 1);
     for (int i = 0; i < CurveConstants.newtonIterations; i++) {
       guess = guess - (arcLength(guess) - arcLength) / derivative(guess).getNorm();
     }

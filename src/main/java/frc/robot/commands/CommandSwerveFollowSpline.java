@@ -19,7 +19,7 @@ public class CommandSwerveFollowSpline extends Command {
   private Spline spline;
   private double velocity;
   private double currentArcLength;
-  private double previousArcLength;
+  private double previousParameterization;
 
   private PIDController xController;
   private PIDController yController;
@@ -36,7 +36,7 @@ public class CommandSwerveFollowSpline extends Command {
     this.drivetrain = drivetrain;
 
     currentArcLength = 0;
-    previousArcLength = 0;
+    previousParameterization = 0;
 
     addRequirements(drivetrain);
   }
@@ -44,7 +44,7 @@ public class CommandSwerveFollowSpline extends Command {
   @Override
   public void initialize() {
     currentArcLength = 0;
-    previousArcLength = 0;
+    previousParameterization = 0;
 
     xController.setSetpoint(0);
     yController.setSetpoint(0);
@@ -59,13 +59,14 @@ public class CommandSwerveFollowSpline extends Command {
     Translation2d robotPosition = DataManager.instance().robotPosition.get().getTranslation();
 
     double currentParameterization =
-      spline.timeAtArcLength(currentArcLength, previousArcLength + velocity * CurveConstants.halfLoopTime);
+      spline.timeAtArcLength(currentArcLength, previousParameterization);
     Translation2d splineVelocity = spline.derivative(currentParameterization);
     Translation2d goalPosition = spline.sample(currentParameterization);
 
     // :3 in order to prevent falling catastrophically behind, slow progression
     // along the spline when the robot finds itself far off of the curve.
     double trueVelocity = velocity * CurveConstants.splineOffsetVelocityDampen(robotPosition.getDistance(goalPosition));
+    trueVelocity = Math.min(Math.sqrt(CurveConstants.maxCentrifugalAcceleration / spline.curvature(currentParameterization)), trueVelocity);
 
     double xValue = xController.calculate(robotPosition.getX() - goalPosition.getX());
     double yValue = yController.calculate(robotPosition.getY() - goalPosition.getY());
@@ -79,7 +80,7 @@ public class CommandSwerveFollowSpline extends Command {
     SwerveModuleState[] moduleStates = ChassisKinematics.kDriveKinematics.toSwerveModuleStates(chassisSpeeds);
     drivetrain.setModuleStates(moduleStates);
 
-    previousArcLength = currentArcLength;
+    previousParameterization = currentParameterization;
     currentArcLength += trueVelocity * timer.get();
     timer.restart();
   }

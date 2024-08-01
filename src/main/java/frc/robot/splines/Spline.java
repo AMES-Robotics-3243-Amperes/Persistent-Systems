@@ -66,8 +66,9 @@ public class Spline {
    */
   public Translation2d sample(double t) {
     int index = (int) t;
-    if (index >= segments.size())
+    if (index >= segments.size()) {
       index = segments.size() - 1;
+    }
 
     SplineSegment segment = segments.get(index);
     return segment.sample(t - Math.floor(t));
@@ -84,11 +85,30 @@ public class Spline {
    */
   public Translation2d derivative(double t) {
     int index = (int) t;
-    if (index >= segments.size())
+    if (index >= segments.size()) {
       index = segments.size() - 1;
+    }
 
     SplineSegment segment = segments.get(index);
     return segment.derivative(t - Math.floor(t));
+  }
+
+  /**
+   * Samples the spline's curvature at a specific parameterization.
+   * 
+   * @param t The parameterization to sample at; every 1.0 is a new segment
+   * @return The curvature at the parameterization, with respect to t
+   * 
+   * @author :3
+   */
+  public double curvature(double t) {
+    int index = (int) t;
+    if (index >= segments.size()) {
+      index = segments.size() - 1;
+    }
+
+    SplineSegment segment = segments.get(index);
+    return segment.curvature(t - Math.floor(t));
   }
 
   /**
@@ -106,7 +126,7 @@ public class Spline {
 
     while (iterator.hasNext()) {
       if (t - 1 >= (double) iterator.nextIndex()) {
-        length += iterator.next().arcLength(1);
+        length += iterator.next().totalArcLength();
       } else {
         length += iterator.next().arcLength(t - Math.floor(t));
         break;
@@ -178,7 +198,7 @@ public class Spline {
         totalLength += nextSegment.totalArcLength();
       } else {
         return iterator.previousIndex() +
-          nextSegment.timeAtArcLength(arcLength - totalLength, initialGuess - Math.floor(initialGuess));
+          nextSegment.timeAtArcLength(arcLength - totalLength, initialGuess - iterator.previousIndex());
       }
     }
 

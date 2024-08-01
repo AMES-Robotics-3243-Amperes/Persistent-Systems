@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.JoyUtilConstants;
@@ -143,6 +144,28 @@ public class JoyUtil extends CommandXboxController {
       rightTriggerRightStickMultiplier);
 
     return rightYRateLimiter.calculate(preRateLimiting);
+  }
+
+  public Translation2d getLeftAxis() {
+    Translation2d rawOutput = new Translation2d(super.getLeftX(), super.getLeftY());
+    Translation2d preRateLimiting = composeJoystickAxisFunctions(rawOutput, leftTriggerLeftStickMultiplier,
+      rightTriggerLeftStickMultiplier);
+
+    return new Translation2d(
+      leftXRateLimiter.calculate(preRateLimiting.getX()),
+      leftYRateLimiter.calculate(preRateLimiting.getY())
+    );
+  }
+
+  public Translation2d getRightAxis() {
+    Translation2d rawOutput = new Translation2d(super.getRightX(), super.getRightY());
+    Translation2d preRateLimiting = composeJoystickAxisFunctions(rawOutput, leftTriggerRightStickMultiplier,
+      rightTriggerRightStickMultiplier);
+
+    return new Translation2d(
+      rightXRateLimiter.calculate(preRateLimiting.getX()),
+      rightYRateLimiter.calculate(preRateLimiting.getY())
+    );
   }
 
   /**
@@ -368,6 +391,19 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
+   * :3 curves a given input
+   *
+   * @param value the value before the curve
+   * @return the value curved
+   */
+  private Translation2d applyCurve(Translation2d value) {
+    double term2 = coefficient2 * Math.pow(value.getNorm(), exponent2);
+    double term1 = coefficient1 * Math.pow(value.getNorm(), exponent1);
+    return term1 + term2 > 0 ? value.div(value.getNorm()).times(term1 + term2)
+      : new Translation2d();
+  }
+
+  /**
    * :3 apply the left and right trigger multipliers
    *
    * @param value                  the value before having the multipliers applied
@@ -384,6 +420,22 @@ public class JoyUtil extends CommandXboxController {
   }
 
   /**
+   * :3 apply the left and right trigger multipliers
+   *
+   * @param value                  the value before having the multipliers applied
+   * @param leftTriggerMultiplier  the multiplier that will be applied if the left trigger is pressed fully
+   * @param rightTriggerMultiplier the multiplier that will be applied if the right trigger is pressed fully
+   * @return the value with trigger multipliers applied
+   */
+  private Translation2d applyTriggerMultipliers(Translation2d value, double leftTriggerMultiplier, double rightTriggerMultiplier) {
+    // linearly interpolate from 1 to the trigger multiplier by the trigger value
+    double realLeftTriggerMultiplier = (leftTriggerMultiplier - 1) * getLeftTriggerAxis() + 1;
+    double realRightTriggerMultiplier = (rightTriggerMultiplier - 1) * getRightTriggerAxis() + 1;
+
+    return value.times(realLeftTriggerMultiplier).times(realRightTriggerMultiplier);
+  }
+
+  /**
    * :3 applies deadzoning, curve, and trigger multipliers to a raw input
    *
    * @param value                  the raw input from the joystick
@@ -396,6 +448,25 @@ public class JoyUtil extends CommandXboxController {
     double withDeadzone = MathUtil.applyDeadband(value, deadzone);
     double withCurve = applyCurve(withDeadzone);
     double withMultipliers = applyTriggerMultipliers(withCurve, leftTriggerMultiplier, rightTriggerMultiplier);
+
+    return withMultipliers;
+  }
+
+  /**
+   * :3 applies deadzoning, curve, and trigger multipliers to an axis raw input
+   *
+   * @param value                  the raw input from the joystick
+   * @param leftTriggerMultiplier  the left trigger output multiplier for the axis being calculated
+   * @param rightTriggerMultiplier the right trigger output multiplier for the axis being calculated
+   * @return the raw input after being deadzoned, curved, and having trigger multipliers applied
+   * @apiNote does not do any rate limiting
+   */
+  private Translation2d composeJoystickAxisFunctions(Translation2d value, double leftTriggerMultiplier, double rightTriggerMultiplier) {
+    double normWithDeadzone = MathUtil.applyDeadband(value.getNorm(), deadzone);
+    Translation2d withDeadzone = normWithDeadzone > 0 ? value.div(value.getNorm()).times(normWithDeadzone)
+      : new Translation2d();
+    Translation2d withCurve = applyCurve(withDeadzone);
+    Translation2d withMultipliers = applyTriggerMultipliers(withCurve, leftTriggerMultiplier, rightTriggerMultiplier);
 
     return withMultipliers;
   }
