@@ -22,7 +22,7 @@ public class LinearSegmentFactory extends SplineSegmentFactory {
   }
 
   @Override
-  public SplineSegment build(SplineSegment _previousSegment) {
+  public SplineSegment buildOverride(SplineSegment _previousSegment) {
     return new LinearSegment(P0, P1);
   }
   

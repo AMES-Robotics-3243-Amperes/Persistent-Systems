@@ -12,6 +12,8 @@ import frc.robot.Constants.CurveConstants;
  * @author :3
  */
 public abstract class SplineSegment {
+  protected SplineMetadata metadata = new SplineMetadata();
+
   /**
    * Samples the segment at a specific parameterization.
    * 
@@ -99,5 +101,23 @@ public abstract class SplineSegment {
     }
 
     return guess;
+  }
+
+  /**
+   * Returns the spline metadata.
+   * 
+   * @author :3
+   */
+  public SplineMetadata metadata() {
+    return metadata;
+  }
+
+  /**
+   * Sets the spline metadata.
+   * 
+   * @author :3
+   */
+  public void setMetadata(SplineMetadata metadata) {
+    this.metadata = metadata;
   }
 }

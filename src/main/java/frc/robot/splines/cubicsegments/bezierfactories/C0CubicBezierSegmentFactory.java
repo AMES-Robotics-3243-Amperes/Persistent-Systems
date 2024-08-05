@@ -30,7 +30,7 @@ public class C0CubicBezierSegmentFactory extends SplineSegmentFactory {
   }
 
   @Override
-  public SplineSegment build(SplineSegment previousSegment) {
+  public SplineSegment buildOverride(SplineSegment previousSegment) {
     return new BezierSegment(P0, P1, P2, P3);
   }
 }

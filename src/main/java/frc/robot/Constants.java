@@ -172,6 +172,11 @@ public final class Constants {
 
     public static final double halfLoopTime = 0.01;
     public static final int newtonIterations = 4;
-    public static final double maxCentrifugalAcceleration = 2.2;
+
+    public static final double baseVelocity = 2;
+    public static final double dropVelocity = 0.4;
+    public static final double maxCentrifugalAcceleration = 2.4;
+
+    public static final double maxGoalTolerance = 0.05;
   }
 }
