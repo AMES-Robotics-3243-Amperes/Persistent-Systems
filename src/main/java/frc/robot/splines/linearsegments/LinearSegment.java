@@ -31,6 +31,11 @@ public class LinearSegment extends SplineSegment {
   }
 
   @Override
+  public double curvature(double t) {
+    return 0;
+  }
+
+  @Override
   public double arcLength(double t) {
     return P1.minus(P0).times(t).getNorm();
   }

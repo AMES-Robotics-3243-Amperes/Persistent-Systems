@@ -28,7 +28,7 @@ public class C1CubicBezierSegmentFactory extends SplineSegmentFactory {
   }
 
   @Override
-  public SplineSegment build(SplineSegment previousSegment) {
+  public SplineSegment buildOverride(SplineSegment previousSegment) {
     if (previousSegment == null)
       throw new UnsupportedOperationException("C1CubicBezierSegmentFactory cannot be first segment");
     

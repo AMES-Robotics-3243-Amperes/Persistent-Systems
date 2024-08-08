@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.Constants.CurveConstants;
 
 /**
  * A series of {@link SplineSegment SplineSegments} forming a
@@ -57,6 +58,21 @@ public class Spline {
   }
 
   /**
+   * Returns the segment at a specific parameterization.
+   * 
+   * @param t The parameterization to sample at; every 1.0 is a new segment
+   * @return The segment at the parameterization
+   */
+  public SplineSegment segment(double t) {
+    int index = (int) t;
+    if (index >= segments.size() || index < 0) {
+      index = segments.size() - 1;
+    }
+
+    return segments.get(index);
+  }
+
+  /**
    * Samples the spline at a specific parameterization.
    * 
    * @param t The parameterization to sample at; every 1.0 is a new segment
@@ -65,12 +81,7 @@ public class Spline {
    * @author :3
    */
   public Translation2d sample(double t) {
-    int index = (int) t;
-    if (index >= segments.size())
-      index = segments.size() - 1;
-
-    SplineSegment segment = segments.get(index);
-    return segment.sample(t - Math.floor(t));
+    return segment(t).sample(t - Math.floor(t));
   }
 
   /**
@@ -83,12 +94,19 @@ public class Spline {
    * @author :3
    */
   public Translation2d derivative(double t) {
-    int index = (int) t;
-    if (index >= segments.size())
-      index = segments.size() - 1;
+    return segment(t).derivative(t - Math.floor(t));
+  }
 
-    SplineSegment segment = segments.get(index);
-    return segment.derivative(t - Math.floor(t));
+  /**
+   * Samples the spline's curvature at a specific parameterization.
+   * 
+   * @param t The parameterization to sample at; every 1.0 is a new segment
+   * @return The curvature at the parameterization, with respect to t
+   * 
+   * @author :3
+   */
+  public double curvature(double t) {
+    return segment(t).curvature(t - Math.floor(t));
   }
 
   /**
@@ -106,7 +124,7 @@ public class Spline {
 
     while (iterator.hasNext()) {
       if (t - 1 >= (double) iterator.nextIndex()) {
-        length += iterator.next().arcLength(1);
+        length += iterator.next().totalArcLength();
       } else {
         length += iterator.next().arcLength(t - Math.floor(t));
         break;
@@ -178,10 +196,27 @@ public class Spline {
         totalLength += nextSegment.totalArcLength();
       } else {
         return iterator.previousIndex() +
-          nextSegment.timeAtArcLength(arcLength - totalLength, initialGuess - Math.floor(initialGuess));
+          nextSegment.timeAtArcLength(arcLength - totalLength, initialGuess - iterator.previousIndex());
       }
     }
 
     return (double) segments.size();
+  }
+
+  public void applyDropVelocities() {
+    SplineMetadata stopMetadata = segments.get(0).metadata();
+    stopMetadata.velocity.set(x -> CurveConstants.baseVelocity - (CurveConstants.baseVelocity - 0.5) * x * x);
+
+    SplineMetadata startMetadata = segments.get(segments.size() - 1).metadata();
+    startMetadata.velocity.set(x -> 0.5 + (CurveConstants.baseVelocity - 0.5) * x * x);
+
+    SplineSegment segment1 = segments.get(0);
+    SplineSegment segment2 = segments.get(segments.size() - 1);
+
+    segment1.setMetadata(startMetadata);
+    segment2.setMetadata(stopMetadata);
+
+    segments.set(0, segment1);
+    segments.set(segments.size() - 1, segment2);
   }
 }

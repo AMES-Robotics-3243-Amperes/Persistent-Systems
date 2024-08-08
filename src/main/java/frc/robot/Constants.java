@@ -34,11 +34,11 @@ public final class Constants {
     public static final double kRateLimitRight = 5;
     public static final double exponent1 = 3;
     public static final double exponent2 = 1;
-    public static final double coeff1 = 0.4;
-    public static final double coeff2 = 0.6;
+    public static final double coeff1 = 0;
+    public static final double coeff2 = 1;
 
-    public static final double leftTriggerSpeedMultiplier = 1.5;
-    public static final double rightTriggerSpeedMultiplier = 0.75;
+    public static final double leftTriggerSpeedMultiplier = 1.6;
+    public static final double rightTriggerSpeedMultiplier = 0.4;
   }
 
   public static final class SwerveConstants {
@@ -140,10 +140,13 @@ public final class Constants {
   }
 
   public static final class PhotonvisionConstants {
-    public static final String cameraName = "Global_Shutter_Camera";
+    public static final String cameraName = "Global_Shutter_Camera (1)";
 
     public static final Pose3d cameraPosition =
-      new Pose3d(new Translation3d(25.0 / 100, -.22, 14.4 / 100), new Rotation3d());
+      new Pose3d(new Translation3d(Units.inchesToMeters(10.5),
+        Units.inchesToMeters(0),
+        Units.inchesToMeters(13)),
+        new Rotation3d(0, Math.PI / 4, 0));
     public static final Transform3d robotToCamera = new Transform3d(new Pose3d(), cameraPosition);
   }
 
@@ -169,5 +172,11 @@ public final class Constants {
 
     public static final double halfLoopTime = 0.01;
     public static final int newtonIterations = 4;
+
+    public static final double baseVelocity = 2;
+    public static final double dropVelocity = 0.4;
+    public static final double maxCentrifugalAcceleration = 2.4;
+
+    public static final double maxGoalTolerance = 0.05;
   }
 }

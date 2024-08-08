@@ -42,9 +42,8 @@ public class CommandSwerveTeleopDrive extends Command {
 
   @Override
   public void execute() {
-    double xSpeed = -controller.getLeftY() * (reverse ? -1 : 1) * ControlConstants.movingSpeed;
-    double ySpeed = -controller.getLeftX() * (reverse ? -1 : 1) * ControlConstants.movingSpeed;
-    Translation2d speeds = new Translation2d(xSpeed, ySpeed);
+    Translation2d speeds = controller.getLeftAxis().times(ControlConstants.movingSpeed).times(reverse ? 1 : -1);
+    speeds = new Translation2d(speeds.getY(), speeds.getX()); // :3 convert to robot coordinates
     speeds = speeds.rotateBy(DataManager.instance().robotPosition.get().getRotation().times(-1));
 
     double controllerRightX = controller.getRightX();

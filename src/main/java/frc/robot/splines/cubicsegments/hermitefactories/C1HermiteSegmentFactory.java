@@ -28,7 +28,7 @@ public class C1HermiteSegmentFactory extends SplineSegmentFactory {
   }
 
   @Override
-  public SplineSegment build(SplineSegment previousSegment) {
+  public SplineSegment buildOverride(SplineSegment previousSegment) {
     if (previousSegment == null)
       throw new UnsupportedOperationException("C1HermiteSegmentFactory cannot be first segment");
     
