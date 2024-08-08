@@ -107,10 +107,12 @@ public class TestSubsystem extends SubsystemBaseTestable {
     TestUtil.assertEquals(1+1, 2);
   }
 
+  Test exampleTest1 = new ExampleTest1();
+
   @Override
   public Test[] getTests() {
     return new Test[] {
-      new ExampleTest1(),
+      exampleTest1,
       exampleTest2
     };
   }
