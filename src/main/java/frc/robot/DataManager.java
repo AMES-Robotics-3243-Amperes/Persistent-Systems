@@ -61,6 +61,16 @@ public class DataManager {
           VecBuilder.fill(ambiguity, ambiguity, ambiguity));
       }
 
+      var poseLatestOptional2 = photonvision.getPhotonPose2();
+      if (poseLatestOptional2.isPresent()) {
+        EstimatedRobotPose poseLatest2 = poseLatestOptional2.get().getFirst();
+        double ambiguity2 = DataManagerConstants.photonPoseEstimatorAmbiguity(poseLatestOptional2.get().getSecond());
+
+        poseEstimator.addVisionMeasurement(poseLatest2.estimatedPose.toPose2d(),
+          poseLatest2.timestampSeconds,
+          VecBuilder.fill(ambiguity2, ambiguity2, ambiguity2));
+      }
+
       field2d.setRobotPose(get());
       SmartDashboard.putData(field2d);
     }
