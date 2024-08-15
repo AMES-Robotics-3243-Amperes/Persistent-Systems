@@ -1,13 +1,20 @@
 package frc.robot;
 
-import org.photonvision.EstimatedRobotPose;
-import edu.wpi.first.math.VecBuilder;
+import java.util.ArrayList;
+import java.util.Optional;
+
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.DataManagerConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
+import frc.robot.PhotonUnit.Measurement;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.utility.AHRS_IMU;
 import frc.robot.utility.IMU;
@@ -20,55 +27,67 @@ public class DataManager {
     return instance;
   }
 
-  public interface Entry<T> {
+  public abstract class Entry<T> {
+    Notifier notifier;
+
+    /* Updates the entry a single time */
+    protected void initialize() {
+      notifier = new Notifier(() -> this.update());
+      notifier.startSingle(0);;
+    }
+
+    /* Updates the entry periodically according to the input */
+    protected void initializePeriodic(double periodicSeconds) {
+      notifier = new Notifier(() -> this.update());
+      notifier.startPeriodic(periodicSeconds);
+    }
+
     /** Updates the entry, called in DataManager.update() */
-    public default void update() {}
+    public void update() {};
 
     /** Gets the entry. Called from DataManager.instance.entry.get() */
     public abstract T get();
   }
 
-  public class RobotPosition implements Entry<Pose2d> {
+  public class RobotPosition extends Entry<Pose2d> {
     /** :3 used to combine vision and odometry data */
     private SwerveDrivePoseEstimator poseEstimator;
 
     private SubsystemSwerveDrivetrain subsystemSwerveDrivetrain;
-    private Photonvision photonvision;
+    private ArrayList<PhotonUnit> photonUnits = new ArrayList<PhotonUnit>();
     private IMU imu = new AHRS_IMU();
 
     private Field2d field2d = new Field2d();
 
     public RobotPosition(RobotContainer robotContainer) {
       subsystemSwerveDrivetrain = robotContainer.subsystemSwerveDrivetrain;
-      photonvision = robotContainer.photonvision;
+
+      AprilTag tag = new AprilTag(1, new Pose3d(new Translation3d(1, 0, 0), new Rotation3d(0, 0, Math.PI)));
+      ArrayList<AprilTag> tags = new ArrayList<>();
+      tags.add(tag);
+      var fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
+
+      photonUnits.add(new PhotonUnit("Global_Shutter_Camera", fieldLayout));
+      photonUnits.add(new PhotonUnit("CameraB", fieldLayout));
 
       poseEstimator = new SwerveDrivePoseEstimator(ChassisKinematics.kDriveKinematics,
         imu.getRotation(),
         subsystemSwerveDrivetrain.getModulePositions(),
         new Pose2d());
+
+      initializePeriodic(0.05);
     }
 
     public void update() {
       poseEstimator.update(imu.getRotation(), subsystemSwerveDrivetrain.getModulePositions());
 
-      var poseLatestOptional = photonvision.getPhotonPose();
-      if (poseLatestOptional.isPresent()) {
-        EstimatedRobotPose poseLatest = poseLatestOptional.get().getFirst();
-        double ambiguity = DataManagerConstants.photonPoseEstimatorAmbiguity(poseLatestOptional.get().getSecond());
-
-        poseEstimator.addVisionMeasurement(poseLatest.estimatedPose.toPose2d(),
-          poseLatest.timestampSeconds,
-          VecBuilder.fill(ambiguity, ambiguity, ambiguity));
-      }
-
-      var poseLatestOptional2 = photonvision.getPhotonPose2();
-      if (poseLatestOptional2.isPresent()) {
-        EstimatedRobotPose poseLatest2 = poseLatestOptional2.get().getFirst();
-        double ambiguity2 = DataManagerConstants.photonPoseEstimatorAmbiguity(poseLatestOptional2.get().getSecond());
-
-        poseEstimator.addVisionMeasurement(poseLatest2.estimatedPose.toPose2d(),
-          poseLatest2.timestampSeconds,
-          VecBuilder.fill(ambiguity2, ambiguity2, ambiguity2));
+      for (var unit : photonUnits) {
+        Optional<Measurement> measurementOptional = unit.getMeasurement();
+        
+        if (measurementOptional.isPresent()) {
+          Measurement measurement = measurementOptional.get();
+          poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds, measurement.ambiguity);
+        }
       }
 
       field2d.setRobotPose(get());
@@ -90,15 +109,7 @@ public class DataManager {
    */
   public DataManager(RobotContainer robotContainer) {
     robotPosition = new RobotPosition(robotContainer);
-    instance = this;
-  }
 
-  /**
-   * Updates all DataManager entries. Should be called after commands/subsystems
-   * have
-   * ran their periodic functions to avoid race conditions.
-   */
-  public void update() {
-    robotPosition.update();
+    instance = this;
   }
 }

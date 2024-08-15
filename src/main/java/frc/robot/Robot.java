@@ -41,12 +41,6 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void robotPeriodic() {
-    // :3 before commands run, update DataManger. separated from
-    // the command scheduler in order to avoid coupling and race conditions.
-    // run before commands as opposed to after to avoid using 20ms old data.
-    // not called statically to ensure that the the singleton has been constructed
-    m_robotContainer.dataManager.update();
-
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic

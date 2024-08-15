@@ -40,7 +40,6 @@ public class RobotContainer {
   //
 
   public SubsystemSwerveDrivetrain subsystemSwerveDrivetrain = new SubsystemSwerveDrivetrain();
-  public Photonvision photonvision;
 
   //
   // Commands
@@ -51,15 +50,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    try {
-      photonvision = new Photonvision();
-    } catch (Exception e) {
-      System.err.println("------------------------------------------------");
-      System.err.println("Photonvision initialization failed: " + e);
-      System.err.println("Failed to construct Photonvision, expect null exceptions...");
-      System.err.println("------------------------------------------------");
-    }
-
     // :3 constructs a DataManager instance using runtime-initialized RobotContainer members
     dataManager = new DataManager(this);
 
