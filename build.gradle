@@ -67,6 +67,9 @@ dependencies {
     nativeRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.desktop)
     nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
     simulationRelease wpi.sim.enableRelease()
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+    testRuntimeOnly("org.junit.vintage:junit-vintage-engine:5.11.0")
 }
 
 // Simulation configuration (e.g. environment variables).
@@ -92,3 +95,12 @@ wpi.java.configureTestTasks(test)
 tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
+
+test {
+    useJUnitPlatform()
+
+    systemProperty("junit.jupiter.conditions.deactivate", "*")
+    systemProperty("junit.jupiter.extensions.autodetection.enabled", true)
+    systemProperty("junit.jupiter.testinstance.lifecycle.default", "per_class")
+}
+
