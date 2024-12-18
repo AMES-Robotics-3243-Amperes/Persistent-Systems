@@ -12,11 +12,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
-import frc.robot.splines.Spline;
-import frc.robot.splines.SplineMetadata;
-import frc.robot.splines.SplineSegmentFactory;
-import frc.robot.splines.cubicsegments.hermitefactories.C2HermiteSegmentFactory;
-import frc.robot.splines.linearsegments.LinearSegmentFactory;
+import frc.robot.splines.Path;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -70,40 +66,9 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    SplineSegmentFactory segment1 = new LinearSegmentFactory(new Translation2d(0, 0),
-      new Translation2d(-0.5, 0));
-    SplineSegmentFactory segment2 = new C2HermiteSegmentFactory(new Translation2d(-1.25, 0.5),
-      new Translation2d(0, 1));
-    SplineSegmentFactory segment3 = new C2HermiteSegmentFactory(new Translation2d(-0.8, 1),
-      new Translation2d(0.6, 0));
-    SplineSegmentFactory segment4 = new C2HermiteSegmentFactory(new Translation2d(-2, 0.4), 
-      new Translation2d(-1, 0));
-    SplineSegmentFactory segment5 = new C2HermiteSegmentFactory(new Translation2d(0, 0), 
-      new Translation2d(1, 0));
-
-    SplineMetadata rotationMetadata = new SplineMetadata();
-    rotationMetadata.rotation.set(Rotation2d.fromDegrees(180));
-    segment2.addMetadata(rotationMetadata);
-    segment3.addMetadata(rotationMetadata);
-    segment4.addMetadata(rotationMetadata);
-    segment5.addMetadata(rotationMetadata);
-      
-    Spline spline = new Spline();
-    spline.addSegment(segment1);
-    spline.addSegment(segment2);
-    spline.addSegment(segment3);
-    spline.addSegment(segment4);
-    spline.addSegment(segment5);
-    spline.applyDropVelocities();
-
     PIDController xController = new PIDController(1, 0, 0);
     PIDController yController = new PIDController(1, 0, 0);
     PIDController thetaController = new PIDController(1.2, 0, 0);
-
-    CommandSwerveFollowSpline splineCommand = new CommandSwerveFollowSpline(subsystemSwerveDrivetrain,
-      spline, xController, yController, thetaController);
-
-    primaryController.b().whileTrue(splineCommand);
   }
 
   /**

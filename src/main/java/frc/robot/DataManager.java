@@ -30,16 +30,8 @@ public class DataManager {
   public abstract class Entry<T> {
     Notifier notifier;
 
-    /* Updates the entry a single time */
-    protected void initialize() {
-      notifier = new Notifier(() -> this.update());
-      notifier.startSingle(0);;
-    }
-
-    /* Updates the entry periodically according to the input */
-    protected void initializePeriodic(double periodicSeconds) {
-      notifier = new Notifier(() -> this.update());
-      notifier.startPeriodic(periodicSeconds);
+    private Entry() {
+      entries.add(this);
     }
 
     /** Updates the entry, called in DataManager.update() */
@@ -60,6 +52,7 @@ public class DataManager {
     private Field2d field2d = new Field2d();
 
     public RobotPosition(RobotContainer robotContainer) {
+      // TODO: move photon stuff to constants
       subsystemSwerveDrivetrain = robotContainer.subsystemSwerveDrivetrain;
 
       AprilTag tag = new AprilTag(1, new Pose3d(new Translation3d(1, 0, 0), new Rotation3d(0, 0, Math.PI)));
@@ -74,8 +67,6 @@ public class DataManager {
         imu.getRotation(),
         subsystemSwerveDrivetrain.getModulePositions(),
         new Pose2d());
-
-      initializePeriodic(0.05);
     }
 
     public void update() {
@@ -99,7 +90,14 @@ public class DataManager {
     }
   }
 
-  public final Entry<Pose2d> robotPosition;
+  @SuppressWarnings("rawtypes")
+  private ArrayList<Entry> entries = new ArrayList<>();
+
+  public Entry<Pose2d> robotPosition;
+
+  public void update() {
+    entries.forEach(entry -> entry.update());
+  }
 
   /**
    * Constructs the singleton from member variables of a RobotContainer.

@@ -14,6 +14,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import frc.robot.splines.interpolation.LinearInterpolator;
+import frc.robot.splines.interpolation.SplineInterpolator;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -159,15 +161,34 @@ public final class Constants {
     }
   }
 
-  public static final class CurveConstants {
-    /**
-     * As the robot drifts from the spline, the speed at
-     * which the setpoint travels across the spline decreases.
-     * This function determines the speed multiplier as a function
-     * of robot offset from the spline. @author :3
-     */
-    public static final double splineOffsetVelocityDampen(double offset) {
-      return 1 / (1 + 1.5 * offset * offset);
+  public static final class SplineConstants {
+    public static final class PathFactoryDefaults {
+      public static final SplineInterpolator defaultInterpolator = new LinearInterpolator();
+      public static final double defaultMaxVelocity = 1.0;
+      public static final double defaultMaxCentrifugalAcceleration = 1.0;
+      public static final boolean defaultInterpolateFromStart = false;
+    }
+
+    public static final class InterpolationConstants {
+      public static final double linearCurvatureEmulationFactor = 1.0;
+      public static final double linearCurvatureEmulationRadius = 0.2;
+    }
+
+    public static final class NumericalConstants {
+      public static final int compositeGaussianQuadratureIntervals = 3;
+      public static final int newtonRaphsonIterations = 3;
+    }
+
+    public static final class FollowConstants {
+      /**
+       * As the robot drifts from the spline, the speed at
+       * which the setpoint travels across the spline decreases.
+       * This function determines the speed multiplier as a function
+       * of robot offset from the spline.
+       */
+      public static final double splineOffsetVelocityDampen(double offset) {
+        return 1 / (1 + 1.5 * offset * offset);
+      }
     }
 
     public static final double halfLoopTime = 0.01;

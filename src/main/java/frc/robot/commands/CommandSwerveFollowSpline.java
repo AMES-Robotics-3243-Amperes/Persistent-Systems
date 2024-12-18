@@ -7,10 +7,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.CurveConstants;
+import frc.robot.Constants.SplineConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
-import frc.robot.splines.Spline;
-import frc.robot.splines.SplineSegment;
+import frc.robot.splines.Path;
+import frc.robot.splines.Path;
 import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
@@ -18,7 +18,7 @@ public class CommandSwerveFollowSpline extends Command {
   private SubsystemSwerveDrivetrain drivetrain;
   private Timer timer = new Timer();
 
-  private Spline spline;
+  private Path spline;
   private double currentArcLength;
   private double previousParameterization;
 
@@ -27,7 +27,7 @@ public class CommandSwerveFollowSpline extends Command {
   private PIDController thetaController;
 
   public CommandSwerveFollowSpline(SubsystemSwerveDrivetrain drivetrain,
-      Spline spline,
+      Path spline,
       PIDController xController,
       PIDController yController,
       PIDController thetaController) {
@@ -59,7 +59,7 @@ public class CommandSwerveFollowSpline extends Command {
 
   @Override
   public void execute() {
-    Translation2d robotPosition = DataManager.instance().robotPosition.get().getTranslation();
+    /*Translation2d robotPosition = DataManager.instance().robotPosition.get().getTranslation();
     Rotation2d robotRotation = DataManager.instance().robotPosition.get().getRotation();
 
     double currentParameterization =
@@ -71,8 +71,8 @@ public class CommandSwerveFollowSpline extends Command {
     // :3 in order to prevent falling catastrophically behind, slow progression
     // along the spline when the robot finds itself far off of the curve.
     double velocity = segment.metadata().velocity.get(currentParameterization - Math.floor(currentParameterization))
-      * CurveConstants.splineOffsetVelocityDampen(robotPosition.getDistance(goalPosition));
-    velocity = Math.min(Math.sqrt(CurveConstants.maxCentrifugalAcceleration / spline.curvature(currentParameterization)), velocity);
+      * SplineConstants.splineOffsetVelocityDampen(robotPosition.getDistance(goalPosition));
+    velocity = Math.min(Math.sqrt(SplineConstants.maxCentrifugalAcceleration / spline.curvature(currentParameterization)), velocity);
 
     double xValue = xController.calculate(robotPosition.getX() - goalPosition.getX());
     double yValue = yController.calculate(robotPosition.getY() - goalPosition.getY());
@@ -94,11 +94,11 @@ public class CommandSwerveFollowSpline extends Command {
 
     previousParameterization = currentParameterization;
     currentArcLength += velocity * timer.get();
-    timer.restart();
+    timer.restart();*/
   }
 
   @Override
   public boolean isFinished() {
-    return currentArcLength >= spline.totalArcLength();
+    return false; //return currentArcLength >= spline.totalArcLength();
   }
 }
