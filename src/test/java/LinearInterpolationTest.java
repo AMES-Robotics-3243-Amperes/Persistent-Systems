@@ -48,5 +48,6 @@ public class LinearInterpolationTest {
     assertEquals(spline.parameterizationAtArcLength(sqrtTwo + sqrtFive), 2.0 / 3.0);
     assertEquals(spline.parameterizationAtArcLength(sqrtTwo + (3.0 / 2.0) * sqrtFive), 2.5 / 3.0);
     assertEquals(spline.parameterizationAtArcLength(sqrtTwo + 2 * sqrtFive), 1);
+    assert spline.parameterizationAtArcLength(sqrtFive * 3) >= 1: "incorrect parameterizationAtArcLength end behavior";
   }
 }

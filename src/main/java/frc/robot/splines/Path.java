@@ -69,10 +69,16 @@ public class Path {
     return finalRotation;
   }
 
-  public double getDesiredVelocity() {
+  public double getDesiredSpeed() {
     double velocity = maxVelocity *
       FollowConstants.splineOffsetVelocityDampen(DataManager.instance().robotPosition.get().getTranslation().getDistance(getGoalPosition()));
     return Math.min(Math.sqrt(maxCentrifugalAcceleration / spline.curvature(spline.parameterizationAtArcLength(currentLength))), velocity);
+  }
+
+  public Translation2d getDesiredVelocity() {
+    double parameterization = spline.parameterizationAtArcLength(currentLength);
+    Translation2d splineDerivative = spline.derivative(parameterization);
+    return splineDerivative.times(getDesiredSpeed() / splineDerivative.getNorm());
   }
 
   public void initialize() {
@@ -89,8 +95,13 @@ public class Path {
     pointsWithStart.addAll(points);
   }
 
-  public void advance(Translation2d currentPosition) {
-    currentLength += timer.get() * getDesiredVelocity();
+  public void advance() {
+    currentLength += timer.get() * getDesiredSpeed();
     timer.restart();
+  }
+
+  public boolean isComplete() {
+    // TODO: should there be options to increase precision once the end of the spline is reached?
+    return currentLength >= spline.arcLength(1);
   }
 }

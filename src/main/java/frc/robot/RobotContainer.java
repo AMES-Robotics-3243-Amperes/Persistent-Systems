@@ -4,15 +4,10 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
-import frc.robot.splines.Path;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -66,9 +61,9 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    PIDController xController = new PIDController(1, 0, 0);
-    PIDController yController = new PIDController(1, 0, 0);
-    PIDController thetaController = new PIDController(1.2, 0, 0);
+    // PIDController xController = new PIDController(1, 0, 0);
+    // PIDController yController = new PIDController(1, 0, 0);
+    // PIDController thetaController = new PIDController(1.2, 0, 0);
   }
 
   /**
