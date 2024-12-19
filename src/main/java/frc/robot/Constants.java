@@ -169,11 +169,6 @@ public final class Constants {
       public static final boolean defaultInterpolateFromStart = false;
     }
 
-    public static final class InterpolationConstants {
-      public static final double linearCurvatureEmulationFactor = 1.0;
-      public static final double linearCurvatureEmulationRadius = 0.2;
-    }
-
     public static final class NumericalConstants {
       public static final int compositeGaussianQuadratureIntervals = 3;
       public static final int newtonRaphsonIterations = 3;

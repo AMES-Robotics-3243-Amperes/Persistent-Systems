@@ -2,19 +2,11 @@ package frc.robot.splines.interpolation;
 
 import java.util.List;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.Constants.SplineConstants.InterpolationConstants;
 import frc.robot.splines.Spline;
 
 public class LinearInterpolator implements SplineInterpolator {
-  private boolean emulateCurvature = false;
-
   public LinearInterpolator() {}
-
-  public LinearInterpolator(boolean emulateCurvature) {
-    this.emulateCurvature = emulateCurvature;
-  }
 
   @Override
   public Spline interpolatePoints(List<Translation2d> points) {
@@ -54,14 +46,7 @@ public class LinearInterpolator implements SplineInterpolator {
 
       @Override
       public double curvature(double t) {
-        assert t <= 1 && t >= 0: "cannot sample a linearly interpolated spline at points not in (0, 1)";
-
-        if (!emulateCurvature) return 0;
-
-        double adjustedSample = t * points.size();
-        double distanceFromVertex = Math.min(Math.abs(adjustedSample - Math.floor(adjustedSample)), Math.abs(adjustedSample - Math.ceil(adjustedSample)));
-
-        return MathUtil.interpolate(InterpolationConstants.linearCurvatureEmulationFactor, 0, distanceFromVertex / InterpolationConstants.linearCurvatureEmulationRadius);
+        return 0;
       }
 
       @Override
