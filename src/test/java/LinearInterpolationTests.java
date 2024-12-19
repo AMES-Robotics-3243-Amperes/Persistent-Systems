@@ -8,7 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.splines.Spline;
 import frc.robot.splines.interpolation.LinearInterpolator;
 
-public class LinearInterpolation {
+public class LinearInterpolationTests {
   @Test
   public void sample() {
     ArrayList<Translation2d> points = new ArrayList<Translation2d>();

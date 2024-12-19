@@ -19,9 +19,6 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 public class RobotContainer {
   // H! Auto Selector
   AutoSelector autoSelector;
-  
-  /** :3 Used as a reference for Robot to call periodically */
-  public DataManager dataManager;
 
   // :3 controllers
   private JoyUtil primaryController = new JoyUtil(0);
@@ -41,9 +38,6 @@ public class RobotContainer {
 
   /** The container for the robot. Contains subsystems, OI devices, and commands. */
   public RobotContainer() {
-    // :3 constructs a DataManager instance using runtime-initialized RobotContainer members
-    dataManager = new DataManager(this);
-
     // :3 set sensible default commands
     subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
 

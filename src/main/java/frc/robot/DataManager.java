@@ -30,7 +30,7 @@ public class DataManager {
   public abstract class Entry<T> {
     Notifier notifier;
 
-    private Entry() {
+    public Entry() {
       entries.add(this);
     }
 
