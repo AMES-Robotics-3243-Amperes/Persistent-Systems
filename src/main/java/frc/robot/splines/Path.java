@@ -4,12 +4,13 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
-import frc.robot.DataManager;
 import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.Constants.SplineConstants.PathFactoryDefaults;
+import frc.robot.Entry;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
 /**
@@ -19,50 +20,66 @@ import frc.robot.splines.interpolation.SplineInterpolator;
  * Should generally be constructed using a {@link frc.robot.splines.PathFactory}.
  */
 public class Path {
+  private Entry<Pose2d> positionEntry = null;
   private ArrayList<Translation2d> points = new ArrayList<Translation2d>();
   @SuppressWarnings("unused") // TODO: implement tasks
   private ArrayList<Task> tasks = new ArrayList<Task>();
   private Optional<Rotation2d> finalRotation = Optional.empty();
   private SplineInterpolator interpolator = PathFactoryDefaults.defaultInterpolator;
-  private double maxVelocity = PathFactoryDefaults.defaultMaxVelocity;
+  private double maxSpeed = PathFactoryDefaults.defaultMaxSpeed;
   private double maxCentrifugalAcceleration = PathFactoryDefaults.defaultMaxCentrifugalAcceleration;
   private boolean interpolateFromStart = PathFactoryDefaults.defaultInterpolateFromStart;
 
   private Spline spline;
+
+  // the current parameterization is expensive to calculate, so we cache it
+  private Optional<Double> currentParameterization = Optional.empty();
   private double currentLength = 0;
   private Timer timer = new Timer();
 
-  public Path(ArrayList<Translation2d> points,
+  public Path(Entry<Pose2d> positionEntry,
+      ArrayList<Translation2d> points,
       ArrayList<Task> tasks,
       Optional<Rotation2d> finalRotation,
       SplineInterpolator interpolator,
-      double maxVelocity,
+      double maxSpeed,
       double maxCentrifugalAcceleration,
       boolean interpolateFromStart) {
+    Objects.requireNonNull(positionEntry, "positionEntry cannot be null");
     Objects.requireNonNull(points, "points cannot be null");
     Objects.requireNonNull(tasks, "tasks cannot be null");
     Objects.requireNonNull(finalRotation, "finalRotation cannot be null");
     Objects.requireNonNull(interpolator, "interpolator cannot be null");
-    Objects.requireNonNull(maxVelocity, "maxVelocity cannot be null");
+    Objects.requireNonNull(maxSpeed, "maxSpeed cannot be null");
     Objects.requireNonNull(maxCentrifugalAcceleration, "maxCentrifugalAcceleration cannot be null");
     Objects.requireNonNull(interpolateFromStart, "interpolateFromStart cannot be null");
 
+    this.positionEntry = positionEntry;
     this.points = points;
     this.tasks = tasks;
     this.finalRotation = finalRotation;
     this.interpolator = interpolator;
-    this.maxVelocity = maxVelocity;
+    this.maxSpeed = maxSpeed;
     this.maxCentrifugalAcceleration = maxCentrifugalAcceleration;
     this.interpolateFromStart = interpolateFromStart;
+
+    this.initialize();
   }
 
   public double getLength() {
     return currentLength;
   }
 
+  public double getParameterization() {
+    if (currentParameterization.isEmpty()) {
+      currentParameterization = Optional.of(spline.parameterizationAtArcLength(currentLength));
+    }
+
+    return currentParameterization.get();
+  }
+
   public Translation2d getGoalPosition() {
-    double parameterization = spline.parameterizationAtArcLength(currentLength);
-    return spline.at(parameterization);
+    return spline.at(getParameterization());
   }
 
   public Optional<Rotation2d> getDesiredRotation() {
@@ -70,14 +87,13 @@ public class Path {
   }
 
   public double getDesiredSpeed() {
-    double velocity = maxVelocity *
-      FollowConstants.splineOffsetVelocityDampen(DataManager.instance().robotPosition.get().getTranslation().getDistance(getGoalPosition()));
-    return Math.min(Math.sqrt(maxCentrifugalAcceleration / spline.curvature(spline.parameterizationAtArcLength(currentLength))), velocity);
+    double speed = maxSpeed *
+      FollowConstants.splineOffsetVelocityDampen(positionEntry.get().getTranslation().getDistance(getGoalPosition()));
+    return Math.min(Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization())), speed);
   }
 
   public Translation2d getDesiredVelocity() {
-    double parameterization = spline.parameterizationAtArcLength(currentLength);
-    Translation2d splineDerivative = spline.derivative(parameterization);
+    Translation2d splineDerivative = spline.derivative(getParameterization());
     return splineDerivative.times(getDesiredSpeed() / splineDerivative.getNorm());
   }
 
@@ -90,13 +106,20 @@ public class Path {
       return;
     }
 
-    ArrayList<Translation2d> pointsWithStart = points;
-    pointsWithStart.add(DataManager.instance().robotPosition.get().getTranslation());
+    ArrayList<Translation2d> pointsWithStart = new ArrayList<Translation2d>();
+    pointsWithStart.add(positionEntry.get().getTranslation());
     pointsWithStart.addAll(points);
   }
 
   public void advance() {
     currentLength += timer.get() * getDesiredSpeed();
+    currentParameterization = Optional.empty();
+    timer.restart();
+  }
+
+  public void advanceTo(double newLength) {
+    currentLength = newLength;
+    currentParameterization = Optional.empty();
     timer.restart();
   }
 

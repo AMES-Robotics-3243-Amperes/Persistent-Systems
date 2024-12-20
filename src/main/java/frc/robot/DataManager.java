@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
@@ -27,21 +26,17 @@ public class DataManager {
     return instance;
   }
 
-  public abstract class Entry<T> {
-    Notifier notifier;
-
-    public Entry() {
+  public abstract class DataManagerEntry<T> extends Entry<T> {
+    public DataManagerEntry() {
       entries.add(this);
     }
-
-    /** Updates the entry, called in DataManager.update() */
-    public void update() {};
-
-    /** Gets the entry. Called from DataManager.instance.entry.get() */
-    public abstract T get();
   }
 
-  public class RobotPosition extends Entry<Pose2d> {
+  /**
+   * A {@link DataManager} entry that is automatically updated upon a call to
+   * {@link #update DataManager.instance().update}.
+   */
+  public class RobotPosition extends DataManagerEntry<Pose2d> {
     /** :3 used to combine vision and odometry data */
     private SwerveDrivePoseEstimator poseEstimator;
 
@@ -85,15 +80,19 @@ public class DataManager {
       SmartDashboard.putData(field2d);
     }
 
+    public void set(Pose2d newPose) {
+      poseEstimator.resetPosition(imu.getRotationModulus(), subsystemSwerveDrivetrain.getModulePositions(), newPose);
+    }
+
     public Pose2d get() {
       return poseEstimator.getEstimatedPosition();
     }
   }
 
   @SuppressWarnings("rawtypes")
-  private ArrayList<Entry> entries = new ArrayList<>();
+  private ArrayList<DataManagerEntry> entries = new ArrayList<>();
 
-  public Entry<Pose2d> robotPosition;
+  public DataManagerEntry<Pose2d> robotPosition;
 
   public void update() {
     entries.forEach(entry -> entry.update());

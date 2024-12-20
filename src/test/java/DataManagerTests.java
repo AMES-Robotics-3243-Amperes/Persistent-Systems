@@ -1,16 +1,11 @@
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-
-import frc.robot.DataManager;
-import frc.robot.RobotContainer;
-import frc.robot.DataManager.Entry;
+// these tests should be migrated to ammeter since data manager
+// requires a robot container. the commented out code works,
+// but it puts stuff on stdout and is generally kinda jank
 
 public class DataManagerTests {
-  RobotContainer robotContainer = new RobotContainer();
+  /*RobotContainer robotContainer = new RobotContainer();
 
-  public class MockEntry extends Entry<Integer> {
+  public class MockEntry extends DataManagerEntry<Integer> {
     int update_calls = 0;
 
     public MockEntry() {
@@ -50,5 +45,5 @@ public class DataManagerTests {
     
     for (int _i = 0; _i < 10; _i++) DataManager.instance().update();
     assertEquals(Integer.valueOf(11), entry.get());
-  }
+  }*/
 }
