@@ -71,6 +71,7 @@ public class TestSubsystem extends SubsystemBaseTestable {
     return a==3;
   }
 
+  @SuppressWarnings("unchecked")
   protected Test multiphaseTest = new TestUtil.MultiphaseTest(
     new Runnable[] {this::phaseOneMain, this::phaseTwoMain}, 
     new Supplier[] {this::phaseOneDone, this::phaseTwoDone}, 
