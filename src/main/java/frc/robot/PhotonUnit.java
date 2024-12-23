@@ -49,6 +49,11 @@ public class PhotonUnit extends PhotonCamera {
     
     if (poseLatestOptional.isPresent() && pipelineResult.targets.size() != 0) {
       EstimatedRobotPose poseLatest = poseLatestOptional.get();
+      // TODO: constants!
+      if (pipelineResult.getBestTarget().getPoseAmbiguity() > 0.1) {
+        return Optional.empty();
+      }
+
       Measurement measurement = new Measurement(poseLatest.estimatedPose.toPose2d(),
         poseLatest.timestampSeconds,
         pipelineResult.getBestTarget().getPoseAmbiguity());

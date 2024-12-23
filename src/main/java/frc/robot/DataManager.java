@@ -50,13 +50,12 @@ public class DataManager {
       // TODO: move photon stuff to constants
       subsystemSwerveDrivetrain = robotContainer.subsystemSwerveDrivetrain;
 
-      AprilTag tag = new AprilTag(1, new Pose3d(new Translation3d(1, 0, 0), new Rotation3d(0, 0, Math.PI)));
+      AprilTag tag = new AprilTag(1, new Pose3d(new Translation3d(15, 0, 0), new Rotation3d(0, 0, Math.PI)));
       ArrayList<AprilTag> tags = new ArrayList<>();
       tags.add(tag);
       var fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
-      photonUnits.add(new PhotonUnit("Global_Shutter_Camera", fieldLayout));
-      photonUnits.add(new PhotonUnit("CameraB", fieldLayout));
+      photonUnits.add(new PhotonUnit("FrontCamera", fieldLayout));
 
       poseEstimator = new SwerveDrivePoseEstimator(ChassisKinematics.kDriveKinematics,
         imu.getRotation(),

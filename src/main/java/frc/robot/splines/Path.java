@@ -70,6 +70,11 @@ public class Path {
     return currentLength;
   }
 
+  public Pose2d getRobotPosition() {
+    // TODO: make a test that makes sure this works
+    return positionEntry.get();
+  }
+
   public double getParameterization() {
     if (currentParameterization.isEmpty()) {
       currentParameterization = Optional.of(spline.parameterizationAtArcLength(currentLength));
@@ -87,9 +92,12 @@ public class Path {
   }
 
   public double getDesiredSpeed() {
-    double speed = maxSpeed *
+    double baseSpeed = maxSpeed *
       FollowConstants.splineOffsetVelocityDampen(positionEntry.get().getTranslation().getDistance(getGoalPosition()));
-    return Math.min(Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization())), speed);
+    double dampenSpeed = Math.min(baseSpeed, 
+      FollowConstants.splineCompleteVelocityDampen(Math.abs(getLength() - spline.arcLength(1))) * baseSpeed);
+    double maxCentrifugalSpeed = Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization()));
+    return Math.min(maxCentrifugalSpeed, dampenSpeed);
   }
 
   public Translation2d getDesiredVelocity() {
@@ -109,6 +117,7 @@ public class Path {
     ArrayList<Translation2d> pointsWithStart = new ArrayList<Translation2d>();
     pointsWithStart.add(positionEntry.get().getTranslation());
     pointsWithStart.addAll(points);
+    spline = interpolator.interpolatePoints(pointsWithStart);
   }
 
   public void advance() {

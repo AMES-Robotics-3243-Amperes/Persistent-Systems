@@ -32,8 +32,8 @@ import frc.robot.splines.interpolation.SplineInterpolator;
 public final class Constants {
   public static final class JoyUtilConstants {
     public static final double kDeadzone = 0.05;
-    public static final double kRateLimitLeft = 5;
-    public static final double kRateLimitRight = 5;
+    public static final double kRateLimitLeft = 20;
+    public static final double kRateLimitRight = 20;
     public static final double exponent1 = 3;
     public static final double exponent2 = 1;
     public static final double coeff1 = 0;
@@ -65,13 +65,13 @@ public final class Constants {
 
     public static final class DriveTrainConstants {
       public static final class IDs {
-        public static final int kFrontLeftDrivingCanId = 8;
-        public static final int kRearLeftDrivingCanId = 2;
+        public static final int kFrontLeftDrivingCanId = 2;
+        public static final int kRearLeftDrivingCanId = 8;
         public static final int kFrontRightDrivingCanId = 4;
         public static final int kRearRightDrivingCanId = 6;
 
-        public static final int kFrontLeftTurningCanId = 7;
-        public static final int kRearLeftTurningCanId = 1;
+        public static final int kFrontLeftTurningCanId = 1;
+        public static final int kRearLeftTurningCanId = 7;
         public static final int kFrontRightTurningCanId = 3;
         public static final int kRearRightTurningCanId = 5;
       }
@@ -145,10 +145,10 @@ public final class Constants {
     public static final String cameraName = "Global_Shutter_Camera (1)";
 
     public static final Pose3d cameraPosition =
-      new Pose3d(new Translation3d(Units.inchesToMeters(10.5),
-        Units.inchesToMeters(0),
-        Units.inchesToMeters(13)),
-        new Rotation3d(0, Math.PI / 4, 0));
+      new Pose3d(new Translation3d(Units.inchesToMeters(9),
+        Units.inchesToMeters(5),
+        Units.inchesToMeters(0)),
+        new Rotation3d(0, Units.degreesToRadians(2), 0));
     public static final Transform3d robotToCamera = new Transform3d(new Pose3d(), cameraPosition);
   }
 
@@ -184,15 +184,15 @@ public final class Constants {
       public static final double splineOffsetVelocityDampen(double offset) {
         return 1 / (1 + 1.5 * offset * offset);
       }
+
+      /**
+       * To avoid harsh stops, slow the robot's movement as it
+       * finishes the path.
+       */
+      public static final double splineCompleteVelocityDampen(double remainingLength) {
+        return 1;
+        //return 2 * remainingLength + 0.1;
+      }
     }
-
-    public static final double halfLoopTime = 0.01;
-    public static final int newtonIterations = 4;
-
-    public static final double baseVelocity = 2;
-    public static final double dropVelocity = 0.4;
-    public static final double maxCentrifugalAcceleration = 2.4;
-
-    public static final double maxGoalTolerance = 0.05;
   }
 }

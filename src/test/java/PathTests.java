@@ -40,6 +40,11 @@ public class PathTests {
         }
 
         @Override
+        public double arcLength(double t) {
+          return t * sqrtTwo;
+        }
+
+        @Override
         public double parameterizationAtArcLength(double length) {
           parameterizationAtArcLengthCalls++;
           return length / sqrtTwo;

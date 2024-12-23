@@ -8,7 +8,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 import frc.robot.splines.Path;
-import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 public class CommandSwerveFollowSpline extends Command {
@@ -40,8 +39,8 @@ public class CommandSwerveFollowSpline extends Command {
 
   @Override
   public void execute() {
-    Translation2d robotPosition = DataManager.instance().robotPosition.get().getTranslation();
-    Rotation2d robotRotation = DataManager.instance().robotPosition.get().getRotation();
+    Translation2d robotPosition = path.getRobotPosition().getTranslation();
+    Rotation2d robotRotation = path.getRobotPosition().getRotation();
     Translation2d goal = path.getGoalPosition();
 
     double xValue = xController.calculate(robotPosition.getX() - goal.getX());
