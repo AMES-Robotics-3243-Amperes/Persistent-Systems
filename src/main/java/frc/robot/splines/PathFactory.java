@@ -10,27 +10,33 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.DataManager;
 import frc.robot.Entry;
-import frc.robot.Constants.SplineConstants.PathFactoryDefaults;
+import frc.robot.Constants.SplineConstants.FollowConstants;
+import frc.robot.Constants.SplineConstants.PathDefaults;
+import frc.robot.splines.NumericalMethods.RealFunction;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
 /**
- * Used to build a {@link Path}. See {@link #newFactory PathFactory.newFactory()}.
+ * Used to build a {@link Path}. See {@link #newFactory
+ * PathFactory.newFactory()}.
  */
 public class PathFactory {
   private Entry<Pose2d> positionEntry = null;
   private ArrayList<Translation2d> points = new ArrayList<Translation2d>();
   private ArrayList<Task> tasks = new ArrayList<Task>();
   private Optional<Rotation2d> finalRotation = Optional.empty();
-  private SplineInterpolator interpolator = PathFactoryDefaults.defaultInterpolator;
-  private double maxSpeed = PathFactoryDefaults.defaultMaxSpeed;
-  private double maxCentrifugalAcceleration = PathFactoryDefaults.defaultMaxCentrifugalAcceleration;
-  private boolean interpolateFromStart = PathFactoryDefaults.defaultInterpolateFromStart;
+  private SplineInterpolator interpolator = PathDefaults.defaultInterpolator;
+  private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
+  private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
+  private double maxSpeed = PathDefaults.defaultMaxSpeed;
+  private double maxCentrifugalAcceleration = PathDefaults.defaultMaxCentrifugalAcceleration;
+  private boolean interpolateFromStart = PathDefaults.defaultInterpolateFromStart;
 
   /**
    * This constructor is private for the sake of enforcing
    * sane (i.e. one line) construction of {@link Path Paths}.
    */
-  private PathFactory() {}
+  private PathFactory() {
+  }
 
   /**
    * Constructs a new {@link PathFactory}. Construction and usage should
@@ -93,6 +99,18 @@ public class PathFactory {
     return this;
   }
 
+  public PathFactory offsetDampen(RealFunction offsetDampen) {
+    Objects.requireNonNull(offsetDampen, "offsetDampen cannot be null");
+    this.offsetDampen = offsetDampen;
+    return this;
+  }
+
+  public PathFactory completeDampen(RealFunction completeDampen) {
+    Objects.requireNonNull(completeDampen, "completeDampen cannot be null");
+    this.completeDampen = completeDampen;
+    return this;
+  }
+
   public PathFactory maxSpeed(double maxSpeed) {
     Objects.requireNonNull(maxSpeed, "maxSpeed cannot be null");
     this.maxSpeed = maxSpeed;
@@ -112,6 +130,7 @@ public class PathFactory {
   }
 
   public Path build() {
-    return new Path(positionEntry, points, tasks, finalRotation, interpolator, maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
+    return new Path(positionEntry, points, tasks, finalRotation, interpolator, offsetDampen, completeDampen, maxSpeed,
+        maxCentrifugalAcceleration, interpolateFromStart);
   }
 }

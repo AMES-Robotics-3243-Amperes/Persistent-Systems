@@ -8,7 +8,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Entry;
-import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.splines.Path;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.Spline;
@@ -77,6 +76,8 @@ public class PathTests {
       .interpolator(new MockInterpolator())
       .maxSpeed(Double.MAX_VALUE)
       .maxCentrifugalAcceleration(Double.MAX_VALUE)
+      .offsetDampen(x -> 1)
+      .completeDampen(x -> Double.MAX_VALUE)
       .build();
 
     path.initialize();
@@ -90,50 +91,69 @@ public class PathTests {
   }
 
   @Test
-  public void pathSetsSpeedToMaxVelocity() {
-    MockEntry entry = new MockEntry();
-    Path path = PathFactory.newFactory()
-      .positionEntry(entry)
-      .interpolator(new MockInterpolator())
-      .maxSpeed(1)
-      .maxCentrifugalAcceleration(Double.MAX_VALUE)
-      .build();
-
-    path.initialize();
-    entry.set(new Pose2d(new Translation2d(0, 0), new Rotation2d()));
-    assertEquals(new Translation2d(sqrtTwo / 2, sqrtTwo / 2), path.getDesiredVelocity());
-
-    path.advanceTo(0.5 * sqrtTwo);
-    entry.set(new Pose2d(new Translation2d(0.5, 0.5), new Rotation2d()));
-    assertEquals(new Translation2d(sqrtTwo / 2, sqrtTwo / 2), path.getDesiredVelocity());
-    assertEquals(1, path.getDesiredSpeed());
-  
-    path.advanceTo(sqrtTwo);
-    entry.set(new Pose2d(new Translation2d(1, 1), new Rotation2d()));
-    assertEquals(new Translation2d(sqrtTwo / 2, sqrtTwo / 2), path.getDesiredVelocity());
-  }
-
-  @Test
-  public void pathCorrectlyCapsCentrifugalAcceleration() {
+  public void pathCorrectlyReportsEntry() {
     MockEntry entry = new MockEntry();
     Path path = PathFactory.newFactory()
       .positionEntry(entry)
       .interpolator(new MockInterpolator())
       .maxSpeed(Double.MAX_VALUE)
+      .maxCentrifugalAcceleration(Double.MAX_VALUE)
+      .offsetDampen(x -> 1)
+      .completeDampen(x -> Double.MAX_VALUE)
+      .build();
+
+    path.initialize();
+    entry.set(new Pose2d());
+    assertEquals(new Pose2d(), path.getPosition());
+
+    entry.set(new Pose2d(new Translation2d(0, 4), new Rotation2d(3)));
+    assertEquals(new Pose2d(new Translation2d(0, 4), new Rotation2d(3)), path.getPosition());
+
+    entry.set(new Pose2d(new Translation2d(3, -2), new Rotation2d(-1)));
+    assertEquals(new Pose2d(new Translation2d(3, -2), new Rotation2d(-1)), path.getPosition());
+  }
+
+  @Test
+  public void pathSetsSpeedToMaxVelocity() {
+    Path path = PathFactory.newFactory()
+      .positionEntry(new MockEntry())
+      .interpolator(new MockInterpolator())
+      .maxSpeed(1)
+      .maxCentrifugalAcceleration(Double.MAX_VALUE)
+      .offsetDampen(x -> 1)
+      .completeDampen(x -> Double.MAX_VALUE)
+      .build();
+
+    path.initialize();
+    assertEquals(new Translation2d(sqrtTwo / 2, sqrtTwo / 2), path.getDesiredVelocity());
+
+    path.advanceTo(0.5 * sqrtTwo);
+    assertEquals(new Translation2d(sqrtTwo / 2, sqrtTwo / 2), path.getDesiredVelocity());
+    assertEquals(1, path.getDesiredSpeed());
+  
+    path.advanceTo(sqrtTwo);
+    assertEquals(new Translation2d(sqrtTwo / 2, sqrtTwo / 2), path.getDesiredVelocity());
+  }
+
+  @Test
+  public void pathCorrectlyCapsCentrifugalAcceleration() {
+    Path path = PathFactory.newFactory()
+      .positionEntry(new MockEntry())
+      .interpolator(new MockInterpolator())
+      .maxSpeed(Double.MAX_VALUE)
       .maxCentrifugalAcceleration(1)
+      .offsetDampen(x -> 1)
+      .completeDampen(x -> Double.MAX_VALUE)
       .build();
     
     path.initialize();
-    entry.set(new Pose2d(new Translation2d(0, 0), new Rotation2d()));
     assert Double.MAX_VALUE / 2 < path.getDesiredVelocity().getX();
     assert Double.MAX_VALUE / 2 < path.getDesiredVelocity().getY();
 
     path.advanceTo(0.5 * sqrtTwo);
-    entry.set(new Pose2d(new Translation2d(0.5, 0.5), new Rotation2d()));
     assertEquals(new Translation2d(1, 1), path.getDesiredVelocity());
 
     path.advanceTo(sqrtTwo);
-    entry.set(new Pose2d(new Translation2d(1, 1), new Rotation2d()));
     assertEquals(new Translation2d(1 / sqrtTwo, 1 / sqrtTwo), path.getDesiredVelocity());
   }
 
@@ -145,6 +165,8 @@ public class PathTests {
       .interpolator(new MockInterpolator())
       .maxSpeed(1)
       .maxCentrifugalAcceleration(Double.MAX_VALUE)
+      .offsetDampen(x -> 1 / (x + 1))
+      .completeDampen(x -> Double.MAX_VALUE)
       .build();
     
     path.initialize();
@@ -153,13 +175,34 @@ public class PathTests {
 
     path.advanceTo(0.5 * sqrtTwo);
     entry.set(new Pose2d(new Translation2d(0.25, 0.25), new Rotation2d()));
-    double component = FollowConstants.splineOffsetVelocityDampen(1 / Math.sqrt(8)) / sqrtTwo;
+    double component = 1 / (sqrtTwo * (1 + 1 / Math.sqrt(8)));
     assertEquals(new Translation2d(component, component), path.getDesiredVelocity());
 
     path.advanceTo(sqrtTwo);
     entry.set(new Pose2d(new Translation2d(1.5, 1.5), new Rotation2d()));
-    component = FollowConstants.splineOffsetVelocityDampen(1 / Math.sqrt(2)) / sqrtTwo;
+    component = 1 / (sqrtTwo * (1 + 1 / sqrtTwo));
     assertEquals(new Translation2d(component, component), path.getDesiredVelocity());
+  }
+
+  @Test
+  public void endingPathLimitsSpeed() {
+    Path path = PathFactory.newFactory()
+      .positionEntry(new MockEntry())
+      .interpolator(new MockInterpolator())
+      .maxSpeed(1)
+      .maxCentrifugalAcceleration(Double.MAX_VALUE)
+      .offsetDampen(x -> 1)
+      .completeDampen(x -> x)
+      .build();
+    
+    path.initialize();
+    assertEquals(new Translation2d(1 / sqrtTwo, 1 / sqrtTwo), path.getDesiredVelocity());
+
+    path.advanceTo(0.5 * sqrtTwo);
+    assertEquals(new Translation2d(0.5, 0.5), path.getDesiredVelocity());
+
+    path.advanceTo(sqrtTwo);
+    assertEquals(new Translation2d(0, 0), path.getDesiredVelocity());
   }
 
   @Test
@@ -170,6 +213,8 @@ public class PathTests {
       .interpolator(interpolator)
       .maxSpeed(Double.MAX_VALUE)
       .maxCentrifugalAcceleration(Double.MAX_VALUE)
+      .offsetDampen(x -> 1)
+      .completeDampen(x -> Double.MAX_VALUE)
       .build();
 
     assertEquals(0, interpolator.parameterizationAtArcLengthCalls);

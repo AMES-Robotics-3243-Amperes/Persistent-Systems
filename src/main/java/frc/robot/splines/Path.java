@@ -9,15 +9,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.SplineConstants.FollowConstants;
-import frc.robot.Constants.SplineConstants.PathFactoryDefaults;
+import frc.robot.Constants.SplineConstants.PathDefaults;
 import frc.robot.Entry;
+import frc.robot.splines.NumericalMethods.RealFunction;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
 /**
  * An arclength-parametrized path in 2D space for the robot to follow. Where a
  * {@link Spline} is simply a time-parameterized curve, a Path contains much
  * more utility and is a complete entity for a robot to follow.
- * Should generally be constructed using a {@link frc.robot.splines.PathFactory}.
+ * Should generally be constructed using a
+ * {@link frc.robot.splines.PathFactory}.
  */
 public class Path {
   private Entry<Pose2d> positionEntry = null;
@@ -25,10 +27,12 @@ public class Path {
   @SuppressWarnings("unused") // TODO: implement tasks
   private ArrayList<Task> tasks = new ArrayList<Task>();
   private Optional<Rotation2d> finalRotation = Optional.empty();
-  private SplineInterpolator interpolator = PathFactoryDefaults.defaultInterpolator;
-  private double maxSpeed = PathFactoryDefaults.defaultMaxSpeed;
-  private double maxCentrifugalAcceleration = PathFactoryDefaults.defaultMaxCentrifugalAcceleration;
-  private boolean interpolateFromStart = PathFactoryDefaults.defaultInterpolateFromStart;
+  private SplineInterpolator interpolator = PathDefaults.defaultInterpolator;
+  private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
+  private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
+  private double maxSpeed = PathDefaults.defaultMaxSpeed;
+  private double maxCentrifugalAcceleration = PathDefaults.defaultMaxCentrifugalAcceleration;
+  private boolean interpolateFromStart = PathDefaults.defaultInterpolateFromStart;
 
   private Spline spline;
 
@@ -42,6 +46,8 @@ public class Path {
       ArrayList<Task> tasks,
       Optional<Rotation2d> finalRotation,
       SplineInterpolator interpolator,
+      RealFunction offsetDampen,
+      RealFunction completeDampen,
       double maxSpeed,
       double maxCentrifugalAcceleration,
       boolean interpolateFromStart) {
@@ -50,6 +56,8 @@ public class Path {
     Objects.requireNonNull(tasks, "tasks cannot be null");
     Objects.requireNonNull(finalRotation, "finalRotation cannot be null");
     Objects.requireNonNull(interpolator, "interpolator cannot be null");
+    Objects.requireNonNull(offsetDampen, "offsetDampen cannot be null");
+    Objects.requireNonNull(completeDampen, "completeDampen cannot be null");
     Objects.requireNonNull(maxSpeed, "maxSpeed cannot be null");
     Objects.requireNonNull(maxCentrifugalAcceleration, "maxCentrifugalAcceleration cannot be null");
     Objects.requireNonNull(interpolateFromStart, "interpolateFromStart cannot be null");
@@ -59,6 +67,8 @@ public class Path {
     this.tasks = tasks;
     this.finalRotation = finalRotation;
     this.interpolator = interpolator;
+    this.offsetDampen = offsetDampen;
+    this.completeDampen = completeDampen;
     this.maxSpeed = maxSpeed;
     this.maxCentrifugalAcceleration = maxCentrifugalAcceleration;
     this.interpolateFromStart = interpolateFromStart;
@@ -70,8 +80,7 @@ public class Path {
     return currentLength;
   }
 
-  public Pose2d getRobotPosition() {
-    // TODO: make a test that makes sure this works
+  public Pose2d getPosition() {
     return positionEntry.get();
   }
 
@@ -93,9 +102,9 @@ public class Path {
 
   public double getDesiredSpeed() {
     double baseSpeed = maxSpeed *
-      FollowConstants.splineOffsetVelocityDampen(positionEntry.get().getTranslation().getDistance(getGoalPosition()));
-    double dampenSpeed = Math.min(baseSpeed, 
-      FollowConstants.splineCompleteVelocityDampen(Math.abs(getLength() - spline.arcLength(1))) * baseSpeed);
+        offsetDampen.sample(positionEntry.get().getTranslation().getDistance(getGoalPosition()));
+    double dampenSpeed = Math.min(baseSpeed,
+        completeDampen.sample(Math.abs(getLength() - spline.arcLength(1))));
     double maxCentrifugalSpeed = Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization()));
     return Math.min(maxCentrifugalSpeed, dampenSpeed);
   }
@@ -133,7 +142,8 @@ public class Path {
   }
 
   public boolean isComplete() {
-    // TODO: should there be options to increase precision once the end of the spline is reached?
+    // TODO: should there be options to increase precision once the end of the
+    // spline is reached?
     return currentLength >= spline.arcLength(1);
   }
 }

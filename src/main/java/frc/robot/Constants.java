@@ -162,7 +162,7 @@ public final class Constants {
   }
 
   public static final class SplineConstants {
-    public static final class PathFactoryDefaults {
+    public static final class PathDefaults {
       public static final SplineInterpolator defaultInterpolator = new LinearInterpolator();
       public static final double defaultMaxSpeed = 1.0;
       public static final double defaultMaxCentrifugalAcceleration = 1.0;
