@@ -89,7 +89,8 @@ public class SubsystemSwerveModule {
     m_turningPIDController.setI(ModuleConstants.PIDF.kTurningI);
     m_turningPIDController.setD(ModuleConstants.PIDF.kTurningD);
     m_turningPIDController.setFF(ModuleConstants.PIDF.kTurningFF);
-    m_turningPIDController.setOutputRange(ModuleConstants.PIDF.kTurningMinOutput, ModuleConstants.PIDF.kTurningMaxOutput);
+    m_turningPIDController.setOutputRange(ModuleConstants.PIDF.kTurningMinOutput,
+        ModuleConstants.PIDF.kTurningMaxOutput);
 
     // :3 set idle modes and current limits
     m_drivingSparkMax.setIdleMode(ModuleConstants.kDrivingMotorIdleMode);
@@ -151,7 +152,8 @@ public class SubsystemSwerveModule {
    * Updates the feedforward and PID controllers of the module.
    */
   public void update() {
-    double drivingPIDOutput = m_drivingPIDController.calculate(m_drivingEncoder.getVelocity(), m_drivingVelocitySetpoint);
+    double drivingPIDOutput = m_drivingPIDController.calculate(m_drivingEncoder.getVelocity(),
+        m_drivingVelocitySetpoint);
     double drivingFFOutput = m_drivingFeedforwardController.calculate(m_drivingVelocitySetpoint);
     m_drivingSparkMax.setVoltage(drivingPIDOutput + drivingFFOutput);
   }

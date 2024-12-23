@@ -12,13 +12,15 @@ public class NumericalMethods {
   /**
    * Approximates a zero of a function using the Newton-Raphson method.
    * 
-   * @param function the function to approximate the zero of
-   * @param initialGuess an initial guess of a zero - the closer the better, but (most) guesses will be strictly improved
-   * @param iterations the number of iterations to run - the more the better, but keep it realistic (2-3 is usually enough)
+   * @param function     the function to approximate the zero of
+   * @param initialGuess an initial guess of a zero - the closer the better, but
+   *                     (most) guesses will be strictly improved
+   * @param iterations   the number of iterations to run - the more the better,
+   *                     but keep it realistic (2-3 is usually enough)
    * @return an approximate zero of the function
    */
   public static double newtonRaphson(DifferentiableFunction function, double initialGuess, int iterations) {
-    assert iterations > 0: "newton-raphson requires at least one iteration";
+    assert iterations > 0 : "newton-raphson requires at least one iteration";
 
     double guess = initialGuess;
     for (int i = 0; i < iterations; i++) {
@@ -31,14 +33,16 @@ public class NumericalMethods {
   /**
    * Approximates an integral using five-point Gaussian Quadrature.
    * 
-   * @param function the function to approximate the integral of
-   * @param leftBound left/lower bound of the integral
+   * @param function   the function to approximate the integral of
+   * @param leftBound  left/lower bound of the integral
    * @param rightBound right/upper bound of the integral
    * @return the approximate integral of the function
    */
   public static double gaussianQuadrature(RealFunction function, double leftBound, double rightBound) {
-    // gaussian quadrature works by intelligently choosing points on our function and integrating
-    // the polynomial that interpolates between them. in practice, implementing it just involves
+    // gaussian quadrature works by intelligently choosing points on our function
+    // and integrating
+    // the polynomial that interpolates between them. in practice, implementing it
+    // just involves
     // translating some simple formulas to code. for more information, see
     // https://en.wikipedia.org/wiki/Gaussian_quadrature
     double midpoint = (leftBound + rightBound) / 2;
@@ -59,18 +63,20 @@ public class NumericalMethods {
    * further increases accuracy by using standard Gaussian Quadrature repeatedly
    * over sub-intervals of the function.
    * 
-   * @param function the function to approximate the integral of
-   * @param leftBound left/lower bound of the integral
+   * @param function   the function to approximate the integral of
+   * @param leftBound  left/lower bound of the integral
    * @param rightBound right/upper bound of the integral
-   * @param intervals the number of intervals to use in the approximation
+   * @param intervals  the number of intervals to use in the approximation
    * @return the approximate integral of the function
    */
-  public static double compositeGaussianQuadrature(RealFunction function, double leftBound, double rightBound, double intervals) {
+  public static double compositeGaussianQuadrature(RealFunction function, double leftBound, double rightBound,
+      double intervals) {
     double subIntervalLength = (rightBound - leftBound) / intervals;
 
     double totalIntegral = 0;
     for (int i = 0; i < intervals; i++) {
-      totalIntegral += gaussianQuadrature(function, leftBound + i * subIntervalLength, rightBound + (i + 1) * subIntervalLength);
+      totalIntegral += gaussianQuadrature(function, leftBound + i * subIntervalLength,
+          rightBound + (i + 1) * subIntervalLength);
     }
 
     return totalIntegral;

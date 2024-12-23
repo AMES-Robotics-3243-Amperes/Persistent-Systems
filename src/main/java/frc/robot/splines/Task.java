@@ -6,5 +6,5 @@ package frc.robot.splines;
  * {@link Spline}.
  */
 public class Task {
-  
+
 }

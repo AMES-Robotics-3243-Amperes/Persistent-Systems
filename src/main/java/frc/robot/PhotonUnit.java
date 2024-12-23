@@ -37,16 +37,16 @@ public class PhotonUnit extends PhotonCamera {
     super(cameraName);
 
     poseEstimator = new PhotonPoseEstimator(fieldLayout,
-      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      this,
-      PhotonvisionConstants.robotToCamera);
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        this,
+        PhotonvisionConstants.robotToCamera);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
   }
 
   public Optional<Measurement> getMeasurement() {
     var poseLatestOptional = poseEstimator.update();
     PhotonPipelineResult pipelineResult = this.getLatestResult();
-    
+
     if (poseLatestOptional.isPresent() && pipelineResult.targets.size() != 0) {
       EstimatedRobotPose poseLatest = poseLatestOptional.get();
       // TODO: constants!
@@ -55,8 +55,8 @@ public class PhotonUnit extends PhotonCamera {
       }
 
       Measurement measurement = new Measurement(poseLatest.estimatedPose.toPose2d(),
-        poseLatest.timestampSeconds,
-        pipelineResult.getBestTarget().getPoseAmbiguity());
+          poseLatest.timestampSeconds,
+          pipelineResult.getBestTarget().getPoseAmbiguity());
 
       return Optional.of(measurement);
     }

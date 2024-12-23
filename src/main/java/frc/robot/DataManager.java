@@ -58,9 +58,9 @@ public class DataManager {
       photonUnits.add(new PhotonUnit("FrontCamera", fieldLayout));
 
       poseEstimator = new SwerveDrivePoseEstimator(ChassisKinematics.kDriveKinematics,
-        imu.getRotation(),
-        subsystemSwerveDrivetrain.getModulePositions(),
-        new Pose2d());
+          imu.getRotation(),
+          subsystemSwerveDrivetrain.getModulePositions(),
+          new Pose2d());
     }
 
     public void update() {
@@ -68,7 +68,7 @@ public class DataManager {
 
       for (var unit : photonUnits) {
         Optional<Measurement> measurementOptional = unit.getMeasurement();
-        
+
         if (measurementOptional.isPresent()) {
           Measurement measurement = measurementOptional.get();
           poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds, measurement.ambiguity);

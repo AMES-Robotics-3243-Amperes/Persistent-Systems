@@ -49,7 +49,8 @@ public class CommandSwerveFollowSpline extends Command {
 
     double rotationSpeed = 0;
     if (path.getDesiredRotation().isPresent()) {
-      rotationSpeed = thetaController.calculate(robotRotation.getRadians(), path.getDesiredRotation().get().getRadians());
+      rotationSpeed = thetaController.calculate(robotRotation.getRadians(),
+          path.getDesiredRotation().get().getRadians());
     }
 
     Translation2d speeds = path.getDesiredVelocity().plus(pidAdjustment).rotateBy(robotRotation.times(-1));

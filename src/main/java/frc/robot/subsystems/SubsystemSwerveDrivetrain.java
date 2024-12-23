@@ -18,22 +18,23 @@ import frc.robot.Constants.SwerveConstants.ModuleConstants;
 
 public class SubsystemSwerveDrivetrain extends SubsystemBase {
   private final SubsystemSwerveModule m_frontLeft = new SubsystemSwerveModule(
-    DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
-    DriveTrainConstants.IDs.kFrontLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
+      DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
+      DriveTrainConstants.IDs.kFrontLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
 
   private final SubsystemSwerveModule m_frontRight = new SubsystemSwerveModule(
-    DriveTrainConstants.IDs.kFrontRightDrivingCanId,
-    DriveTrainConstants.IDs.kFrontRightTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
+      DriveTrainConstants.IDs.kFrontRightDrivingCanId,
+      DriveTrainConstants.IDs.kFrontRightTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
 
   private final SubsystemSwerveModule m_rearLeft = new SubsystemSwerveModule(
-    DriveTrainConstants.IDs.kRearLeftDrivingCanId,
-    DriveTrainConstants.IDs.kRearLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
+      DriveTrainConstants.IDs.kRearLeftDrivingCanId,
+      DriveTrainConstants.IDs.kRearLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
 
   private final SubsystemSwerveModule m_rearRight = new SubsystemSwerveModule(
-    DriveTrainConstants.IDs.kRearRightDrivingCanId,
-    DriveTrainConstants.IDs.kRearRightTurningCanId, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
+      DriveTrainConstants.IDs.kRearRightDrivingCanId,
+      DriveTrainConstants.IDs.kRearRightTurningCanId, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
 
-  public SubsystemSwerveDrivetrain() {}
+  public SubsystemSwerveDrivetrain() {
+  }
 
   /**
    * Set the swerve modules' desired states
@@ -74,9 +75,9 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * @return the positions of the swerve modules
    */
   public SwerveModulePosition[] getModulePositions() {
-    return new SwerveModulePosition[]{
-      m_frontLeft.getPosition(), m_frontRight.getPosition(),
-      m_rearLeft.getPosition(), m_rearRight.getPosition()
+    return new SwerveModulePosition[] {
+        m_frontLeft.getPosition(), m_frontRight.getPosition(),
+        m_rearLeft.getPosition(), m_rearRight.getPosition()
     };
   }
 
@@ -89,16 +90,14 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
   }
 
   public SysIdRoutine driveRoutine = new SysIdRoutine(
-    new Config(BaseUnits.Voltage.of(0.75).per(BaseUnits.Time.of(1)),
-      BaseUnits.Voltage.of(3),
-      BaseUnits.Time.of(8),
-      null),
-    new Mechanism(
-      this::sysIdDrive, 
-      this::sysIdDriveLog, 
-      this
-    )
-  );
+      new Config(BaseUnits.Voltage.of(0.75).per(BaseUnits.Time.of(1)),
+          BaseUnits.Voltage.of(3),
+          BaseUnits.Time.of(8),
+          null),
+      new Mechanism(
+          this::sysIdDrive,
+          this::sysIdDriveLog,
+          this));
 
   /**
    * Sets the modules' drive voltages to a specific value
