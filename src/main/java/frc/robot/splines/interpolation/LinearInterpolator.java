@@ -21,7 +21,7 @@ public class LinearInterpolator implements SplineInterpolator {
 
       @Override
       public Translation2d at(double t) {
-        assert t <= 1 && t >= 0 : "cannot sample a linearly interpolated spline at points not in (0, 1)";
+        assert t <= 1 && t >= 0 : "cannot sample a linearly interpolated spline at points not in [0, 1]";
 
         double adjustedSample = t * (points.size() - 1);
         int index = (int) Math.floor(adjustedSample);
@@ -35,7 +35,7 @@ public class LinearInterpolator implements SplineInterpolator {
 
       @Override
       public Translation2d derivative(double t) {
-        assert t <= 1 && t >= 0 : "cannot sample a linearly interpolated spline at points not in (0, 1)";
+        assert t <= 1 && t >= 0 : "cannot sample a linearly interpolated spline at points not in [0, 1]";
 
         double adjustedSample = t * (points.size() - 1);
         int index = (int) Math.floor(adjustedSample);
@@ -54,7 +54,7 @@ public class LinearInterpolator implements SplineInterpolator {
 
       @Override
       public double arcLength(double t) {
-        assert t <= 1 && t >= 0 : "cannot sample a linearly interpolated spline at points not in (0, 1)";
+        assert t <= 1 && t >= 0 : "cannot sample a linearly interpolated spline at points not in [0, 1]";
 
         double adjustedSample = t * (points.size() - 1);
         int index = (int) Math.floor(adjustedSample);

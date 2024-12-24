@@ -1,12 +1,13 @@
 package frc.robot.splines;
 
+// TODO: tests
 public class NumericalMethods {
   public interface RealFunction {
     double sample(double x);
   }
 
   public interface DifferentiableFunction extends RealFunction {
-    double derivative(double x);
+    double firstDerivative(double x);
   }
 
   /**
@@ -24,7 +25,7 @@ public class NumericalMethods {
 
     double guess = initialGuess;
     for (int i = 0; i < iterations; i++) {
-      guess = guess - (function.sample(guess) / function.derivative(guess));
+      guess = guess - (function.sample(guess) / function.firstDerivative(guess));
     }
 
     return guess;
@@ -49,10 +50,10 @@ public class NumericalMethods {
     double scaleFactor = (rightBound - leftBound) / 2;
 
     double termOne = 0.568889 * function.sample(midpoint);
-    double termTwo = 0.478629 * function.sample(scaleFactor * 0.538469 / 2 + midpoint);
-    double termThree = 0.478629 * function.sample(-scaleFactor * 0.538469 / 2 + midpoint);
-    double termFour = 0.236927 * function.sample(scaleFactor * 0.90618 / 2 + midpoint);
-    double termFive = 0.236927 * function.sample(-scaleFactor * 0.90618 / 2 + midpoint);
+    double termTwo = 0.478629 * function.sample(scaleFactor * 0.538469 + midpoint);
+    double termThree = 0.478629 * function.sample(-scaleFactor * 0.538469 + midpoint);
+    double termFour = 0.236927 * function.sample(scaleFactor * 0.90618 + midpoint);
+    double termFive = 0.236927 * function.sample(-scaleFactor * 0.90618 + midpoint);
 
     return scaleFactor * (termOne + termTwo + termThree + termFour + termFive);
   }
@@ -70,13 +71,13 @@ public class NumericalMethods {
    * @return the approximate integral of the function
    */
   public static double compositeGaussianQuadrature(RealFunction function, double leftBound, double rightBound,
-      double intervals) {
+      int intervals) {
     double subIntervalLength = (rightBound - leftBound) / intervals;
 
     double totalIntegral = 0;
     for (int i = 0; i < intervals; i++) {
       totalIntegral += gaussianQuadrature(function, leftBound + i * subIntervalLength,
-          rightBound + (i + 1) * subIntervalLength);
+          leftBound + (i + 1) * subIntervalLength);
     }
 
     return totalIntegral;
