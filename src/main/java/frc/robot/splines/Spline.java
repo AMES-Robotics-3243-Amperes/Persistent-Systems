@@ -15,7 +15,6 @@ public interface Spline {
 
   public double curvature(double t);
 
-  // TODO: tests
   public default double arcLength(double t) {
     return NumericalMethods.compositeGaussianQuadrature(x -> derivative(x).getNorm(), 0, t,
         NumericalConstants.newtonRaphsonIterations);

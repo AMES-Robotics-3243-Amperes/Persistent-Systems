@@ -170,7 +170,7 @@ public final class Constants {
     }
 
     public static final class NumericalConstants {
-      public static final int compositeGaussianQuadratureIntervals = 3;
+      public static final int compositeGaussianQuadratureIntervals = 2;
       public static final int newtonRaphsonIterations = 3;
     }
 

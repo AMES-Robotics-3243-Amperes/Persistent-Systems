@@ -34,7 +34,7 @@ public class CubicInterpolator implements SplineInterpolator {
 
     public double curvature(double t) {
       Translation2d derivative = derivative(t);
-      Translation2d second_derivative = b.times(2).plus(a.times(6 * t));
+      Translation2d second_derivative = a.times(6 * t).plus(b.times(2));
 
       double x1 = derivative.getX();
       double y1 = derivative.getY();
@@ -55,42 +55,42 @@ public class CubicInterpolator implements SplineInterpolator {
   /**
    * An internal helper function that generates a 1D natural spline.
    * 
-   * @param d the function samples (for our use case, the x or y coordinates of
-   *          interpolated points)
+   * @param samples the function samples (for our use case, the x or y coordinates
+   *                of interpolated points)
    * @return an {@link List} containing lists for the a, b, c, and d
    *         coefficients. there will be a.size() - 1 useful entries; the last
    *         entry is trash and remains only to keep this function as simple as
    *         possible
    */
-  private List<List<Double>> interpolateAxis(List<Double> d) {
+  private List<List<Double>> interpolateAxis(List<Double> samples) {
     // see https://www.math.ntnu.no/emner/TMA4215/2008h/cubicsplines.pdf
     // for a technical explanation (or just trust the unit tests smhing my head)
 
-    double h = 1.0 / (d.size() - 1);
+    double h = 1.0 / (samples.size() - 1);
     ArrayList<Double> alphas = new ArrayList<Double>();
-    for (int i = 1; i < d.size() - 1; i++) {
-      alphas.add((d.get(i + 1) - 2 * d.get(i) + d.get(i - 1)) * (3 / h));
+    for (int i = 1; i < samples.size() - 1; i++) {
+      alphas.add((samples.get(i + 1) - 2 * samples.get(i) + samples.get(i - 1)) * (3 / h));
     }
 
-    List<Double> l = new ArrayList<Double>(Collections.nCopies(d.size(), 1.0));
-    List<Double> mu = new ArrayList<Double>(Collections.nCopies(d.size(), 0.0));
-    List<Double> z = new ArrayList<Double>(Collections.nCopies(d.size(), 0.0));
-    for (int i = 1; i < d.size() - 1; i++) {
+    List<Double> l = new ArrayList<Double>(Collections.nCopies(samples.size(), 1.0));
+    List<Double> mu = new ArrayList<Double>(Collections.nCopies(samples.size(), 0.0));
+    List<Double> z = new ArrayList<Double>(Collections.nCopies(samples.size(), 0.0));
+    for (int i = 1; i < samples.size() - 1; i++) {
       l.set(i, 4 * h - h * mu.get(i - 1));
       mu.set(i, h / l.get(i));
       z.set(i, (alphas.get(i - 1) - h * z.get(i - 1)) / l.get(i));
     }
 
-    List<Double> c = new ArrayList<Double>(Collections.nCopies(d.size(), 0.0));
-    List<Double> b = new ArrayList<Double>(Collections.nCopies(d.size(), 0.0));
-    List<Double> a = new ArrayList<Double>(Collections.nCopies(d.size(), 0.0));
-    for (int i = d.size() - 2; i >= 0; i--) {
+    List<Double> c = new ArrayList<Double>(Collections.nCopies(samples.size(), 0.0));
+    List<Double> b = new ArrayList<Double>(Collections.nCopies(samples.size(), 0.0));
+    List<Double> a = new ArrayList<Double>(Collections.nCopies(samples.size(), 0.0));
+    for (int i = samples.size() - 2; i >= 0; i--) {
       b.set(i, z.get(i) - mu.get(i) * b.get(i + 1));
-      c.set(i, (d.get(i + 1) - d.get(i)) / h - h * (b.get(i + 1) + 2 * b.get(i)) / 3.0);
+      c.set(i, (samples.get(i + 1) - samples.get(i)) / h - h * (b.get(i + 1) + 2 * b.get(i)) / 3.0);
       a.set(i, (b.get(i + 1) - b.get(i)) / (3 * h));
     }
 
-    return List.of(a, b, c, d);
+    return List.of(a, b, c, samples);
   }
 
   @Override

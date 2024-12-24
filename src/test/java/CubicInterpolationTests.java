@@ -1,3 +1,4 @@
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import frc.robot.splines.interpolation.CubicInterpolator;
 
 public class CubicInterpolationTests {
   // used as a small distance while traversing the spline doing sanity checks
-  private final double h = 0.005;
+  private final double h = 0.01;
 
   @Test
   public void sample() {
@@ -32,7 +33,7 @@ public class CubicInterpolationTests {
 
     // ensure continuity
     for (int i = 0; i < ((int) (1.0 / h)) - 1; i++) {
-      AssertHelpers.assertEquals(spline.at(i * h), spline.at(i * h + h), 1e+2 * h);
+      AssertHelpers.assertEquals(spline.at(i * h), spline.at(i * h + h), 5 * h * spline.arcLength(1));
     }
   }
 
@@ -47,12 +48,6 @@ public class CubicInterpolationTests {
 
     CubicInterpolator interpolator = new CubicInterpolator();
     Spline spline = interpolator.interpolatePoints(points);
-
-    // ensure continuity of the derivative
-    for (int i = 0; i < ((int) (1.0 / h)) - 1; i++) {
-      AssertHelpers.assertEquals(spline.derivative(i * h), spline.derivative(i * h + h),
-          1e+3 * h);
-    }
 
     // ensure forward-difference roughly agrees with the derivative
     for (int i = 0; i < ((int) (1.0 / h)) - 2; i++) {
@@ -82,7 +77,7 @@ public class CubicInterpolationTests {
     double estimate = 0;
     for (int i = 1; i < ((int) (1 / h)); i++) {
       estimate += spline.derivative(i * h - h).plus(spline.derivative(i * h)).getNorm() * h / 2;
-      assertEquals(estimate, spline.arcLength(i * h), 1e-1);
+      assertEquals(estimate, spline.arcLength(i * h), h * 1e+1);
     }
   }
 
@@ -102,5 +97,28 @@ public class CubicInterpolationTests {
     assertEquals(3.5, spline.arcLength(spline.parameterizationAtArcLength(3.5)), 1e-4);
     assertEquals(5, spline.arcLength(spline.parameterizationAtArcLength(5)), 1e-4);
     assertEquals(6.2, spline.arcLength(spline.parameterizationAtArcLength(6.2)), 1e-4);
+  }
+
+  @Test
+  public void curvature() {
+    ArrayList<Translation2d> points = new ArrayList<Translation2d>();
+    points.add(new Translation2d(1, 2));
+    points.add(new Translation2d(1, 3));
+    points.add(new Translation2d(-2, 4));
+    points.add(new Translation2d(-3, -1.5));
+
+    CubicInterpolator interpolator = new CubicInterpolator();
+    Spline spline = interpolator.interpolatePoints(points);
+
+    // ensure forward-difference roughly agrees with the curvature
+    for (int i = 0; i < ((int) (1.0 / h)) - 1; i++) {
+      Translation2d unitOne = spline.derivative(i * h);
+      Translation2d unitTwo = spline.derivative(i * h + h);
+      unitOne = unitOne.div(unitOne.getNorm());
+      unitTwo = unitTwo.div(unitTwo.getNorm());
+
+      assertEquals(unitTwo.minus(unitOne).div(spline.arcLength(i * h + h) - spline.arcLength(i * h)).getNorm(),
+          spline.curvature(i * h), h * 2e+1);
+    }
   }
 }

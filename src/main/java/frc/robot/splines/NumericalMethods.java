@@ -1,6 +1,5 @@
 package frc.robot.splines;
 
-// TODO: tests
 public class NumericalMethods {
   public interface RealFunction {
     double sample(double x);
