@@ -5,31 +5,33 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.DataManager;
 import frc.robot.Entry;
 import frc.robot.Constants.SplineConstants.FollowConstants;
-import frc.robot.Constants.SplineConstants.PathDefaults;
+import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.splines.NumericalMethods.RealFunction;
 import frc.robot.splines.interpolation.SplineInterpolator;
+import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
  * Used to build a {@link Path}. See {@link #newFactory
  * PathFactory.newFactory()}.
  */
 public class PathFactory {
-  private Entry<Pose2d> positionEntry = null;
+  private Optional<Entry<Pose2d>> positionEntry = Optional.empty();
   private ArrayList<Translation2d> points = new ArrayList<Translation2d>();
   private ArrayList<Task> tasks = new ArrayList<Task>();
   private Optional<Rotation2d> finalRotation = Optional.empty();
-  private SplineInterpolator interpolator = PathDefaults.defaultInterpolator;
+  private SplineInterpolator interpolator = FollowConstants.defaultInterpolator;
   private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
   private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
-  private double maxSpeed = PathDefaults.defaultMaxSpeed;
-  private double maxCentrifugalAcceleration = PathDefaults.defaultMaxCentrifugalAcceleration;
-  private boolean interpolateFromStart = PathDefaults.defaultInterpolateFromStart;
+  private double maxSpeed = FollowConstants.maxSpeed;
+  private double maxCentrifugalAcceleration = FollowConstants.maxCentrifugalAcceleration;
+  private boolean interpolateFromStart = FollowConstants.interpolateFromStart;
 
   /**
    * This constructor is private for the sake of enforcing
@@ -56,12 +58,7 @@ public class PathFactory {
 
   public PathFactory positionEntry(Entry<Pose2d> positionEntry) {
     Objects.requireNonNull(positionEntry, "positionEntry cannot be null");
-    this.positionEntry = positionEntry;
-    return this;
-  }
-
-  public PathFactory useRobotPositionEntry() {
-    this.positionEntry = DataManager.instance().robotPosition;
+    this.positionEntry = Optional.of(positionEntry);
     return this;
   }
 
@@ -89,6 +86,7 @@ public class PathFactory {
   }
 
   public PathFactory finalRotation(Optional<Rotation2d> rotation) {
+    Objects.requireNonNull(rotation, "rotation cannot be null");
     this.finalRotation = rotation;
     return this;
   }
@@ -112,25 +110,34 @@ public class PathFactory {
   }
 
   public PathFactory maxSpeed(double maxSpeed) {
-    Objects.requireNonNull(maxSpeed, "maxSpeed cannot be null");
     this.maxSpeed = maxSpeed;
     return this;
   }
 
   public PathFactory maxCentrifugalAcceleration(double maxCentrifugalAcceleration) {
-    Objects.requireNonNull(maxCentrifugalAcceleration, "maxCentrifugalAcceleration cannot be null");
     this.maxCentrifugalAcceleration = maxCentrifugalAcceleration;
     return this;
   }
 
   public PathFactory interpolateFromStart(boolean interpolateFromStart) {
-    Objects.requireNonNull(interpolateFromStart, "interpolateFromStart cannot be null");
     this.interpolateFromStart = interpolateFromStart;
     return this;
   }
 
   public Path build() {
-    return new Path(positionEntry, points, tasks, finalRotation, interpolator, offsetDampen, completeDampen, maxSpeed,
-        maxCentrifugalAcceleration, interpolateFromStart);
+    // we delay setting the default position entry until now
+    // since we don't want to assume DataManager.instance() exists
+    // if we don't absolutely need to
+    if (this.positionEntry.isEmpty()) {
+      this.positionEntry = Optional.of(DataManager.instance().robotPosition);
+    }
+
+    return new Path(positionEntry.get(), points, tasks, finalRotation, interpolator, offsetDampen, completeDampen,
+        maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
+  }
+
+  public CommandSwerveFollowSpline buildCommand(SubsystemSwerveDrivetrain subsystem, PIDController xController,
+      PIDController yController, PIDController thetaController) {
+    return new CommandSwerveFollowSpline(subsystem, this.build(), xController, yController, thetaController);
   }
 }

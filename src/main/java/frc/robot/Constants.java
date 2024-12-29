@@ -14,7 +14,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
-import frc.robot.splines.interpolation.LinearInterpolator;
+import frc.robot.splines.interpolation.CubicInterpolator;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
 /**
@@ -36,11 +36,11 @@ public final class Constants {
     public static final double kRateLimitRight = 20;
     public static final double exponent1 = 3;
     public static final double exponent2 = 1;
-    public static final double coeff1 = 0;
-    public static final double coeff2 = 1;
+    public static final double coeff1 = 0.2;
+    public static final double coeff2 = 0.8;
 
-    public static final double leftTriggerSpeedMultiplier = 1.6;
-    public static final double rightTriggerSpeedMultiplier = 0.4;
+    public static final double leftTriggerSpeedMultiplier = 2.0;
+    public static final double rightTriggerSpeedMultiplier = 0.3;
   }
 
   public static final class SwerveConstants {
@@ -162,19 +162,17 @@ public final class Constants {
   }
 
   public static final class SplineConstants {
-    public static final class PathDefaults {
-      public static final SplineInterpolator defaultInterpolator = new LinearInterpolator();
-      public static final double defaultMaxSpeed = 1.0;
-      public static final double defaultMaxCentrifugalAcceleration = 1.0;
-      public static final boolean defaultInterpolateFromStart = false;
-    }
-
     public static final class NumericalConstants {
       public static final int compositeGaussianQuadratureIntervals = 2;
       public static final int newtonRaphsonIterations = 3;
     }
 
     public static final class FollowConstants {
+      public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
+      public static final double maxSpeed = 0.8;
+      public static final double maxCentrifugalAcceleration = 2.0;
+      public static final boolean interpolateFromStart = true;
+
       /**
        * As the robot drifts from the spline, the speed at
        * which the setpoint travels across the spline decreases.
@@ -187,11 +185,11 @@ public final class Constants {
 
       /**
        * To avoid harsh stops, slow the robot's movement as it
-       * finishes the path.
+       * finishes the path. This function gives a hard velocity
+       * cap as a function of remaining length.
        */
       public static final double splineCompleteVelocityDampen(double remainingLength) {
-        return 1;
-        //return 2 * remainingLength + 0.1;
+        return 2 * remainingLength + 0.1;
       }
     }
   }

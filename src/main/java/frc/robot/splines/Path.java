@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.Constants.SplineConstants.FollowConstants;
-import frc.robot.Constants.SplineConstants.PathDefaults;
 import frc.robot.Entry;
 import frc.robot.splines.NumericalMethods.RealFunction;
 import frc.robot.splines.interpolation.SplineInterpolator;
@@ -27,12 +26,12 @@ public class Path {
   @SuppressWarnings("unused") // TODO: implement tasks
   private ArrayList<Task> tasks = new ArrayList<Task>();
   private Optional<Rotation2d> finalRotation = Optional.empty();
-  private SplineInterpolator interpolator = PathDefaults.defaultInterpolator;
+  private SplineInterpolator interpolator = FollowConstants.defaultInterpolator;
   private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
   private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
-  private double maxSpeed = PathDefaults.defaultMaxSpeed;
-  private double maxCentrifugalAcceleration = PathDefaults.defaultMaxCentrifugalAcceleration;
-  private boolean interpolateFromStart = PathDefaults.defaultInterpolateFromStart;
+  private double maxSpeed = FollowConstants.maxSpeed;
+  private double maxCentrifugalAcceleration = FollowConstants.maxCentrifugalAcceleration;
+  private boolean interpolateFromStart = FollowConstants.interpolateFromStart;
 
   private Spline spline;
 

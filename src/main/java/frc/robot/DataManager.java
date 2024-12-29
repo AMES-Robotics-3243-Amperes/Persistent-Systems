@@ -19,25 +19,25 @@ import frc.robot.utility.AHRS_IMU;
 import frc.robot.utility.IMU;
 
 public class DataManager {
-  /** :3 Singleton instance */
+  /** Singleton instance */
   private static DataManager instance;
 
   public static DataManager instance() {
     return instance;
   }
 
+  /**
+   * An {@link Entry} that is automatically updated upon a call to
+   * {@link #update DataManager.instance().update}.
+   */
   public abstract class DataManagerEntry<T> extends Entry<T> {
     public DataManagerEntry() {
       entries.add(this);
     }
   }
 
-  /**
-   * A {@link DataManager} entry that is automatically updated upon a call to
-   * {@link #update DataManager.instance().update}.
-   */
   public class RobotPosition extends DataManagerEntry<Pose2d> {
-    /** :3 used to combine vision and odometry data */
+    /** used to combine vision and odometry data */
     private SwerveDrivePoseEstimator poseEstimator;
 
     private SubsystemSwerveDrivetrain subsystemSwerveDrivetrain;
@@ -100,8 +100,6 @@ public class DataManager {
   /**
    * Constructs the singleton from member variables of a RobotContainer.
    * Should be called ASAP, preferably in the constructor for RobotContainer.
-   * 
-   * @author :3
    */
   public DataManager(RobotContainer robotContainer) {
     robotPosition = new RobotPosition(robotContainer);

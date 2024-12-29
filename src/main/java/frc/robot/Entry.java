@@ -5,7 +5,7 @@ import frc.robot.DataManager.DataManagerEntry;
 /**
  * A data entry. If the entry is for use with {@link DataManager},
  * use a {@link DataManagerEntry} instead; it ensures the entry is automatically
- * connected to {@link DataManager#update DataManager.instance().update}
+ * connected to {@link DataManager#update DataManager.instance().update}.
  */
 public abstract class Entry<T> {
   public Entry() {
