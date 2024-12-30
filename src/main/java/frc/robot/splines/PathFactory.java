@@ -29,6 +29,7 @@ public class PathFactory {
   private Optional<Rotation2d> finalRotation = Optional.empty();
   private SplineInterpolator interpolator = FollowConstants.defaultInterpolator;
   private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
+  private RealFunction startDampen = FollowConstants::splineStartVelocityDampen;
   private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
   private RealFunction taskDampen = FollowConstants::splineTaskVelocityDampen;
   private double maxSpeed = FollowConstants.maxSpeed;
@@ -70,6 +71,11 @@ public class PathFactory {
     return this;
   }
 
+  public PathFactory addPoint(double x, double y) {
+    this.points.add(new Pair<Translation2d, Optional<Task>>(new Translation2d(x, y), Optional.empty()));
+    return this;
+  }
+
   public PathFactory addPoints(List<Translation2d> points) {
     Objects.requireNonNull(points, "point cannot be null");
     points.forEach(point -> this.addPoint(point));
@@ -102,6 +108,12 @@ public class PathFactory {
   public PathFactory offsetDampen(RealFunction offsetDampen) {
     Objects.requireNonNull(offsetDampen, "offsetDampen cannot be null");
     this.offsetDampen = offsetDampen;
+    return this;
+  }
+
+  public PathFactory startDampen(RealFunction startDampen) {
+    Objects.requireNonNull(startDampen, "startDampen cannot be null");
+    this.startDampen = startDampen;
     return this;
   }
 
@@ -140,8 +152,8 @@ public class PathFactory {
       this.positionEntry = Optional.of(DataManager.instance().robotPosition);
     }
 
-    return new Path(positionEntry.get(), points, finalRotation, interpolator, offsetDampen, completeDampen, taskDampen,
-        maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
+    return new Path(positionEntry.get(), points, finalRotation, interpolator, offsetDampen, startDampen, completeDampen,
+        taskDampen, maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
   }
 
   public CommandSwerveFollowSpline buildCommand(SubsystemSwerveDrivetrain subsystem, PIDController xController,

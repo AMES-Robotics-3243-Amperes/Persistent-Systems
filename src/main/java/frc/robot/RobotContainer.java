@@ -6,7 +6,6 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.CommandSwerveFollowSpline;
@@ -67,7 +66,8 @@ public class RobotContainer {
     subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
   }
 
-  private class MockShooterSubsystem extends SubsystemBase {}
+  private class MockShooterSubsystem extends SubsystemBase {
+  }
 
   private class MockReadyShooterCommand extends Command {
     public MockReadyShooterCommand(MockShooterSubsystem subsystem) {
@@ -112,11 +112,11 @@ public class RobotContainer {
     MockShooterSubsystem mockShooterSubsystem = new MockShooterSubsystem();
 
     CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
-        .addPoint(new Translation2d(0, 0))
-        .addPoint(new Translation2d(1, 1))
-        .addTask(new FinishByTask(new Translation2d(2, 0), new MockReadyShooterCommand(mockShooterSubsystem)))
-        .addTask(new PerformAtTask(new Translation2d(3, -1), 0.1, Rotation2d.fromDegrees(180), new MockShootCommand(mockShooterSubsystem)))
-        .addPoint(new Translation2d(0, 0))
+        .addPoint(0, 0)
+        .addPoint(1, 1)
+        .addTask(new FinishByTask(2, 0, new MockReadyShooterCommand(mockShooterSubsystem)))
+        .addTask(new PerformAtTask(3, -1, Rotation2d.fromDegrees(180), new MockShootCommand(mockShooterSubsystem)))
+        .addPoint(0, 0)
         .finalRotation(new Rotation2d(0))
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 

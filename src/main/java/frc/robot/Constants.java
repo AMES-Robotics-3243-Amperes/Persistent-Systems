@@ -166,6 +166,11 @@ public final class Constants {
       public static final int newtonRaphsonIterations = 3;
     }
 
+    public static final class TaskConstants {
+      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(5);
+      public static final double defaultPerformAtTaskTolerance = 0.2;
+    }
+
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
       public static final double maxSpeed = 0.8;
@@ -180,6 +185,15 @@ public final class Constants {
        */
       public static final double splineOffsetVelocityDampen(double offset) {
         return 1 / (1 + 1.5 * offset * offset);
+      }
+
+      /**
+       * To avoid harsh acceleration, slow the robot's movement as it starts following
+       * the path. This function gives a hard velocity cap as a function of length
+       * traversed.
+       */
+      public static final double splineStartVelocityDampen(double length) {
+        return 3 * length + 0.2;
       }
 
       /**

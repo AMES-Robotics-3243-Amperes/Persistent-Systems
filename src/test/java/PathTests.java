@@ -1,16 +1,19 @@
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Entry;
 import frc.robot.splines.Path;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.Spline;
+import frc.robot.splines.Tasks.Task;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
 public class PathTests {
@@ -52,6 +55,26 @@ public class PathTests {
       };
     }
 
+  }
+
+  public class MockTask extends Task {
+    public MockTask(Optional<Rotation2d> targetRotation, Rotation2d rotationTolerance) {
+      super(new Translation2d(sqrtTwo / 2, sqrtTwo / 2), targetRotation, rotationTolerance, new InstantCommand());
+    }
+
+    public MockTask() {
+      this(Optional.empty(), new Rotation2d());
+    }
+
+    @Override
+    protected double calculateStartLength(Spline spline, double targetLength) {
+      return 0.25 * sqrtTwo;
+    }
+
+    @Override
+    protected double calculateEndLength(Spline spline, double targetLength) {
+      return 0.75 * sqrtTwo;
+    }
   }
 
   public class MockInterpolatorTwo implements SplineInterpolator {
@@ -104,6 +127,7 @@ public class PathTests {
         .maxSpeed(Double.MAX_VALUE)
         .maxCentrifugalAcceleration(Double.MAX_VALUE)
         .offsetDampen(x -> 1)
+        .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
         .interpolateFromStart(false)
@@ -128,6 +152,7 @@ public class PathTests {
         .maxSpeed(Double.MAX_VALUE)
         .maxCentrifugalAcceleration(Double.MAX_VALUE)
         .offsetDampen(x -> 1)
+        .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
         .interpolateFromStart(false)
@@ -152,6 +177,7 @@ public class PathTests {
         .maxSpeed(1)
         .maxCentrifugalAcceleration(Double.MAX_VALUE)
         .offsetDampen(x -> 1)
+        .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
         .interpolateFromStart(false)
@@ -176,6 +202,7 @@ public class PathTests {
         .maxSpeed(Double.MAX_VALUE)
         .maxCentrifugalAcceleration(1)
         .offsetDampen(x -> 1)
+        .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
         .interpolateFromStart(false)
@@ -201,6 +228,7 @@ public class PathTests {
         .maxSpeed(1)
         .maxCentrifugalAcceleration(Double.MAX_VALUE)
         .offsetDampen(x -> 1 / (x + 1))
+        .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
         .interpolateFromStart(false)
@@ -229,6 +257,7 @@ public class PathTests {
         .maxSpeed(1)
         .maxCentrifugalAcceleration(Double.MAX_VALUE)
         .offsetDampen(x -> 1)
+        .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> x)
         .taskDampen(x -> Double.MAX_VALUE)
         .interpolateFromStart(false)
@@ -245,6 +274,56 @@ public class PathTests {
   }
 
   @Test
+  public void startingPathLimitsSpeed() {
+    Path path = PathFactory.newFactory()
+        .positionEntry(new MockEntry())
+        .interpolator(new MockInterpolator())
+        .maxSpeed(1)
+        .maxCentrifugalAcceleration(Double.MAX_VALUE)
+        .offsetDampen(x -> 1)
+        .startDampen(x -> x)
+        .completeDampen(x -> Double.MAX_VALUE)
+        .taskDampen(x -> Double.MAX_VALUE)
+        .interpolateFromStart(false)
+        .build();
+
+    path.initialize();
+    assertEquals(new Translation2d(0, 0), path.getDesiredVelocity());
+
+    path.advanceTo(0.5 * sqrtTwo);
+    assertEquals(new Translation2d(0.5, 0.5), path.getDesiredVelocity());
+
+    path.advanceTo(sqrtTwo);
+    assertEquals(new Translation2d(1 / sqrtTwo, 1 / sqrtTwo), path.getDesiredVelocity());
+  }
+
+  @Test
+  public void approachingTaskLimitsSpeed() {
+    MockTask task = new MockTask();
+    Path path = PathFactory.newFactory()
+        .addTask(task)
+        .positionEntry(new MockEntry())
+        .interpolator(new MockInterpolator())
+        .maxSpeed(Double.MAX_VALUE)
+        .maxCentrifugalAcceleration(Double.MAX_VALUE)
+        .offsetDampen(x -> Double.MAX_VALUE)
+        .startDampen(x -> Double.MAX_VALUE)
+        .completeDampen(x -> Double.MAX_VALUE)
+        .taskDampen(x -> x)
+        .interpolateFromStart(false)
+        .build();
+
+    path.initialize();
+    assertEquals(new Translation2d(0.75, 0.75), path.getDesiredVelocity());
+
+    path.advanceTo(0.1 * sqrtTwo);
+    AssertHelpers.assertEquals(new Translation2d(0.65, 0.65), path.getDesiredVelocity(), 1e-2);
+
+    path.advanceTo(0.6 * sqrtTwo);
+    AssertHelpers.assertEquals(new Translation2d(0.15, 0.15), path.getDesiredVelocity(), 1e-2);
+  }
+
+  @Test
   public void parameterizationComputationKeptToMinimum() {
     MockInterpolator interpolator = new MockInterpolator();
     Path path = PathFactory.newFactory()
@@ -253,6 +332,7 @@ public class PathTests {
         .maxSpeed(Double.MAX_VALUE)
         .maxCentrifugalAcceleration(Double.MAX_VALUE)
         .offsetDampen(x -> 1)
+        .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
         .interpolateFromStart(false)
@@ -286,11 +366,13 @@ public class PathTests {
   public void interpolateFromStart() {
     MockEntry entry = new MockEntry();
     Path path = PathFactory.newFactory()
+        .addPoint(0, 0)
         .positionEntry(entry)
         .interpolator(new MockInterpolatorTwo())
         .maxSpeed(Double.MAX_VALUE)
         .maxCentrifugalAcceleration(Double.MAX_VALUE)
         .offsetDampen(x -> Double.MAX_VALUE)
+        .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
         .interpolateFromStart(true)

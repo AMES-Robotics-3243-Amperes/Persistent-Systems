@@ -32,6 +32,7 @@ public class Path {
   private Optional<Rotation2d> finalRotation = Optional.empty();
   private SplineInterpolator interpolator = FollowConstants.defaultInterpolator;
   private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
+  private RealFunction startDampen = FollowConstants::splineStartVelocityDampen;
   private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
   private RealFunction taskDampen = FollowConstants::splineTaskVelocityDampen;
   private double maxSpeed = FollowConstants.maxSpeed;
@@ -50,6 +51,7 @@ public class Path {
       Optional<Rotation2d> finalRotation,
       SplineInterpolator interpolator,
       RealFunction offsetDampen,
+      RealFunction startDampen,
       RealFunction completeDampen,
       RealFunction taskDampen,
       double maxSpeed,
@@ -60,6 +62,7 @@ public class Path {
     Objects.requireNonNull(finalRotation, "finalRotation cannot be null");
     Objects.requireNonNull(interpolator, "interpolator cannot be null");
     Objects.requireNonNull(offsetDampen, "offsetDampen cannot be null");
+    Objects.requireNonNull(startDampen, "startDampen cannot be null");
     Objects.requireNonNull(completeDampen, "completeDampen cannot be null");
     Objects.requireNonNull(taskDampen, "taskDampen cannot be null");
     Objects.requireNonNull(maxSpeed, "maxSpeed cannot be null");
@@ -71,6 +74,7 @@ public class Path {
     this.finalRotation = finalRotation;
     this.interpolator = interpolator;
     this.offsetDampen = offsetDampen;
+    this.startDampen = startDampen;
     this.completeDampen = completeDampen;
     this.taskDampen = taskDampen;
     this.maxSpeed = maxSpeed;
@@ -85,18 +89,6 @@ public class Path {
         assert point.getSecond().get().getTargetTranslation() == point.getFirst()
             : "task target position does not match accompanying point";
       }
-    }
-
-    // make sure that no task ends after a task that proceeds it. this allows us to
-    // only deal with one task per subsystem at a time
-    double earliestEnd = Double.MAX_VALUE;
-    List<Task> tasks = getTasks();
-    ListIterator<Task> it = tasks.listIterator(tasks.size());
-    while (it.hasPrevious()) {
-      Task nextTask = it.previous();
-      earliestEnd = Double.min(nextTask.getEndLength(), earliestEnd);
-
-      nextTask.setEndLength(earliestEnd);
     }
 
     this.initialize();
@@ -139,13 +131,14 @@ public class Path {
   }
 
   public double getDesiredSpeed() {
-    double offsetSpeed = maxSpeed *
-        offsetDampen.sample(positionEntry.get().getTranslation().getDistance(getGoalPosition()));
-    double completeSpeed = Math.min(offsetSpeed,
-        completeDampen.sample(Math.abs(getLength() - spline.arcLength(1))));
-    double centrifugalSpeed = Math.min(completeSpeed,
+    double offsetSpeed = maxSpeed
+        * offsetDampen.sample(positionEntry.get().getTranslation().getDistance(getGoalPosition()));
+    double completeSpeed = Math.min(offsetSpeed, completeDampen.sample(Math.abs(getLength() - spline.arcLength(1))));
+    double startSpeed = Math.min(completeSpeed, startDampen.sample(currentLength));
+    double centrifugalSpeed = Math.min(startSpeed,
         Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization())));
 
+    // TODO: smooth speed after a task ends
     List<Task> upcomingTasks = getUpcomingTasks();
     if (!upcomingTasks.isEmpty()) {
       return Math.min(centrifugalSpeed, taskDampen.sample(upcomingTasks.get(0).getRemainingLength(currentLength)));
@@ -184,7 +177,7 @@ public class Path {
    */
   private List<Task> getValidActiveTasks() {
     List<Task> activeTasks = getActiveTasks();
-    List<Task> nextActiveTasks = new ArrayList<Task>();
+    List<Task> validActiveTasks = new ArrayList<Task>();
     HashSet<Subsystem> activeSubsystems = new HashSet<Subsystem>();
     for (Task task : activeTasks) {
       if (task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem))) {
@@ -192,10 +185,10 @@ public class Path {
       }
 
       activeSubsystems.addAll(task.getRequirements());
-      nextActiveTasks.add(task);
+      validActiveTasks.add(task);
     }
 
-    return nextActiveTasks;
+    return validActiveTasks;
   }
 
   public void initialize() {
@@ -219,6 +212,18 @@ public class Path {
       double index = (double) it.nextIndex();
       it.next().initialize(spline, spline.arcLength(index / (double) (points.size() - 1)));
     }
+
+    // make sure that no task ends after a task that proceeds it. this allows us to
+    // only deal with one task per subsystem at a time
+    double earliestEnd = Double.MAX_VALUE;
+    List<Task> tasks = getTasks();
+    it = tasks.listIterator(tasks.size());
+    while (it.hasPrevious()) {
+      Task nextTask = it.previous();
+      earliestEnd = Double.min(nextTask.getEndLength(), earliestEnd);
+
+      nextTask.setEndLength(earliestEnd);
+    }
   }
 
   public void advance() {
@@ -231,15 +236,23 @@ public class Path {
   }
 
   /**
-   * Starts any active tasks. <b> Already scheduled by {@link #advance}. </b> This
+   * Starts any active tasks. <b> Already run by {@link #advance}. </b> This
    * method is separate from {@link #advance} only for testing purposes.
    */
   public void startTasks() {
     for (Task task : getValidActiveTasks()) {
-      task.runCommand();
+      if (task.isValidRotation(getCurrentPosition().getRotation())) {
+        task.runCommand();
+      }
     }
   }
 
+  /**
+   * Advances the spline to a specific arc length. Should primarily be used for
+   * debug/testing purposes; does not interact well with tasks.
+   * 
+   * @param newLength the length to advance to
+   */
   public void advanceTo(double newLength) {
     currentLength = newLength;
     currentParameterization = Optional.empty();
