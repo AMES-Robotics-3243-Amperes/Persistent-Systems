@@ -41,7 +41,7 @@ public class DefaultSplineTests {
   @Test
   public void parameterizationAtArcLength() {
     MockSpline spline = new MockSpline();
-    
+
     assertEquals(0, spline.parameterizationAtArcLength(0), 1e-4);
     assertEquals(0.2, spline.arcLength(spline.parameterizationAtArcLength(0.2)), 1e-4);
     assertEquals(0.43, spline.arcLength(spline.parameterizationAtArcLength(0.43)), 1e-4);

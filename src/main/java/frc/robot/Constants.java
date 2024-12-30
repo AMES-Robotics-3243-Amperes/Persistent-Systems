@@ -57,10 +57,10 @@ public final class Constants {
       public static final double kRobotLength = Units.inchesToMeters(15);
 
       public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-        new Translation2d(kRobotLength / 2, kRobotWidth / 2),
-        new Translation2d(kRobotLength / 2, -kRobotWidth / 2),
-        new Translation2d(-kRobotLength / 2, kRobotWidth / 2),
-        new Translation2d(-kRobotLength / 2, -kRobotWidth / 2));
+          new Translation2d(kRobotLength / 2, kRobotWidth / 2),
+          new Translation2d(kRobotLength / 2, -kRobotWidth / 2),
+          new Translation2d(-kRobotLength / 2, kRobotWidth / 2),
+          new Translation2d(-kRobotLength / 2, -kRobotWidth / 2));
     }
 
     public static final class DriveTrainConstants {
@@ -110,13 +110,13 @@ public final class Constants {
         // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
         // teeth on the bevel pinion
         public static final double kDrivingMotorReduction = (45.0 * 22)
-          / (PhysicalProperties.kDrivingMotorPinionTeeth * 15);
+            / (PhysicalProperties.kDrivingMotorPinionTeeth * 15);
 
         public static final double kDrivingEncoderPositionFactor = (PhysicalProperties.kWheelDiameterMeters * Math.PI)
-          / kDrivingMotorReduction;
+            / kDrivingMotorReduction;
         public static final double kDrivingEncoderVelocityFactor = ((PhysicalProperties.kWheelDiameterMeters * Math.PI)
-          / kDrivingMotorReduction) / 60.0;
-          public static final double test = 1 / kDrivingEncoderVelocityFactor / 60;
+            / kDrivingMotorReduction) / 60.0;
+        public static final double test = 1 / kDrivingEncoderVelocityFactor / 60;
 
         public static final double kTurningEncoderPositionFactor = (2 * Math.PI);
         public static final double kTurningEncoderVelocityFactor = (2 * Math.PI) / 60.0;
@@ -144,8 +144,7 @@ public final class Constants {
   public static final class PhotonvisionConstants {
     public static final String cameraName = "Global_Shutter_Camera (1)";
 
-    public static final Pose3d cameraPosition =
-      new Pose3d(new Translation3d(Units.inchesToMeters(9),
+    public static final Pose3d cameraPosition = new Pose3d(new Translation3d(Units.inchesToMeters(9),
         Units.inchesToMeters(5),
         Units.inchesToMeters(0)),
         new Rotation3d(0, Units.degreesToRadians(2), 0));
@@ -190,6 +189,15 @@ public final class Constants {
        */
       public static final double splineCompleteVelocityDampen(double remainingLength) {
         return 2 * remainingLength + 0.1;
+      }
+
+      /**
+       * The robot needs to slow down to ensure it executes tasks in the correct
+       * position. This command dictates the max velocity of the robot as a function
+       * of remaining valid length to execute a task.
+       */
+      public static final double splineTaskVelocityDampen(double remainingLength) {
+        return remainingLength * remainingLength;
       }
     }
   }

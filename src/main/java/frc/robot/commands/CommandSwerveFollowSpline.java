@@ -39,8 +39,8 @@ public class CommandSwerveFollowSpline extends Command {
 
   @Override
   public void execute() {
-    Translation2d robotPosition = path.getPosition().getTranslation();
-    Rotation2d robotRotation = path.getPosition().getRotation();
+    Translation2d robotPosition = path.getCurrentPosition().getTranslation();
+    Rotation2d robotRotation = path.getCurrentPosition().getRotation();
     Translation2d goal = path.getGoalPosition();
 
     double xValue = xController.calculate(robotPosition.getX() - goal.getX());

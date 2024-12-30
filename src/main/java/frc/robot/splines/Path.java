@@ -1,16 +1,22 @@
 package frc.robot.splines;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 
+import edu.wpi.first.math.MathSharedStore;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.Entry;
 import frc.robot.splines.NumericalMethods.RealFunction;
+import frc.robot.splines.Tasks.Task;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
 /**
@@ -22,13 +28,12 @@ import frc.robot.splines.interpolation.SplineInterpolator;
  */
 public class Path {
   private Entry<Pose2d> positionEntry = null;
-  private ArrayList<Translation2d> points = new ArrayList<Translation2d>();
-  @SuppressWarnings("unused") // TODO: implement tasks
-  private ArrayList<Task> tasks = new ArrayList<Task>();
+  private ArrayList<Pair<Translation2d, Optional<Task>>> points = new ArrayList<Pair<Translation2d, Optional<Task>>>();
   private Optional<Rotation2d> finalRotation = Optional.empty();
   private SplineInterpolator interpolator = FollowConstants.defaultInterpolator;
   private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
   private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
+  private RealFunction taskDampen = FollowConstants::splineTaskVelocityDampen;
   private double maxSpeed = FollowConstants.maxSpeed;
   private double maxCentrifugalAcceleration = FollowConstants.maxCentrifugalAcceleration;
   private boolean interpolateFromStart = FollowConstants.interpolateFromStart;
@@ -38,39 +43,61 @@ public class Path {
   // the current parameterization is expensive to calculate, so we cache it
   private Optional<Double> currentParameterization = Optional.empty();
   private double currentLength = 0;
-  private Timer timer = new Timer();
+  private double previousTimestamp = 0;
 
   public Path(Entry<Pose2d> positionEntry,
-      ArrayList<Translation2d> points,
-      ArrayList<Task> tasks,
+      ArrayList<Pair<Translation2d, Optional<Task>>> points,
       Optional<Rotation2d> finalRotation,
       SplineInterpolator interpolator,
       RealFunction offsetDampen,
       RealFunction completeDampen,
+      RealFunction taskDampen,
       double maxSpeed,
       double maxCentrifugalAcceleration,
       boolean interpolateFromStart) {
     Objects.requireNonNull(positionEntry, "positionEntry cannot be null");
     Objects.requireNonNull(points, "points cannot be null");
-    Objects.requireNonNull(tasks, "tasks cannot be null");
     Objects.requireNonNull(finalRotation, "finalRotation cannot be null");
     Objects.requireNonNull(interpolator, "interpolator cannot be null");
     Objects.requireNonNull(offsetDampen, "offsetDampen cannot be null");
     Objects.requireNonNull(completeDampen, "completeDampen cannot be null");
+    Objects.requireNonNull(taskDampen, "taskDampen cannot be null");
     Objects.requireNonNull(maxSpeed, "maxSpeed cannot be null");
     Objects.requireNonNull(maxCentrifugalAcceleration, "maxCentrifugalAcceleration cannot be null");
     Objects.requireNonNull(interpolateFromStart, "interpolateFromStart cannot be null");
 
     this.positionEntry = positionEntry;
     this.points = points;
-    this.tasks = tasks;
     this.finalRotation = finalRotation;
     this.interpolator = interpolator;
     this.offsetDampen = offsetDampen;
     this.completeDampen = completeDampen;
+    this.taskDampen = taskDampen;
     this.maxSpeed = maxSpeed;
     this.maxCentrifugalAcceleration = maxCentrifugalAcceleration;
     this.interpolateFromStart = interpolateFromStart;
+
+    // verify that tasks match the point they are zipped with. tasks could
+    // theoretically be handled in a way that makes these checks irrelevant, but for
+    // the purpose of simplicity, this sanity check will do.
+    for (var point : points) {
+      if (point.getSecond().isPresent()) {
+        assert point.getSecond().get().getTargetTranslation() == point.getFirst()
+            : "task target position does not match accompanying point";
+      }
+    }
+
+    // make sure that no task ends after a task that proceeds it. this allows us to
+    // only deal with one task per subsystem at a time
+    double earliestEnd = Double.MAX_VALUE;
+    List<Task> tasks = getTasks();
+    ListIterator<Task> it = tasks.listIterator(tasks.size());
+    while (it.hasPrevious()) {
+      Task nextTask = it.previous();
+      earliestEnd = Double.min(nextTask.getEndLength(), earliestEnd);
+
+      nextTask.setEndLength(earliestEnd);
+    }
 
     this.initialize();
   }
@@ -79,7 +106,7 @@ public class Path {
     return currentLength;
   }
 
-  public Pose2d getPosition() {
+  public Pose2d getCurrentPosition() {
     return positionEntry.get();
   }
 
@@ -96,16 +123,35 @@ public class Path {
   }
 
   public Optional<Rotation2d> getDesiredRotation() {
-    return finalRotation;
+    Optional<Rotation2d> rotation = finalRotation;
+
+    List<Task> upcomingTasks = getUpcomingTasks();
+    ListIterator<Task> it = upcomingTasks.listIterator();
+    while (it.hasNext()) {
+      Task nextTask = it.next();
+      if (nextTask.getTargetRotation().isPresent()) {
+        rotation = nextTask.getTargetRotation();
+        break;
+      }
+    }
+
+    return rotation;
   }
 
   public double getDesiredSpeed() {
-    double baseSpeed = maxSpeed *
+    double offsetSpeed = maxSpeed *
         offsetDampen.sample(positionEntry.get().getTranslation().getDistance(getGoalPosition()));
-    double dampenSpeed = Math.min(baseSpeed,
+    double completeSpeed = Math.min(offsetSpeed,
         completeDampen.sample(Math.abs(getLength() - spline.arcLength(1))));
-    double maxCentrifugalSpeed = Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization()));
-    return Math.min(maxCentrifugalSpeed, dampenSpeed);
+    double centrifugalSpeed = Math.min(completeSpeed,
+        Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization())));
+
+    List<Task> upcomingTasks = getUpcomingTasks();
+    if (!upcomingTasks.isEmpty()) {
+      return Math.min(centrifugalSpeed, taskDampen.sample(upcomingTasks.get(0).getRemainingLength(currentLength)));
+    } else {
+      return centrifugalSpeed;
+    }
   }
 
   public Translation2d getDesiredVelocity() {
@@ -113,31 +159,91 @@ public class Path {
     return splineDerivative.times(getDesiredSpeed() / splineDerivative.getNorm());
   }
 
-  public void initialize() {
-    currentLength = 0;
-    timer.restart();
+  private List<Translation2d> getTranslations() {
+    return points.stream().map(point -> point.getFirst()).toList();
+  }
 
-    if (!interpolateFromStart) {
-      spline = interpolator.interpolatePoints(points);
-      return;
+  private List<Task> getTasks() {
+    return points.stream().filter(point -> point.getSecond().isPresent()).map(point -> point.getSecond().get())
+        .toList();
+  }
+
+  private List<Task> getUpcomingTasks() {
+    return getTasks().stream().filter(task -> task.isUpcoming(currentLength)).toList();
+  }
+
+  private List<Task> getActiveTasks() {
+    return getTasks().stream().filter(task -> task.isActive(currentLength)).toList();
+  }
+
+  /**
+   * Similar go {@link #getActiveTasks}, but if some subsystem has multiple active
+   * tasks, only includes the first.
+   * 
+   * @return The next active tasks
+   */
+  private List<Task> getValidActiveTasks() {
+    List<Task> activeTasks = getActiveTasks();
+    List<Task> nextActiveTasks = new ArrayList<Task>();
+    HashSet<Subsystem> activeSubsystems = new HashSet<Subsystem>();
+    for (Task task : activeTasks) {
+      if (task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem))) {
+        continue;
+      }
+
+      activeSubsystems.addAll(task.getRequirements());
+      nextActiveTasks.add(task);
     }
 
-    ArrayList<Translation2d> pointsWithStart = new ArrayList<Translation2d>();
-    pointsWithStart.add(positionEntry.get().getTranslation());
-    pointsWithStart.addAll(points);
-    spline = interpolator.interpolatePoints(pointsWithStart);
+    return nextActiveTasks;
+  }
+
+  public void initialize() {
+    currentLength = 0;
+    previousTimestamp = MathSharedStore.getTimestamp();
+    currentParameterization = Optional.empty();
+
+    // construct the spline
+    if (interpolateFromStart) {
+      ArrayList<Translation2d> pointsWithStart = new ArrayList<Translation2d>();
+      pointsWithStart.add(positionEntry.get().getTranslation());
+      pointsWithStart.addAll(getTranslations());
+      spline = interpolator.interpolatePoints(pointsWithStart);
+    } else {
+      spline = interpolator.interpolatePoints(getTranslations());
+    }
+
+    // initialize the tasks
+    ListIterator<Task> it = getTasks().listIterator();
+    while (it.hasNext()) {
+      double index = (double) it.nextIndex();
+      it.next().initialize(spline, spline.arcLength(index / (double) (points.size() - 1)));
+    }
   }
 
   public void advance() {
-    currentLength += timer.get() * getDesiredSpeed();
+    double newTimestamp = MathSharedStore.getTimestamp();
+    currentLength += (newTimestamp - previousTimestamp) * getDesiredSpeed();
     currentParameterization = Optional.empty();
-    timer.restart();
+    previousTimestamp = newTimestamp;
+
+    startTasks();
+  }
+
+  /**
+   * Starts any active tasks. <b> Already scheduled by {@link #advance}. </b> This
+   * method is separate from {@link #advance} only for testing purposes.
+   */
+  public void startTasks() {
+    for (Task task : getValidActiveTasks()) {
+      task.runCommand();
+    }
   }
 
   public void advanceTo(double newLength) {
     currentLength = newLength;
     currentParameterization = Optional.empty();
-    timer.restart();
+    previousTimestamp = MathSharedStore.getTimestamp();
   }
 
   public boolean isComplete() {

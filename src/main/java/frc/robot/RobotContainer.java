@@ -8,9 +8,12 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.splines.PathFactory;
+import frc.robot.splines.Tasks.FinishByTask;
+import frc.robot.splines.Tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -39,7 +42,8 @@ public class RobotContainer {
   // Commands
   //
 
-  private CommandSwerveTeleopDrive commandSwerveTeleopDrive = new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain, primaryController);
+  private CommandSwerveTeleopDrive commandSwerveTeleopDrive = new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain,
+      primaryController);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -63,6 +67,40 @@ public class RobotContainer {
     subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
   }
 
+  private class MockShooterSubsystem extends SubsystemBase {}
+
+  private class MockReadyShooterCommand extends Command {
+    public MockReadyShooterCommand(MockShooterSubsystem subsystem) {
+      addRequirements(subsystem);
+    }
+
+    @Override
+    public boolean isFinished() {
+      return true;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+      System.out.println("Shooter readied!");
+    }
+  }
+
+  private class MockShootCommand extends Command {
+    public MockShootCommand(MockShooterSubsystem subsystem) {
+      addRequirements(subsystem);
+    }
+
+    @Override
+    public boolean isFinished() {
+      return true;
+    }
+
+    @Override
+    public void end(boolean interrupted) {
+      System.out.println("Shot!");
+    }
+  }
+
   /**
    * Used to configure controller bindings.
    */
@@ -71,13 +109,15 @@ public class RobotContainer {
     PIDController yController = new PIDController(0.4, 0, 0.02);
     PIDController thetaController = new PIDController(1.2, 0, 0);
 
+    MockShooterSubsystem mockShooterSubsystem = new MockShooterSubsystem();
+
     CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
-        .addPoint(new Translation2d(13, 0))
-        .addPoint(new Translation2d(13, -0.7))
-        .addPoint(new Translation2d(14, -0.7))
-        .addPoint(new Translation2d(13, 0))
+        .addPoint(new Translation2d(0, 0))
+        .addPoint(new Translation2d(1, 1))
+        .addTask(new FinishByTask(new Translation2d(2, 0), new MockReadyShooterCommand(mockShooterSubsystem)))
+        .addTask(new PerformAtTask(new Translation2d(3, -1), 0.1, Rotation2d.fromDegrees(180), new MockShootCommand(mockShooterSubsystem)))
+        .addPoint(new Translation2d(0, 0))
         .finalRotation(new Rotation2d(0))
-        .interpolateFromStart(true)
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
     primaryController.a().whileTrue(followCommand);

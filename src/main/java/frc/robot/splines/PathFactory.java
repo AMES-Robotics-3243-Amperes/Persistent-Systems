@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,6 +15,7 @@ import frc.robot.Entry;
 import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.splines.NumericalMethods.RealFunction;
+import frc.robot.splines.Tasks.Task;
 import frc.robot.splines.interpolation.SplineInterpolator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
@@ -23,12 +25,12 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
  */
 public class PathFactory {
   private Optional<Entry<Pose2d>> positionEntry = Optional.empty();
-  private ArrayList<Translation2d> points = new ArrayList<Translation2d>();
-  private ArrayList<Task> tasks = new ArrayList<Task>();
+  private ArrayList<Pair<Translation2d, Optional<Task>>> points = new ArrayList<Pair<Translation2d, Optional<Task>>>();
   private Optional<Rotation2d> finalRotation = Optional.empty();
   private SplineInterpolator interpolator = FollowConstants.defaultInterpolator;
   private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
   private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
+  private RealFunction taskDampen = FollowConstants::splineTaskVelocityDampen;
   private double maxSpeed = FollowConstants.maxSpeed;
   private double maxCentrifugalAcceleration = FollowConstants.maxCentrifugalAcceleration;
   private boolean interpolateFromStart = FollowConstants.interpolateFromStart;
@@ -64,19 +66,19 @@ public class PathFactory {
 
   public PathFactory addPoint(Translation2d point) {
     Objects.requireNonNull(point, "point cannot be null");
-    points.add(point);
+    this.points.add(new Pair<Translation2d, Optional<Task>>(point, Optional.empty()));
     return this;
   }
 
   public PathFactory addPoints(List<Translation2d> points) {
     Objects.requireNonNull(points, "point cannot be null");
-    points.addAll(points);
+    points.forEach(point -> this.addPoint(point));
     return this;
   }
 
   public PathFactory addTask(Task task) {
     Objects.requireNonNull(task, "task cannot be null");
-    tasks.add(task);
+    this.points.add(new Pair<Translation2d, Optional<Task>>(task.getTargetTranslation(), Optional.of(task)));
     return this;
   }
 
@@ -109,6 +111,12 @@ public class PathFactory {
     return this;
   }
 
+  public PathFactory taskDampen(RealFunction taskDampen) {
+    Objects.requireNonNull(taskDampen, "taskDampen cannot be null");
+    this.taskDampen = taskDampen;
+    return this;
+  }
+
   public PathFactory maxSpeed(double maxSpeed) {
     this.maxSpeed = maxSpeed;
     return this;
@@ -132,7 +140,7 @@ public class PathFactory {
       this.positionEntry = Optional.of(DataManager.instance().robotPosition);
     }
 
-    return new Path(positionEntry.get(), points, tasks, finalRotation, interpolator, offsetDampen, completeDampen,
+    return new Path(positionEntry.get(), points, finalRotation, interpolator, offsetDampen, completeDampen, taskDampen,
         maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
   }
 

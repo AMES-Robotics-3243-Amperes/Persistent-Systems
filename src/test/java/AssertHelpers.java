@@ -5,10 +5,10 @@ import edu.wpi.first.math.geometry.Translation2d;
 public class AssertHelpers {
   private static <T> void failNotEqual(T expected, T actual, String message) {
     AssertionFailureBuilder.assertionFailure()
-				.message(message)
-				.expected(expected)
-				.actual(actual)
-				.buildAndThrow();
+        .message(message)
+        .expected(expected)
+        .actual(actual)
+        .buildAndThrow();
   }
 
   public static <T> void assertEqualsOr(T expectedOne, T expectedTwo, T actual) {
@@ -23,7 +23,8 @@ public class AssertHelpers {
     }
   }
 
-  public static void assertEqualsOr(Translation2d expectedOne, Translation2d expectedTwo, Translation2d actual, double delta) {
+  public static void assertEqualsOr(Translation2d expectedOne, Translation2d expectedTwo, Translation2d actual,
+      double delta) {
     if (expectedOne.getDistance(actual) > delta && expectedTwo.getDistance(actual) > delta) {
       AssertionFailureBuilder.assertionFailure().buildAndThrow();
     }
