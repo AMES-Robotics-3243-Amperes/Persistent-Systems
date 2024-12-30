@@ -168,7 +168,8 @@ public final class Constants {
 
     public static final class TaskConstants {
       public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(5);
-      public static final double defaultPerformAtTaskTolerance = 0.2;
+      public static final double defaultPositionTolerance = 0.2;
+      public static final double defaultPositionBuffer = 0.3;
     }
 
     public static final class FollowConstants {

@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.Entry;
 import frc.robot.splines.NumericalMethods.RealFunction;
-import frc.robot.splines.Tasks.Task;
+import frc.robot.splines.tasks.Task;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
 /**

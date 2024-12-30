@@ -11,8 +11,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.splines.PathFactory;
-import frc.robot.splines.Tasks.FinishByTask;
-import frc.robot.splines.Tasks.PerformAtTask;
+import frc.robot.splines.tasks.FinishByTask;
+import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**

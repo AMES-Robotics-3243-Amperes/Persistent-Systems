@@ -13,7 +13,7 @@ import frc.robot.Entry;
 import frc.robot.splines.Path;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.Spline;
-import frc.robot.splines.Tasks.Task;
+import frc.robot.splines.tasks.Task;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
 public class PathTests {

@@ -1,4 +1,4 @@
-package frc.robot.splines.Tasks;
+package frc.robot.splines.tasks;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -47,8 +47,8 @@ public abstract class Task {
 
   public final void initialize(Spline spline, double targetLength) {
     completed = false;
-    startLength = calculateStartLength(spline, targetLength);
-    endLength = calculateEndLength(spline, targetLength);
+    startLength = MathUtil.clamp(calculateStartLength(spline, targetLength), 0, 1);
+    endLength = MathUtil.clamp(calculateEndLength(spline, targetLength), 0, 1);
   }
 
   protected abstract double calculateStartLength(Spline spline, double targetLength);
