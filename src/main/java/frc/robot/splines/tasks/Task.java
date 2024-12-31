@@ -6,7 +6,6 @@ import java.util.Set;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.splines.Spline;
@@ -19,7 +18,6 @@ public abstract class Task {
   private double startLength = 0;
   private double endLength = 1;
 
-  private final Translation2d targetTranslation;
   private final Optional<Rotation2d> targetRotation;
   private final Command command;
 
@@ -27,14 +25,11 @@ public abstract class Task {
 
   private boolean completed = false;
 
-  public Task(Translation2d targetTranslation, Optional<Rotation2d> targetRotation, Rotation2d rotationTolerance,
-      Command command) {
-    Objects.requireNonNull(targetTranslation, "targetTranslation cannot be null");
+  public Task(Optional<Rotation2d> targetRotation, Rotation2d rotationTolerance, Command command) {
     Objects.requireNonNull(targetRotation, "targetRotation cannot be null");
     Objects.requireNonNull(rotationTolerance, "rotationTolerance cannot be null");
     Objects.requireNonNull(command, "command cannot be null");
 
-    this.targetTranslation = targetTranslation;
     this.targetRotation = targetRotation;
     this.rotationTolerance = rotationTolerance;
     this.command = command.finallyDo(new Runnable() {
@@ -66,10 +61,6 @@ public abstract class Task {
     this.endLength = newEndLength;
   }
 
-  public final Translation2d getTargetTranslation() {
-    return targetTranslation;
-  }
-
   public final Optional<Rotation2d> getTargetRotation() {
     return targetRotation;
   };
@@ -95,9 +86,12 @@ public abstract class Task {
       return true;
     }
 
-    boolean directlyNear = MathUtil.isNear(this.targetRotation.get().getDegrees(), rotation.getDegrees(), this.rotationTolerance.getDegrees());
-    boolean targetLoopNear = MathUtil.isNear(this.targetRotation.get().getDegrees() + 360, rotation.getDegrees(), this.rotationTolerance.getDegrees());
-    boolean actualLoopNear = MathUtil.isNear(this.targetRotation.get().getDegrees(), rotation.getDegrees() + 360, this.rotationTolerance.getDegrees());
+    boolean directlyNear = MathUtil.isNear(this.targetRotation.get().getDegrees(), rotation.getDegrees(),
+        this.rotationTolerance.getDegrees());
+    boolean targetLoopNear = MathUtil.isNear(this.targetRotation.get().getDegrees() + 360, rotation.getDegrees(),
+        this.rotationTolerance.getDegrees());
+    boolean actualLoopNear = MathUtil.isNear(this.targetRotation.get().getDegrees(), rotation.getDegrees() + 360,
+        this.rotationTolerance.getDegrees());
     return directlyNear || targetLoopNear || actualLoopNear;
   }
 

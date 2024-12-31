@@ -114,8 +114,8 @@ public class RobotContainer {
     CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
         .addPoint(0, 0)
         .addPoint(1, 1)
-        .addTask(new FinishByTask(2, 0, new MockReadyShooterCommand(mockShooterSubsystem)))
-        .addTask(new PerformAtTask(3, -1, Rotation2d.fromDegrees(180), new MockShootCommand(mockShooterSubsystem)))
+        .addTask(2, 0, new FinishByTask(new MockReadyShooterCommand(mockShooterSubsystem)))
+        .addTask(3, -1, new PerformAtTask(Rotation2d.fromDegrees(180), new MockShootCommand(mockShooterSubsystem)))
         .addPoint(0, 0)
         .finalRotation(new Rotation2d(0))
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);

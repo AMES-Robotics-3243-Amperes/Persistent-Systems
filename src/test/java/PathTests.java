@@ -54,30 +54,9 @@ public class PathTests {
 
       };
     }
-
   }
 
-  public class MockTask extends Task {
-    public MockTask(Optional<Rotation2d> targetRotation, Rotation2d rotationTolerance) {
-      super(new Translation2d(sqrtTwo / 2, sqrtTwo / 2), targetRotation, rotationTolerance, new InstantCommand());
-    }
-
-    public MockTask() {
-      this(Optional.empty(), new Rotation2d());
-    }
-
-    @Override
-    protected double calculateStartLength(Spline spline, double targetLength) {
-      return 0.25 * sqrtTwo;
-    }
-
-    @Override
-    protected double calculateEndLength(Spline spline, double targetLength) {
-      return 0.75 * sqrtTwo;
-    }
-  }
-
-  public class MockInterpolatorTwo implements SplineInterpolator {
+  public class PointReturningMockInterpolator implements SplineInterpolator {
     public int parameterizationAtArcLengthCalls = 0;
 
     @Override
@@ -101,7 +80,31 @@ public class PathTests {
 
       };
     }
+  }
 
+  public class MockTask extends Task {
+    double startLength, endLength;
+
+    public MockTask(double startLength, double endLength, Optional<Rotation2d> targetRotation,
+        Rotation2d rotationTolerance) {
+      super(targetRotation, rotationTolerance, new InstantCommand());
+      this.startLength = startLength;
+      this.endLength = endLength;
+    }
+
+    public MockTask(double startLength, double endLength) {
+      this(startLength, endLength, Optional.empty(), new Rotation2d());
+    }
+
+    @Override
+    protected double calculateStartLength(Spline spline, double targetLength) {
+      return startLength;
+    }
+
+    @Override
+    protected double calculateEndLength(Spline spline, double targetLength) {
+      return endLength;
+    }
   }
 
   public class MockEntry extends Entry<Pose2d> {
@@ -298,32 +301,6 @@ public class PathTests {
   }
 
   @Test
-  public void approachingTaskLimitsSpeed() {
-    MockTask task = new MockTask();
-    Path path = PathFactory.newFactory()
-        .addTask(task)
-        .positionEntry(new MockEntry())
-        .interpolator(new MockInterpolator())
-        .maxSpeed(Double.MAX_VALUE)
-        .maxCentrifugalAcceleration(Double.MAX_VALUE)
-        .offsetDampen(x -> Double.MAX_VALUE)
-        .startDampen(x -> Double.MAX_VALUE)
-        .completeDampen(x -> Double.MAX_VALUE)
-        .taskDampen(x -> x)
-        .interpolateFromStart(false)
-        .build();
-
-    path.initialize();
-    assertEquals(new Translation2d(0.75, 0.75), path.getDesiredVelocity());
-
-    path.advanceTo(0.1 * sqrtTwo);
-    AssertHelpers.assertEquals(new Translation2d(0.65, 0.65), path.getDesiredVelocity(), 1e-2);
-
-    path.advanceTo(0.6 * sqrtTwo);
-    AssertHelpers.assertEquals(new Translation2d(0.15, 0.15), path.getDesiredVelocity(), 1e-2);
-  }
-
-  @Test
   public void parameterizationComputationKeptToMinimum() {
     MockInterpolator interpolator = new MockInterpolator();
     Path path = PathFactory.newFactory()
@@ -368,7 +345,7 @@ public class PathTests {
     Path path = PathFactory.newFactory()
         .addPoint(0, 0)
         .positionEntry(entry)
-        .interpolator(new MockInterpolatorTwo())
+        .interpolator(new PointReturningMockInterpolator())
         .maxSpeed(Double.MAX_VALUE)
         .maxCentrifugalAcceleration(Double.MAX_VALUE)
         .offsetDampen(x -> Double.MAX_VALUE)
@@ -385,5 +362,34 @@ public class PathTests {
       path.initialize();
       assertEquals(path.getGoalPosition(), goalPosition);
     }
+  }
+
+  @Test
+  public void approachingTaskLimitsSpeed() {
+    MockTask task = new MockTask(0, sqrtTwo);
+    MockTask taskTwo = new MockTask(0.4 * sqrtTwo, 0.6 * sqrtTwo);
+    Path path = PathFactory.newFactory()
+        .addTask(0, 0, task)
+        .addTask(sqrtTwo / 2, sqrtTwo / 2, taskTwo)
+        .addPoint(1, 1)
+        .positionEntry(new MockEntry())
+        .interpolator(new MockInterpolator())
+        .maxSpeed(Double.MAX_VALUE)
+        .maxCentrifugalAcceleration(Double.MAX_VALUE)
+        .offsetDampen(x -> Double.MAX_VALUE)
+        .startDampen(x -> Double.MAX_VALUE)
+        .completeDampen(x -> Double.MAX_VALUE)
+        .taskDampen(x -> x)
+        .interpolateFromStart(false)
+        .build();
+
+    path.initialize();
+    assertEquals(new Translation2d(0.6, 0.6), path.getDesiredVelocity());
+
+    path.advanceTo(0.1 * sqrtTwo);
+    AssertHelpers.assertEquals(new Translation2d(0.5, 0.5), path.getDesiredVelocity(), 1e-2);
+
+    path.advanceTo(0.5 * sqrtTwo);
+    AssertHelpers.assertEquals(new Translation2d(0.1, 0.1), path.getDesiredVelocity(), 1e-2);
   }
 }

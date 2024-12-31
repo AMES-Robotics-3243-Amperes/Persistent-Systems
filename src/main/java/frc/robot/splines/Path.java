@@ -1,18 +1,15 @@
 package frc.robot.splines;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 
 import edu.wpi.first.math.MathSharedStore;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.Entry;
 import frc.robot.splines.NumericalMethods.RealFunction;
@@ -28,7 +25,7 @@ import frc.robot.splines.interpolation.SplineInterpolator;
  */
 public class Path {
   private Entry<Pose2d> positionEntry = null;
-  private ArrayList<Pair<Translation2d, Optional<Task>>> points = new ArrayList<Pair<Translation2d, Optional<Task>>>();
+  private ControlPointList controlPoints = new ControlPointList();
   private Optional<Rotation2d> finalRotation = Optional.empty();
   private SplineInterpolator interpolator = FollowConstants.defaultInterpolator;
   private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
@@ -47,7 +44,7 @@ public class Path {
   private double previousTimestamp = 0;
 
   public Path(Entry<Pose2d> positionEntry,
-      ArrayList<Pair<Translation2d, Optional<Task>>> points,
+      ControlPointList points,
       Optional<Rotation2d> finalRotation,
       SplineInterpolator interpolator,
       RealFunction offsetDampen,
@@ -70,7 +67,7 @@ public class Path {
     Objects.requireNonNull(interpolateFromStart, "interpolateFromStart cannot be null");
 
     this.positionEntry = positionEntry;
-    this.points = points;
+    this.controlPoints = points;
     this.finalRotation = finalRotation;
     this.interpolator = interpolator;
     this.offsetDampen = offsetDampen;
@@ -80,16 +77,6 @@ public class Path {
     this.maxSpeed = maxSpeed;
     this.maxCentrifugalAcceleration = maxCentrifugalAcceleration;
     this.interpolateFromStart = interpolateFromStart;
-
-    // verify that tasks match the point they are zipped with. tasks could
-    // theoretically be handled in a way that makes these checks irrelevant, but for
-    // the purpose of simplicity, this sanity check will do.
-    for (var point : points) {
-      if (point.getSecond().isPresent()) {
-        assert point.getSecond().get().getTargetTranslation() == point.getFirst()
-            : "task target position does not match accompanying point";
-      }
-    }
 
     this.initialize();
   }
@@ -117,7 +104,7 @@ public class Path {
   public Optional<Rotation2d> getDesiredRotation() {
     Optional<Rotation2d> rotation = finalRotation;
 
-    List<Task> upcomingTasks = getUpcomingTasks();
+    List<Task> upcomingTasks = controlPoints.getUpcomingTasks(currentLength);
     ListIterator<Task> it = upcomingTasks.listIterator();
     while (it.hasNext()) {
       Task nextTask = it.next();
@@ -139,7 +126,7 @@ public class Path {
         Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization())));
 
     // TODO: smooth speed after a task ends
-    List<Task> upcomingTasks = getUpcomingTasks();
+    List<Task> upcomingTasks = controlPoints.getUpcomingTasks(currentLength);
     if (!upcomingTasks.isEmpty()) {
       return Math.min(centrifugalSpeed, taskDampen.sample(upcomingTasks.get(0).getRemainingLength(currentLength)));
     } else {
@@ -152,45 +139,6 @@ public class Path {
     return splineDerivative.times(getDesiredSpeed() / splineDerivative.getNorm());
   }
 
-  private List<Translation2d> getTranslations() {
-    return points.stream().map(point -> point.getFirst()).toList();
-  }
-
-  private List<Task> getTasks() {
-    return points.stream().filter(point -> point.getSecond().isPresent()).map(point -> point.getSecond().get())
-        .toList();
-  }
-
-  private List<Task> getUpcomingTasks() {
-    return getTasks().stream().filter(task -> task.isUpcoming(currentLength)).toList();
-  }
-
-  private List<Task> getActiveTasks() {
-    return getTasks().stream().filter(task -> task.isActive(currentLength)).toList();
-  }
-
-  /**
-   * Similar go {@link #getActiveTasks}, but if some subsystem has multiple active
-   * tasks, only includes the first.
-   * 
-   * @return The next active tasks
-   */
-  private List<Task> getValidActiveTasks() {
-    List<Task> activeTasks = getActiveTasks();
-    List<Task> validActiveTasks = new ArrayList<Task>();
-    HashSet<Subsystem> activeSubsystems = new HashSet<Subsystem>();
-    for (Task task : activeTasks) {
-      if (task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem))) {
-        continue;
-      }
-
-      activeSubsystems.addAll(task.getRequirements());
-      validActiveTasks.add(task);
-    }
-
-    return validActiveTasks;
-  }
-
   public void initialize() {
     currentLength = 0;
     previousTimestamp = MathSharedStore.getTimestamp();
@@ -200,30 +148,13 @@ public class Path {
     if (interpolateFromStart) {
       ArrayList<Translation2d> pointsWithStart = new ArrayList<Translation2d>();
       pointsWithStart.add(positionEntry.get().getTranslation());
-      pointsWithStart.addAll(getTranslations());
+      pointsWithStart.addAll(controlPoints.getTranslations());
       spline = interpolator.interpolatePoints(pointsWithStart);
     } else {
-      spline = interpolator.interpolatePoints(getTranslations());
+      spline = interpolator.interpolatePoints(controlPoints.getTranslations());
     }
 
-    // initialize the tasks
-    ListIterator<Task> it = getTasks().listIterator();
-    while (it.hasNext()) {
-      double index = (double) it.nextIndex();
-      it.next().initialize(spline, spline.arcLength(index / (double) (points.size() - 1)));
-    }
-
-    // make sure that no task ends after a task that proceeds it. this allows us to
-    // only deal with one task per subsystem at a time
-    double earliestEnd = Double.MAX_VALUE;
-    List<Task> tasks = getTasks();
-    it = tasks.listIterator(tasks.size());
-    while (it.hasPrevious()) {
-      Task nextTask = it.previous();
-      earliestEnd = Double.min(nextTask.getEndLength(), earliestEnd);
-
-      nextTask.setEndLength(earliestEnd);
-    }
+    controlPoints.initializeTasks(spline, interpolateFromStart);
   }
 
   public void advance() {
@@ -240,7 +171,7 @@ public class Path {
    * method is separate from {@link #advance} only for testing purposes.
    */
   public void startTasks() {
-    for (Task task : getValidActiveTasks()) {
+    for (Task task : controlPoints.getValidActiveTasks(currentLength)) {
       if (task.isValidRotation(getCurrentPosition().getRotation())) {
         task.runCommand();
       }

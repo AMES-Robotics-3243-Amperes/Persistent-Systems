@@ -1,11 +1,9 @@
 package frc.robot.splines;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -25,7 +23,7 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
  */
 public class PathFactory {
   private Optional<Entry<Pose2d>> positionEntry = Optional.empty();
-  private ArrayList<Pair<Translation2d, Optional<Task>>> points = new ArrayList<Pair<Translation2d, Optional<Task>>>();
+  private ControlPointList controlPoints = new ControlPointList();
   private Optional<Rotation2d> finalRotation = Optional.empty();
   private SplineInterpolator interpolator = FollowConstants.defaultInterpolator;
   private RealFunction offsetDampen = FollowConstants::splineOffsetVelocityDampen;
@@ -65,14 +63,15 @@ public class PathFactory {
     return this;
   }
 
-  public PathFactory addPoint(Translation2d point) {
-    Objects.requireNonNull(point, "point cannot be null");
-    this.points.add(new Pair<Translation2d, Optional<Task>>(point, Optional.empty()));
+  public PathFactory addPoint(Translation2d translation) {
+    Objects.requireNonNull(translation, "point cannot be null");
+    this.controlPoints.addControlPoint(translation);
+    ;
     return this;
   }
 
   public PathFactory addPoint(double x, double y) {
-    this.points.add(new Pair<Translation2d, Optional<Task>>(new Translation2d(x, y), Optional.empty()));
+    this.controlPoints.addControlPoint(new Translation2d(x, y));
     return this;
   }
 
@@ -82,9 +81,16 @@ public class PathFactory {
     return this;
   }
 
-  public PathFactory addTask(Task task) {
+  public PathFactory addTask(Translation2d targetTranslation, Task task) {
+    Objects.requireNonNull(targetTranslation, "targetTranslation cannot be null");
     Objects.requireNonNull(task, "task cannot be null");
-    this.points.add(new Pair<Translation2d, Optional<Task>>(task.getTargetTranslation(), Optional.of(task)));
+    this.controlPoints.addControlPoint(targetTranslation, task);
+    return this;
+  }
+
+  public PathFactory addTask(double x, double y, Task task) {
+    Objects.requireNonNull(task, "task cannot be null");
+    this.controlPoints.addControlPoint(new Translation2d(x, y), task);
     return this;
   }
 
@@ -152,8 +158,8 @@ public class PathFactory {
       this.positionEntry = Optional.of(DataManager.instance().robotPosition);
     }
 
-    return new Path(positionEntry.get(), points, finalRotation, interpolator, offsetDampen, startDampen, completeDampen,
-        taskDampen, maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
+    return new Path(positionEntry.get(), controlPoints, finalRotation, interpolator, offsetDampen, startDampen,
+        completeDampen, taskDampen, maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
   }
 
   public CommandSwerveFollowSpline buildCommand(SubsystemSwerveDrivetrain subsystem, PIDController xController,
