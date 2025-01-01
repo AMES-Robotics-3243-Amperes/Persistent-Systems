@@ -57,15 +57,14 @@ public class PathTests {
   }
 
   public class PointReturningMockInterpolator implements SplineInterpolator {
-    public int parameterizationAtArcLengthCalls = 0;
-
     @Override
     public Spline interpolatePoints(List<Translation2d> points) {
       return new Spline() {
+        private int pointIndex = 0;
 
         @Override
         public Translation2d at(double t) {
-          return points.get(0);
+          return points.get(pointIndex++);
         }
 
         @Override
@@ -362,6 +361,37 @@ public class PathTests {
       path.initialize();
       assertEquals(path.getGoalPosition(), goalPosition);
     }
+  }
+
+  @Test
+  public void removesDuplicateTranslations() {
+    MockEntry entry = new MockEntry();
+    Path path = PathFactory.newFactory()
+        .addPoint(0, 0)
+        .addPoint(1, 1)
+        .addPoint(1, 1)
+        .addPoint(2, 2)
+        .addPoint(1, 1)
+        .addPoint(1, 1)
+        .addPoint(3, 3)
+        .positionEntry(entry)
+        .interpolator(new PointReturningMockInterpolator())
+        .maxSpeed(Double.MAX_VALUE)
+        .maxCentrifugalAcceleration(Double.MAX_VALUE)
+        .offsetDampen(x -> Double.MAX_VALUE)
+        .startDampen(x -> Double.MAX_VALUE)
+        .completeDampen(x -> Double.MAX_VALUE)
+        .taskDampen(x -> Double.MAX_VALUE)
+        .interpolateFromStart(true)
+        .build();
+
+    path.initialize();
+    entry.set(new Pose2d(0, 0, new Rotation2d()));
+    assertEquals(new Translation2d(0, 0), path.getGoalPosition());
+    assertEquals(new Translation2d(1, 1), path.getGoalPosition());
+    assertEquals(new Translation2d(2, 2), path.getGoalPosition());
+    assertEquals(new Translation2d(1, 1), path.getGoalPosition());
+    assertEquals(new Translation2d(3, 3), path.getGoalPosition());
   }
 
   @Test

@@ -23,7 +23,7 @@ public class CubicInterpolationTests {
     points.add(new Translation2d(2, -0.5));
 
     CubicInterpolator interpolator = new CubicInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     AssertHelpers.assertEquals(new Translation2d(0, 0), spline.at(0), 1e-10);
     AssertHelpers.assertEquals(new Translation2d(1, 1), spline.at(0.25), 1e-10);
@@ -47,7 +47,7 @@ public class CubicInterpolationTests {
     points.add(new Translation2d(4, 3));
 
     CubicInterpolator interpolator = new CubicInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     // ensure forward-difference roughly agrees with the derivative
     for (int i = 0; i < ((int) (1.0 / h)) - 2; i++) {
@@ -72,7 +72,7 @@ public class CubicInterpolationTests {
     points.add(new Translation2d(0, 1));
 
     CubicInterpolator interpolator = new CubicInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     double estimate = 0;
     for (int i = 1; i < ((int) (1 / h)); i++) {
@@ -90,7 +90,7 @@ public class CubicInterpolationTests {
     points.add(new Translation2d(0, 0));
 
     CubicInterpolator interpolator = new CubicInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     assertEquals(0, spline.arcLength(spline.parameterizationAtArcLength(0)), 1e-4);
     assertEquals(2.2, spline.arcLength(spline.parameterizationAtArcLength(2.2)), 1e-4);
@@ -108,7 +108,7 @@ public class CubicInterpolationTests {
     points.add(new Translation2d(-3, -1.5));
 
     CubicInterpolator interpolator = new CubicInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     // ensure forward-difference roughly agrees with the curvature
     for (int i = 0; i < ((int) (1.0 / h)) - 1; i++) {

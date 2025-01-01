@@ -1,6 +1,7 @@
 package frc.robot.splines;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
@@ -43,7 +44,7 @@ public class ControlPointList {
   public void addControlPoint(Translation2d translation, Optional<Task> task) {
     if (uniqueTranslations.isEmpty()) {
       uniqueTranslations.add(translation);
-    } else if (uniqueTranslations.get(uniqueTranslations.size() - 1) != translation) {
+    } else if (uniqueTranslations.get(uniqueTranslations.size() - 1).getDistance(translation) > 1e-2) {
       uniqueTranslations.add(translation);
     }
 
@@ -61,7 +62,20 @@ public class ControlPointList {
   }
 
   public List<Translation2d> getTranslations() {
-    return uniqueTranslations;
+    return Collections.unmodifiableList(uniqueTranslations);
+  }
+
+  public List<Translation2d> getInterpolationTranslations(Optional<Translation2d> interpolateFromStartTranslation) {
+    if (interpolateFromStartTranslation.isEmpty()) {
+      return getTranslations();
+    } else if (interpolateFromStartTranslation.get().getDistance(getTranslations().get(0)) < 1e-2) {
+      return getTranslations();
+    }
+
+    ArrayList<Translation2d> pointsWithStart = new ArrayList<Translation2d>();
+    pointsWithStart.add(interpolateFromStartTranslation.get());
+    pointsWithStart.addAll(getTranslations());
+    return pointsWithStart;
   }
 
   public List<Task> getTasks() {

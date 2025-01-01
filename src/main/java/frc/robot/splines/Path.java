@@ -1,12 +1,12 @@
 package frc.robot.splines;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Optional;
 
 import edu.wpi.first.math.MathSharedStore;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -42,6 +42,12 @@ public class Path {
   private Optional<Double> currentParameterization = Optional.empty();
   private double currentLength = 0;
   private double previousTimestamp = 0;
+
+  /**
+   * used to stop the robot from suddenly accelerating after a task ends.
+   * takes the form (previousSpeed, previousLength).
+   */
+  private Pair<Double, Double> previousTaskSpeed = new Pair<Double, Double>(0.0, 0.0);
 
   public Path(Entry<Pose2d> positionEntry,
       ControlPointList points,
@@ -125,13 +131,16 @@ public class Path {
     double centrifugalSpeed = Math.min(startSpeed,
         Math.sqrt(maxCentrifugalAcceleration / spline.curvature(getParameterization())));
 
-    // TODO: smooth speed after a task ends
     List<Task> upcomingTasks = controlPoints.getUpcomingTasks(currentLength);
+    double taskSpeed = centrifugalSpeed;
     if (!upcomingTasks.isEmpty()) {
-      return Math.min(centrifugalSpeed, taskDampen.sample(upcomingTasks.get(0).getRemainingLength(currentLength)));
-    } else {
-      return centrifugalSpeed;
+      taskSpeed = Math.min(centrifugalSpeed, taskDampen.sample(upcomingTasks.get(0).getRemainingLength(currentLength)));
     }
+
+    taskSpeed = Math.min(taskSpeed,
+        previousTaskSpeed.getFirst() + Math.abs(currentLength - previousTaskSpeed.getSecond()));
+    previousTaskSpeed = new Pair<Double, Double>(taskSpeed, currentLength);
+    return taskSpeed;
   }
 
   public Translation2d getDesiredVelocity() {
@@ -141,19 +150,15 @@ public class Path {
 
   public void initialize() {
     currentLength = 0;
+    previousTaskSpeed = new Pair<Double, Double>(maxSpeed, currentLength);
     previousTimestamp = MathSharedStore.getTimestamp();
     currentParameterization = Optional.empty();
 
-    // construct the spline
-    if (interpolateFromStart) {
-      ArrayList<Translation2d> pointsWithStart = new ArrayList<Translation2d>();
-      pointsWithStart.add(positionEntry.get().getTranslation());
-      pointsWithStart.addAll(controlPoints.getTranslations());
-      spline = interpolator.interpolatePoints(pointsWithStart);
-    } else {
-      spline = interpolator.interpolatePoints(controlPoints.getTranslations());
-    }
-
+    Optional<Translation2d> interpolateFromStartTranslation = interpolateFromStart
+        ? Optional.of(getCurrentPosition().getTranslation())
+        : Optional.empty();
+    spline = interpolator
+        .interpolatePoints(controlPoints.getInterpolationTranslations(interpolateFromStartTranslation));
     controlPoints.initializeTasks(spline, interpolateFromStart);
   }
 

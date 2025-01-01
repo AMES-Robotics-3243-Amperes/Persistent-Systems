@@ -19,7 +19,7 @@ public class LinearInterpolationTests {
     points.add(new Translation2d(0, 1));
 
     LinearInterpolator interpolator = new LinearInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     assertEquals(new Translation2d(0, 0), spline.at(0));
     assertEquals(new Translation2d(5.0 / 2.0, 1), spline.at(0.125));
@@ -37,7 +37,7 @@ public class LinearInterpolationTests {
     points.add(new Translation2d(0, 0));
 
     LinearInterpolator interpolator = new LinearInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     assertEquals(new Translation2d(-1, 3), spline.derivative(0));
     assertEquals(new Translation2d(-1, 3), spline.derivative(0.2));
@@ -56,7 +56,7 @@ public class LinearInterpolationTests {
     points.add(new Translation2d(0, 0));
 
     LinearInterpolator interpolator = new LinearInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     assertEquals(0, spline.arcLength(0));
     assertEquals(0.5, spline.arcLength(0.125));
@@ -74,7 +74,7 @@ public class LinearInterpolationTests {
     points.add(new Translation2d(0, 0));
 
     LinearInterpolator interpolator = new LinearInterpolator();
-    Spline spline = interpolator.interpolatePoints(points);
+    Spline spline = interpolator.interpolatePointsChecked(points);
 
     double sqrtTwo = Math.sqrt(2);
     double sqrtFive = Math.sqrt(5);
