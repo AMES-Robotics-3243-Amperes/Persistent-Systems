@@ -422,4 +422,76 @@ public class PathTests {
     path.advanceTo(0.5 * sqrtTwo);
     AssertHelpers.assertEquals(new Translation2d(0.1, 0.1), path.getDesiredVelocity(), 1e-2);
   }
+
+  @Test
+  public void givesCorrectRotation() {
+    MockTask task = new MockTask(0, sqrtTwo, Optional.of(Rotation2d.fromDegrees(0)), Rotation2d.fromDegrees(5));
+    MockTask taskTwo = new MockTask(0.3 * sqrtTwo, 0.6 * sqrtTwo, Optional.of(Rotation2d.fromDegrees(90)),
+        Rotation2d.fromDegrees(5));
+    MockTask taskThree = new MockTask(0.2 * sqrtTwo, 0.7 * sqrtTwo, Optional.of(Rotation2d.fromDegrees(180)),
+        Rotation2d.fromDegrees(5));
+    Path path = PathFactory.newFactory()
+        .addTask(0, 0, task)
+        .addTask(0.33 * sqrtTwo, 0.33 * sqrtTwo, taskTwo)
+        .addTask(0.66 * sqrtTwo, 0.66 * sqrtTwo, taskThree)
+        .addPoint(1, 1)
+        .positionEntry(new MockEntry())
+        .interpolator(new MockInterpolator())
+        .maxSpeed(Double.MAX_VALUE)
+        .maxCentrifugalAcceleration(Double.MAX_VALUE)
+        .offsetDampen(x -> Double.MAX_VALUE)
+        .startDampen(x -> Double.MAX_VALUE)
+        .completeDampen(x -> Double.MAX_VALUE)
+        .taskDampen(x -> x)
+        .interpolateFromStart(false)
+        .build();
+
+    path.initialize();
+    assertEquals(Rotation2d.fromDegrees(0), path.getDesiredRotation().get());
+
+    path.advanceTo(0.2 * sqrtTwo);
+    task.markCompleted();
+    assertEquals(Rotation2d.fromDegrees(90), path.getDesiredRotation().get());
+
+    path.advanceTo(0.5 * sqrtTwo);
+    taskTwo.markCompleted();
+    assertEquals(Rotation2d.fromDegrees(180), path.getDesiredRotation().get());
+
+    taskThree.markCompleted();
+    assert path.getDesiredRotation().isEmpty();
+  }
+
+  @Test
+  public void correctlySetsTaskLimits() {
+    MockTask task = new MockTask(0, sqrtTwo, Optional.of(Rotation2d.fromDegrees(0)), Rotation2d.fromDegrees(5));
+    MockTask taskTwo = new MockTask(0.3 * sqrtTwo, 0.6 * sqrtTwo, Optional.of(Rotation2d.fromDegrees(90)),
+        Rotation2d.fromDegrees(5));
+    MockTask taskThree = new MockTask(0.2 * sqrtTwo, 0.7 * sqrtTwo, Optional.of(Rotation2d.fromDegrees(180)),
+        Rotation2d.fromDegrees(5));
+        
+    Path path = PathFactory.newFactory()
+        .addTask(0, 0, task)
+        .addTask(0.33 * sqrtTwo, 0.33 * sqrtTwo, taskTwo)
+        .addTask(0.66 * sqrtTwo, 0.66 * sqrtTwo, taskThree)
+        .addPoint(1, 1)
+        .positionEntry(new MockEntry())
+        .interpolator(new MockInterpolator())
+        .maxSpeed(Double.MAX_VALUE)
+        .maxCentrifugalAcceleration(Double.MAX_VALUE)
+        .offsetDampen(x -> Double.MAX_VALUE)
+        .startDampen(x -> Double.MAX_VALUE)
+        .completeDampen(x -> Double.MAX_VALUE)
+        .taskDampen(x -> x)
+        .interpolateFromStart(false)
+        .build();
+
+    path.initialize();
+    assertEquals(task.getStartLength(), 0);
+    assertEquals(taskTwo.getStartLength(), 0.3 * sqrtTwo);
+    assertEquals(taskThree.getStartLength(), 0.2 * sqrtTwo);
+
+    assertEquals(task.getEndLength(), 0.6 * sqrtTwo);
+    assertEquals(taskTwo.getEndLength(), 0.6 * sqrtTwo);
+    assertEquals(taskThree.getEndLength(), 0.7 * sqrtTwo);
+  }
 }

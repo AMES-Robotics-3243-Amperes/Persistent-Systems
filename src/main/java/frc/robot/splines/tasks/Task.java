@@ -15,8 +15,8 @@ import frc.robot.splines.Spline;
  * in the field while following a {@link Spline}.
  */
 public abstract class Task {
-  private double startLength = 0;
-  private double endLength = 1;
+  private double startLength = 0.0;
+  private double endLength = 1.0;
 
   private final Optional<Rotation2d> targetRotation;
   private final Command command;
@@ -105,6 +105,13 @@ public abstract class Task {
 
   public final boolean isComplete() {
     return completed;
+  }
+
+  /**
+   * Sets a task as completed. Should only be used for testing purposes.
+   */
+  public final void markCompleted() {
+    completed = true;
   }
 
   public final void runCommand() {
