@@ -1,6 +1,5 @@
 package frc.robot.splines;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.Constants.SplineConstants.NumericalConstants;
 import frc.robot.splines.NumericalMethods.DifferentiableFunction;
@@ -21,18 +20,18 @@ public interface Spline {
   }
 
   public default double parameterizationAtArcLength(double length) {
-    return MathUtil.clamp(NumericalMethods.newtonRaphson(new DifferentiableFunction() {
+    return NumericalMethods.newtonRaphsonBounded(new DifferentiableFunction() {
 
       @Override
       public double sample(double x) {
-        return arcLength(MathUtil.clamp(x, 0, 1)) - length;
+        return arcLength(x) - length;
       }
 
       @Override
       public double firstDerivative(double x) {
-        return derivative(MathUtil.clamp(x, 0, 1)).getNorm();
+        return derivative(x).getNorm();
       }
 
-    }, length / arcLength(1), NumericalConstants.newtonRaphsonIterations), 0, 1);
+    }, length / arcLength(1), 0, 1, NumericalConstants.newtonRaphsonIterations);
   }
 }

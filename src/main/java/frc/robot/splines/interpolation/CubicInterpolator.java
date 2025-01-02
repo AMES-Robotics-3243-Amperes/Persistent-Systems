@@ -185,6 +185,7 @@ public class CubicInterpolator implements SplineInterpolator {
             t - (double) index / (double) (points.size() - 1), NumericalConstants.compositeGaussianQuadratureIntervals);
         return integral;
       }
+      
     };
   }
 }

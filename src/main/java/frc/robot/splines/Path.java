@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Optional;
 
 import edu.wpi.first.math.MathSharedStore;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -32,22 +31,19 @@ public class Path {
   private RealFunction startDampen = FollowConstants::splineStartVelocityDampen;
   private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
   private RealFunction taskDampen = FollowConstants::splineTaskVelocityDampen;
+  private double maxAccelAfterTask = FollowConstants.maxAccelAfterTask;
   private double maxSpeed = FollowConstants.maxSpeed;
   private double maxCentrifugalAcceleration = FollowConstants.maxCentrifugalAcceleration;
   private boolean interpolateFromStart = FollowConstants.interpolateFromStart;
 
-  private Spline spline;
+  public Spline spline; // TODO: private
 
   // the current parameterization is expensive to calculate, so we cache it
   private Optional<Double> currentParameterization = Optional.empty();
   private double currentLength = 0;
-  private double previousTimestamp = 0;
-
-  /**
-   * used to stop the robot from suddenly accelerating after a task ends.
-   * takes the form (previousSpeed, previousLength).
-   */
-  private Pair<Double, Double> previousTaskSpeed = new Pair<Double, Double>(0.0, 0.0);
+  private double previousAdvanceTimestamp = 0;
+  private double previousVelocityTimestamp = 0;
+  private double previousTaskSpeed = 0;
 
   public Path(Entry<Pose2d> positionEntry,
       ControlPointList points,
@@ -57,6 +53,7 @@ public class Path {
       RealFunction startDampen,
       RealFunction completeDampen,
       RealFunction taskDampen,
+      double maxAccelAfterTask,
       double maxSpeed,
       double maxCentrifugalAcceleration,
       boolean interpolateFromStart) {
@@ -68,8 +65,6 @@ public class Path {
     Objects.requireNonNull(startDampen, "startDampen cannot be null");
     Objects.requireNonNull(completeDampen, "completeDampen cannot be null");
     Objects.requireNonNull(taskDampen, "taskDampen cannot be null");
-    Objects.requireNonNull(maxSpeed, "maxSpeed cannot be null");
-    Objects.requireNonNull(maxCentrifugalAcceleration, "maxCentrifugalAcceleration cannot be null");
     Objects.requireNonNull(interpolateFromStart, "interpolateFromStart cannot be null");
 
     this.positionEntry = positionEntry;
@@ -80,6 +75,7 @@ public class Path {
     this.startDampen = startDampen;
     this.completeDampen = completeDampen;
     this.taskDampen = taskDampen;
+    this.maxAccelAfterTask = maxAccelAfterTask;
     this.maxSpeed = maxSpeed;
     this.maxCentrifugalAcceleration = maxCentrifugalAcceleration;
     this.interpolateFromStart = interpolateFromStart;
@@ -137,9 +133,11 @@ public class Path {
       taskSpeed = Math.min(centrifugalSpeed, taskDampen.sample(upcomingTasks.get(0).getRemainingLength(currentLength)));
     }
 
+    double currentTimestamp = MathSharedStore.getTimestamp();
     taskSpeed = Math.min(taskSpeed,
-        previousTaskSpeed.getFirst() + Math.abs(currentLength - previousTaskSpeed.getSecond()));
-    previousTaskSpeed = new Pair<Double, Double>(taskSpeed, currentLength);
+        previousTaskSpeed + maxAccelAfterTask * Math.abs(currentTimestamp - previousVelocityTimestamp));
+    previousVelocityTimestamp = currentTimestamp;
+    previousTaskSpeed = taskSpeed;
     return taskSpeed;
   }
 
@@ -150,8 +148,9 @@ public class Path {
 
   public void initialize() {
     currentLength = 0;
-    previousTaskSpeed = new Pair<Double, Double>(maxSpeed, currentLength);
-    previousTimestamp = MathSharedStore.getTimestamp();
+    previousTaskSpeed = maxSpeed;
+    previousVelocityTimestamp = MathSharedStore.getTimestamp();
+    previousAdvanceTimestamp = MathSharedStore.getTimestamp();
     currentParameterization = Optional.empty();
 
     Optional<Translation2d> interpolateFromStartTranslation = interpolateFromStart
@@ -164,9 +163,15 @@ public class Path {
 
   public void advance() {
     double newTimestamp = MathSharedStore.getTimestamp();
-    currentLength += (newTimestamp - previousTimestamp) * getDesiredSpeed();
+    double oldLength = currentLength;
+    currentLength += (newTimestamp - previousAdvanceTimestamp) * getDesiredSpeed();
     currentParameterization = Optional.empty();
-    previousTimestamp = newTimestamp;
+    previousAdvanceTimestamp = newTimestamp;
+
+    if (!controlPoints.getUpcomingTasks(oldLength).isEmpty()) {
+      currentLength = Math.min(currentLength, controlPoints.getUpcomingTasks(oldLength).get(0).getEndLength());
+      currentLength = Math.min(currentLength, spline.arcLength(1));
+    }
 
     startTasks();
   }
@@ -176,7 +181,7 @@ public class Path {
    * method is separate from {@link #advance} only for testing purposes.
    */
   public void startTasks() {
-    for (Task task : controlPoints.getValidActiveTasks(currentLength)) {
+    for (Task task : controlPoints.getActiveTasks(currentLength)) {
       if (task.isValidRotation(getCurrentPosition().getRotation())) {
         task.runCommand();
       }
@@ -192,12 +197,10 @@ public class Path {
   public void advanceTo(double newLength) {
     currentLength = newLength;
     currentParameterization = Optional.empty();
-    previousTimestamp = MathSharedStore.getTimestamp();
+    previousAdvanceTimestamp = MathSharedStore.getTimestamp();
   }
 
   public boolean isComplete() {
-    // TODO: should there be options to increase precision once the end of the
-    // spline is reached?
-    return currentLength >= spline.arcLength(1);
+    return currentLength > spline.arcLength(1);
   }
 }

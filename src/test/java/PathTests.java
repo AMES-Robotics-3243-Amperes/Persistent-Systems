@@ -132,6 +132,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -157,6 +158,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -182,6 +184,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -207,6 +210,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -233,6 +237,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -262,6 +267,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> x)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -286,6 +292,7 @@ public class PathTests {
         .startDampen(x -> x)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -311,6 +318,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -351,6 +359,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(true)
         .build();
 
@@ -382,6 +391,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> Double.MAX_VALUE)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(true)
         .build();
 
@@ -410,6 +420,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> x)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -443,6 +454,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> x)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 
@@ -482,6 +494,7 @@ public class PathTests {
         .startDampen(x -> Double.MAX_VALUE)
         .completeDampen(x -> Double.MAX_VALUE)
         .taskDampen(x -> x)
+        .maxAccelAfterTask(Double.MAX_VALUE)
         .interpolateFromStart(false)
         .build();
 

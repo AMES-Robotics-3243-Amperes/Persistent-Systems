@@ -4,8 +4,15 @@
 
 package frc.robot;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
 import com.revrobotics.CANSparkBase.IdleMode;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -142,40 +149,39 @@ public final class Constants {
   }
 
   public static final class PhotonvisionConstants {
-    public static final String cameraName = "Global_Shutter_Camera (1)";
+    public static final AprilTag tag = new AprilTag(1,
+        new Pose3d(new Translation3d(15, 0, 0), new Rotation3d(0, 0, Math.PI)));
+    public static final List<AprilTag> tags = Arrays.asList(tag);
+    public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
-    public static final Pose3d cameraPosition = new Pose3d(new Translation3d(Units.inchesToMeters(9),
-        Units.inchesToMeters(5),
-        Units.inchesToMeters(0)),
-        new Rotation3d(0, Units.degreesToRadians(2), 0));
-    public static final Transform3d robotToCamera = new Transform3d(new Pose3d(), cameraPosition);
-  }
+    public static final List<PhotonUnit> photonUnits = Arrays
+        .asList(new PhotonUnit("Global_Shutter_Camera (1)", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            new Transform3d(new Pose3d(),
+                new Pose3d(new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), Units.inchesToMeters(0)),
+                    new Rotation3d(0, Units.degreesToRadians(2), 0))),
+            fieldLayout));
 
-  public static final class DataManagerConstants {
-    /**
-     * Takes photon ambiguity and turns it into pose estimator ambiguity @author :3
-     */
-    public static final double photonPoseEstimatorAmbiguity(Double photonAmbiguity) {
-      return 5 * photonAmbiguity * photonAmbiguity;
-    }
+    public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
+    public static final double photonUnitAmbiguityCutoff = 0.05;
   }
 
   public static final class SplineConstants {
     public static final class NumericalConstants {
-      public static final int compositeGaussianQuadratureIntervals = 2;
-      public static final int newtonRaphsonIterations = 3;
+      public static final int compositeGaussianQuadratureIntervals = 3;
+      public static final int newtonRaphsonIterations = 10;
     }
 
     public static final class TaskConstants {
-      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(5);
-      public static final double defaultPositionTolerance = 0.2;
+      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(4);
+      public static final double defaultPositionTolerance = 0.05;
       public static final double defaultPositionBuffer = 0.3;
     }
 
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
-      public static final double maxSpeed = 0.8;
-      public static final double maxCentrifugalAcceleration = 2.0;
+      public static final double maxSpeed = 2;
+      public static final double maxCentrifugalAcceleration = 2;
+      public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;
 
       /**
@@ -194,7 +200,7 @@ public final class Constants {
        * traversed.
        */
       public static final double splineStartVelocityDampen(double length) {
-        return 3 * length + 0.2;
+        return 5 * length + 0.2;
       }
 
       /**
@@ -203,7 +209,7 @@ public final class Constants {
        * cap as a function of remaining length.
        */
       public static final double splineCompleteVelocityDampen(double remainingLength) {
-        return 2 * remainingLength + 0.1;
+        return 5 * remainingLength + 0.2;
       }
 
       /**
@@ -212,7 +218,7 @@ public final class Constants {
        * of remaining valid length to execute a task.
        */
       public static final double splineTaskVelocityDampen(double remainingLength) {
-        return remainingLength * remainingLength;
+        return 5 * remainingLength + 0.2;
       }
     }
   }

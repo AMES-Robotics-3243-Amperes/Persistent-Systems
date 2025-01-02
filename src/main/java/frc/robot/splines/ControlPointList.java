@@ -86,30 +86,19 @@ public class ControlPointList {
     return getTasks().stream().filter(task -> task.isUpcoming(currentLength)).toList();
   }
 
-  public List<Task> getActiveTasks(double currentLength) {
-    return getTasks().stream().filter(task -> task.isActive(currentLength)).toList();
-  }
-
-  /**
-   * Similar go {@link #getActiveTasks}, but if some subsystem has multiple active
-   * tasks, only includes the first.
-   * 
-   * @return The next active tasks
-   */
-  public List<Task> getValidActiveTasks(double length) {
-    List<Task> activeTasks = getActiveTasks(length);
-    List<Task> validActiveTasks = new ArrayList<Task>();
+  public List<Task> getActiveTasks(double length) {
+    List<Task> upcomingTasks = getUpcomingTasks(length);
+    List<Task> activeTasks = new ArrayList<Task>();
     HashSet<Subsystem> activeSubsystems = new HashSet<Subsystem>();
-    for (Task task : activeTasks) {
-      if (task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem))) {
-        continue;
+    for (Task task : upcomingTasks) {
+      if (!task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem)) && task.isActive(length)) {
+        activeTasks.add(task);
       }
 
       activeSubsystems.addAll(task.getRequirements());
-      validActiveTasks.add(task);
     }
 
-    return validActiveTasks;
+    return activeTasks;
   }
 
   public void initializeTasks(Spline spline, boolean splineInterpolatedFromStart) {

@@ -1,6 +1,8 @@
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -16,13 +18,15 @@ public class CommandSwerveFollowSpline extends Command {
 
   private PIDController xController;
   private PIDController yController;
-  private PIDController thetaController;
+  private ProfiledPIDController thetaController;
 
   public CommandSwerveFollowSpline(SubsystemSwerveDrivetrain drivetrain,
       Path path,
       PIDController xController,
       PIDController yController,
-      PIDController thetaController) {
+      ProfiledPIDController thetaController) {
+    thetaController.enableContinuousInput(-Math.PI, Math.PI);
+
     this.path = path;
     this.xController = xController;
     this.yController = yController;
@@ -49,8 +53,8 @@ public class CommandSwerveFollowSpline extends Command {
 
     double rotationSpeed = 0;
     if (path.getDesiredRotation().isPresent()) {
-      rotationSpeed = thetaController.calculate(robotRotation.getRadians(),
-          path.getDesiredRotation().get().getRadians());
+      rotationSpeed = thetaController.calculate(MathUtil.angleModulus(robotRotation.getRadians()),
+          MathUtil.angleModulus(path.getDesiredRotation().get().getRadians()));
     }
 
     Translation2d speeds = path.getDesiredVelocity().plus(pidAdjustment).rotateBy(robotRotation.times(-1));

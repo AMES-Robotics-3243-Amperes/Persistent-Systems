@@ -42,8 +42,10 @@ public abstract class Task {
 
   public final void initialize(Spline spline, double targetLength) {
     completed = false;
-    startLength = MathUtil.clamp(calculateStartLength(spline, targetLength), 0, 1);
-    endLength = MathUtil.clamp(calculateEndLength(spline, targetLength), 0, 1);
+    startLength = MathUtil.clamp(calculateStartLength(spline, targetLength), 0, spline.arcLength(1));
+    endLength = MathUtil.clamp(calculateEndLength(spline, targetLength), 0, spline.arcLength(1));
+
+    assert startLength <= endLength;
   }
 
   protected abstract double calculateStartLength(Spline spline, double targetLength);
@@ -86,13 +88,9 @@ public abstract class Task {
       return true;
     }
 
-    boolean directlyNear = MathUtil.isNear(this.targetRotation.get().getDegrees(), rotation.getDegrees(),
-        this.rotationTolerance.getDegrees());
-    boolean targetLoopNear = MathUtil.isNear(this.targetRotation.get().getDegrees() + 360, rotation.getDegrees(),
-        this.rotationTolerance.getDegrees());
-    boolean actualLoopNear = MathUtil.isNear(this.targetRotation.get().getDegrees(), rotation.getDegrees() + 360,
-        this.rotationTolerance.getDegrees());
-    return directlyNear || targetLoopNear || actualLoopNear;
+    return Math
+        .abs(MathUtil.angleModulus(this.targetRotation.get().getRadians() - rotation.getRadians())) <= rotationTolerance
+            .getRadians();
   }
 
   public final boolean isUpcoming(double length) {

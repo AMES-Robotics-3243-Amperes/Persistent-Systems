@@ -1,17 +1,14 @@
 package frc.robot;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.PhotonvisionConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 import frc.robot.PhotonUnit.Measurement;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -41,26 +38,17 @@ public class DataManager {
     private SwerveDrivePoseEstimator poseEstimator;
 
     private SubsystemSwerveDrivetrain subsystemSwerveDrivetrain;
-    private ArrayList<PhotonUnit> photonUnits = new ArrayList<PhotonUnit>();
+    private List<PhotonUnit> photonUnits = new ArrayList<PhotonUnit>();
     private IMU imu = new AHRS_IMU();
 
     private Field2d field2d = new Field2d();
 
     public RobotPosition(RobotContainer robotContainer) {
-      // TODO: move photon stuff to constants
       subsystemSwerveDrivetrain = robotContainer.subsystemSwerveDrivetrain;
+      this.photonUnits = new ArrayList<PhotonUnit>(PhotonvisionConstants.photonUnits);
 
-      AprilTag tag = new AprilTag(1, new Pose3d(new Translation3d(15, 0, 0), new Rotation3d(0, 0, Math.PI)));
-      ArrayList<AprilTag> tags = new ArrayList<>();
-      tags.add(tag);
-      var fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
-
-      photonUnits.add(new PhotonUnit("FrontCamera", fieldLayout));
-
-      poseEstimator = new SwerveDrivePoseEstimator(ChassisKinematics.kDriveKinematics,
-          imu.getRotation(),
-          subsystemSwerveDrivetrain.getModulePositions(),
-          new Pose2d());
+      poseEstimator = new SwerveDrivePoseEstimator(ChassisKinematics.kDriveKinematics, imu.getRotation(),
+          subsystemSwerveDrivetrain.getModulePositions(), new Pose2d());
     }
 
     public void update() {
@@ -71,7 +59,9 @@ public class DataManager {
 
         if (measurementOptional.isPresent()) {
           Measurement measurement = measurementOptional.get();
-          poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds, measurement.ambiguity);
+          poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds,
+              measurement.ambiguity.times(PhotonvisionConstants.poseEstimatorAmbiguityScaleFactor
+                  * poseEstimator.getEstimatedPosition().getTranslation().getDistance(measurement.targetPosition)));
         }
       }
 

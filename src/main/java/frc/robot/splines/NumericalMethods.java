@@ -1,5 +1,7 @@
 package frc.robot.splines;
 
+import edu.wpi.first.math.MathUtil;
+
 public class NumericalMethods {
   public interface RealFunction {
     double sample(double x);
@@ -25,6 +27,31 @@ public class NumericalMethods {
     double guess = initialGuess;
     for (int i = 0; i < iterations; i++) {
       guess = guess - (function.sample(guess) / function.firstDerivative(guess));
+    }
+
+    return guess;
+  }
+
+  /**
+   * Approximates a zero of a function using the Newton-Raphson method.
+   * 
+   * @param function     the function to approximate the zero of
+   * @param initialGuess an initial guess of a zero - the closer the better, but
+   *                     (most) guesses will be strictly improved
+   * @param lowerBound   a lower bound for the output
+   * @param upperBound   a upper bound for the output
+   * @param iterations   the number of iterations to run - the more the better,
+   *                     but keep it realistic (2-3 is usually enough)
+   * @return an approximate zero of the function
+   */
+  public static double newtonRaphsonBounded(DifferentiableFunction function, double initialGuess, double lowerBound,
+      double upperBound, int iterations) {
+    assert iterations > 0 : "newton-raphson requires at least one iteration";
+
+    double guess = MathUtil.clamp(initialGuess, lowerBound, upperBound);
+    for (int i = 0; i < iterations; i++) {
+      guess = MathUtil.clamp(guess - (function.sample(guess) / function.firstDerivative(guess)), lowerBound,
+          upperBound);
     }
 
     return guess;

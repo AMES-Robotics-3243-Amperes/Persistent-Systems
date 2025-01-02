@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -30,6 +31,7 @@ public class PathFactory {
   private RealFunction startDampen = FollowConstants::splineStartVelocityDampen;
   private RealFunction completeDampen = FollowConstants::splineCompleteVelocityDampen;
   private RealFunction taskDampen = FollowConstants::splineTaskVelocityDampen;
+  private double maxAccelAfterTask = FollowConstants.maxAccelAfterTask;
   private double maxSpeed = FollowConstants.maxSpeed;
   private double maxCentrifugalAcceleration = FollowConstants.maxCentrifugalAcceleration;
   private boolean interpolateFromStart = FollowConstants.interpolateFromStart;
@@ -135,6 +137,11 @@ public class PathFactory {
     return this;
   }
 
+  public PathFactory maxAccelAfterTask(double maxAccelAfterTask) {
+    this.maxAccelAfterTask = maxAccelAfterTask;
+    return this;
+  }
+
   public PathFactory maxSpeed(double maxSpeed) {
     this.maxSpeed = maxSpeed;
     return this;
@@ -159,11 +166,11 @@ public class PathFactory {
     }
 
     return new Path(positionEntry.get(), controlPoints, finalRotation, interpolator, offsetDampen, startDampen,
-        completeDampen, taskDampen, maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
+        completeDampen, taskDampen, maxAccelAfterTask, maxSpeed, maxCentrifugalAcceleration, interpolateFromStart);
   }
 
   public CommandSwerveFollowSpline buildCommand(SubsystemSwerveDrivetrain subsystem, PIDController xController,
-      PIDController yController, PIDController thetaController) {
+      PIDController yController, ProfiledPIDController thetaController) {
     return new CommandSwerveFollowSpline(subsystem, this.build(), xController, yController, thetaController);
   }
 }

@@ -11,7 +11,7 @@ import frc.robot.splines.interpolation.CubicInterpolator;
 
 public class CubicInterpolationTests {
   // used as a small distance while traversing the spline doing sanity checks
-  private final double h = 0.01;
+  private final double h = 0.005;
 
   @Test
   public void sample() {
@@ -84,19 +84,18 @@ public class CubicInterpolationTests {
   @Test
   public void parameterizationAtArcLength() {
     ArrayList<Translation2d> points = new ArrayList<Translation2d>();
-    points.add(new Translation2d(0, 0));
-    points.add(new Translation2d(1, 1));
-    points.add(new Translation2d(-1, 2));
-    points.add(new Translation2d(0, 0));
+    points.add(new Translation2d(11, 1));
+    points.add(new Translation2d(13, 0));
+    points.add(new Translation2d(12, -0.5));
+    points.add(new Translation2d(13, -0.5));
+    points.add(new Translation2d(12, -0.5));
 
     CubicInterpolator interpolator = new CubicInterpolator();
     Spline spline = interpolator.interpolatePointsChecked(points);
 
-    assertEquals(0, spline.arcLength(spline.parameterizationAtArcLength(0)), 1e-4);
-    assertEquals(2.2, spline.arcLength(spline.parameterizationAtArcLength(2.2)), 1e-4);
-    assertEquals(3.5, spline.arcLength(spline.parameterizationAtArcLength(3.5)), 1e-4);
-    assertEquals(5, spline.arcLength(spline.parameterizationAtArcLength(5)), 1e-4);
-    assertEquals(6.2, spline.arcLength(spline.parameterizationAtArcLength(6.2)), 1e-4);
+    for (int i = 0; i < ((int) (1 / h)); i++) {
+      assertEquals(i * h, spline.parameterizationAtArcLength(spline.arcLength(i * h)), 1e-2);
+    }
   }
 
   @Test
