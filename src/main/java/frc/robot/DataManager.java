@@ -61,7 +61,8 @@ public class DataManager {
           Measurement measurement = measurementOptional.get();
           poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds,
               measurement.ambiguity.times(PhotonvisionConstants.poseEstimatorAmbiguityScaleFactor
-                  * poseEstimator.getEstimatedPosition().getTranslation().getDistance(measurement.targetPosition)));
+                  * (poseEstimator.getEstimatedPosition().getTranslation().getDistance(measurement.targetPosition)
+                      + 1)));
         }
       }
 
