@@ -157,7 +157,7 @@ public class TestUtil {
 
 
     /** A test that runs once and ends immediately. Intended to be created from a preexisting function. */
-    protected static class InstantTest implements Test {
+    public static class InstantTest implements Test {
 
         protected Runnable execute;
         protected String name;
@@ -228,7 +228,7 @@ public class TestUtil {
 
 
     /** A test that runs until a specified condition is met. Intended to be created from two existing functions. */
-    protected static class OnePhaseTest implements Test {
+    public static class OnePhaseTest implements Test {
 
         protected Runnable periodicFunc;
         protected String name;
@@ -298,7 +298,7 @@ public class TestUtil {
 
 
      /** A test that runs until a specified condition is met. Intended to be created from two existing functions. */
-    protected static class MultiphaseTest implements Test {
+    public static class MultiphaseTest implements Test {
 
         protected Runnable[] phases;
         protected String name;

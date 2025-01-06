@@ -1,5 +1,8 @@
 package frc.robot.subsystems;
 
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -15,8 +18,11 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Constants.SwerveConstants.DriveTrainConstants;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
+import frc.robot.test.SubsystemBaseTestable;
+import frc.robot.test.Test;
+import frc.robot.test.TestUtil;
 
-public class SubsystemSwerveDrivetrain extends SubsystemBase {
+public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   private final SubsystemSwerveModule m_frontLeft = new SubsystemSwerveModule(
       DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
       DriveTrainConstants.IDs.kFrontLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
@@ -82,7 +88,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
   }
 
   @Override
-  public void periodic() {
+  public void doPeriodic() {
     m_frontLeft.update();
     m_frontRight.update();
     m_rearLeft.update();
@@ -137,5 +143,68 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    */
   public Command sysIdDriveDynamic(SysIdRoutine.Direction direction) {
     return driveRoutine.dynamic(direction);
+  }
+
+  // #################
+  // INTEGRATION TESTS
+  // #################
+
+  @Override
+  public Test[] getTests() {
+    return tests;
+  }
+
+  private boolean moduleRotationTest2Done = false;
+  private Future<Boolean> moduleRotationTestUserQuestion;
+  private Test[] tests = {
+    new TestUtil.MultiphaseTest(
+      new Runnable[] {this::moduleRotationTest1, this::moduleRotationTest2, this::moduleRotationTest3},
+      (Supplier<Boolean>[]) new Supplier[] {() -> true, () -> moduleRotationTest2Done, () -> true}, 
+      "Module Rotation Test"
+    )
+  };
+
+  /**
+   * Ensures the {@link setModuleRotations} method functions properly, according
+   * to user viewing, and encoders.
+   * 
+   * Part 1.
+   */
+  private void moduleRotationTest1() {
+    setModuleRotations(new Rotation2d[] {
+      new Rotation2d(0), 
+      new Rotation2d(0), 
+      new Rotation2d(0), 
+      new Rotation2d(0)
+    });
+
+    moduleRotationTest2Done = false;
+    moduleRotationTestUserQuestion = TestUtil.askUserBool("Are all wheels pointing forward?");
+  }
+
+  private void moduleRotationTest2() {
+    if (moduleRotationTestUserQuestion.isDone()) {
+      boolean areWheelsCorrect;
+      try {
+        areWheelsCorrect = moduleRotationTestUserQuestion.get();
+      } catch (Exception e) {
+        throw new AssertionError(e);
+      }
+
+      TestUtil.assertBool(areWheelsCorrect, "Wheels did not point forward when given that command.");
+
+      moduleRotationTest2Done = true;
+    }
+  }
+
+  private void moduleRotationTest3() {
+    SwerveModulePosition[] positions = getModulePositions();
+
+    for (SwerveModulePosition position : positions) {
+      double angleDif = position.angle.minus(new Rotation2d()).getDegrees() % 360;
+      if (angleDif > 10 || angleDif < -10) {
+        throw new AssertionError("Swerve module encoder did not show forward facing direction.");
+      }
+    }
   }
 }
