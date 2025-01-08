@@ -8,6 +8,10 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.CommandSwerveFollowSpline;
@@ -26,8 +30,11 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
+  // H! Main shuffleboard tab
+  ShuffleboardTab mainTab = Shuffleboard.getTab("Main");
+
   // H! Auto Selector
-  AutoSelector autoSelector;
+  AutoSelector autoSelector = new AutoSelector(mainTab);
 
   // controllers
   private JoyUtil primaryController = new JoyUtil(0);
@@ -56,6 +63,9 @@ public class RobotContainer {
     // set sensible default commands
     setDefaultCommands();
 
+    // H! Set all commands in auto selector
+    setAutoCommands();
+
     // configure the controller bindings
     configureBindings();
   }
@@ -65,6 +75,12 @@ public class RobotContainer {
    */
   private void setDefaultCommands() {
     subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
+  }
+
+  private void setAutoCommands() {
+    autoSelector
+      .add(new InstantCommand(() -> {System.out.println("\n\n\nPRINT COMMAND RUN!\n\n\n");}), "Print Command")
+      .add(new InstantCommand(() -> {System.out.println("\n\n\nOTHER COMMAND RUN!\n\n\n");}), "Other Command");
   }
 
   /**
