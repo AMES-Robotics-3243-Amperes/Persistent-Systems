@@ -358,7 +358,10 @@ public class TestUtil {
             return out;
         }
 
-
+        @Override
+        public void setup() {
+            phase = 0;
+        }
 
         @Override
         public void periodic() { 
