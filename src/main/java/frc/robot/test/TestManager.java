@@ -182,12 +182,6 @@ public class TestManager {
      * @author H!
      */
     public static void periodic() {
-        if (Robot.managerFirst == null) {
-            Robot.managerFirst = true;
-        }
-
-
-
         if (initialPauseTimer > 0) {
             initialPauseTimer--;
             return;
