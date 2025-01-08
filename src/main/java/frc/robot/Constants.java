@@ -150,12 +150,12 @@ public final class Constants {
 
   public static final class PhotonvisionConstants {
     public static final AprilTag tag = new AprilTag(1,
-        new Pose3d(new Translation3d(15, 0, 0), new Rotation3d(0, 0, Math.PI)));
+        new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
     public static final List<AprilTag> tags = Arrays.asList(tag);
     public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
     public static final List<PhotonUnit> photonUnits = Arrays
-        .asList(new PhotonUnit("Global_Shutter_Camera (1)", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        .asList(new PhotonUnit("FrontCamera", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             new Transform3d(new Pose3d(),
                 new Pose3d(new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), Units.inchesToMeters(0)),
                     new Rotation3d(0, Units.degreesToRadians(2), 0))),
@@ -172,14 +172,14 @@ public final class Constants {
     }
 
     public static final class TaskConstants {
-      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(4);
+      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(8);
       public static final double defaultPositionTolerance = 0.05;
       public static final double defaultPositionBuffer = 0.3;
     }
 
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
-      public static final double maxSpeed = 2;
+      public static final double maxSpeed = 4;
       public static final double maxCentrifugalAcceleration = 2;
       public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;

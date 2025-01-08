@@ -6,11 +6,14 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.splines.PathFactory;
+import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -70,14 +73,15 @@ public class RobotContainer {
   private void configureBindings() {
     PIDController xController = new PIDController(1.2, 0, 0.1);
     PIDController yController = new PIDController(1.2, 0, 0.1);
-    ProfiledPIDController thetaController = new ProfiledPIDController(3, 0, 0.0,
+    ProfiledPIDController thetaController = new ProfiledPIDController(0.7, 0, 0.0,
         new Constraints(3 * Math.PI, 6 * Math.PI));
 
     CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
-        .addPoint(12, -0.5)
-        .addPoint(11, 0)
-        .addPoint(12, 0.5)
-        .addPoint(13, 0)
+        .addPoint(1, 0)
+        .addPoint(4, 0)
+        .addPoint(4, -0.5)
+        .addPoint(3, 0)
+        .addTask(1, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
     primaryController.a().onTrue(followCommand);
