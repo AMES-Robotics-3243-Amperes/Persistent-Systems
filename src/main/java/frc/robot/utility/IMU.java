@@ -4,8 +4,8 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 
 /**
- * For interfacing with IMU, intended to making switching
- * between IMUs as painless as possible
+ * For interfacing with an IMU, intended to make switching
+ * between IMUs as painless as possible.
  * 
  * @author :3
  */

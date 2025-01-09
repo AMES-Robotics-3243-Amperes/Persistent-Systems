@@ -6,7 +6,6 @@ package frc.robot.test;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Robot;
 
 /** Extend this class to have it automatically run tests in the integrated testing framework managed by {@link TestManager} @author H! */
 public abstract class SubsystemBaseTestable extends SubsystemBase implements TestGroup {
@@ -22,9 +21,6 @@ public abstract class SubsystemBaseTestable extends SubsystemBase implements Tes
     public final void periodic() {
 
         if (DriverStation.isTest() && DriverStation.isEnabled()) {
-            if (Robot.managerFirst == null) {
-                Robot.managerFirst = false;
-            }
             if (!isTesting) {
                 onTestStart();
             }

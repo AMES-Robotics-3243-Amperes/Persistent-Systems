@@ -4,8 +4,15 @@
 
 package frc.robot;
 
-import com.revrobotics.CANSparkBase.IdleMode;
+import java.util.Arrays;
+import java.util.List;
 
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -14,6 +21,8 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import frc.robot.splines.interpolation.CubicInterpolator;
+import frc.robot.splines.interpolation.SplineInterpolator;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -30,15 +39,15 @@ import edu.wpi.first.math.util.Units;
 public final class Constants {
   public static final class JoyUtilConstants {
     public static final double kDeadzone = 0.05;
-    public static final double kRateLimitLeft = 5;
-    public static final double kRateLimitRight = 5;
+    public static final double kRateLimitLeft = 20;
+    public static final double kRateLimitRight = 20;
     public static final double exponent1 = 3;
     public static final double exponent2 = 1;
-    public static final double coeff1 = 0;
-    public static final double coeff2 = 1;
+    public static final double coeff1 = 0.2;
+    public static final double coeff2 = 0.8;
 
-    public static final double leftTriggerSpeedMultiplier = 1.6;
-    public static final double rightTriggerSpeedMultiplier = 0.4;
+    public static final double leftTriggerSpeedMultiplier = 2.0;
+    public static final double rightTriggerSpeedMultiplier = 0.3;
   }
 
   public static final class SwerveConstants {
@@ -55,21 +64,21 @@ public final class Constants {
       public static final double kRobotLength = Units.inchesToMeters(15);
 
       public static final SwerveDriveKinematics kDriveKinematics = new SwerveDriveKinematics(
-        new Translation2d(kRobotLength / 2, kRobotWidth / 2),
-        new Translation2d(kRobotLength / 2, -kRobotWidth / 2),
-        new Translation2d(-kRobotLength / 2, kRobotWidth / 2),
-        new Translation2d(-kRobotLength / 2, -kRobotWidth / 2));
+          new Translation2d(kRobotLength / 2, kRobotWidth / 2),
+          new Translation2d(kRobotLength / 2, -kRobotWidth / 2),
+          new Translation2d(-kRobotLength / 2, kRobotWidth / 2),
+          new Translation2d(-kRobotLength / 2, -kRobotWidth / 2));
     }
 
     public static final class DriveTrainConstants {
       public static final class IDs {
-        public static final int kFrontLeftDrivingCanId = 8;
-        public static final int kRearLeftDrivingCanId = 2;
+        public static final int kFrontLeftDrivingCanId = 2;
+        public static final int kRearLeftDrivingCanId = 8;
         public static final int kFrontRightDrivingCanId = 4;
         public static final int kRearRightDrivingCanId = 6;
 
-        public static final int kFrontLeftTurningCanId = 7;
-        public static final int kRearLeftTurningCanId = 1;
+        public static final int kFrontLeftTurningCanId = 1;
+        public static final int kRearLeftTurningCanId = 7;
         public static final int kFrontRightTurningCanId = 3;
         public static final int kRearRightTurningCanId = 5;
       }
@@ -108,13 +117,13 @@ public final class Constants {
         // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
         // teeth on the bevel pinion
         public static final double kDrivingMotorReduction = (45.0 * 22)
-          / (PhysicalProperties.kDrivingMotorPinionTeeth * 15);
+            / (PhysicalProperties.kDrivingMotorPinionTeeth * 15);
 
         public static final double kDrivingEncoderPositionFactor = (PhysicalProperties.kWheelDiameterMeters * Math.PI)
-          / kDrivingMotorReduction;
+            / kDrivingMotorReduction;
         public static final double kDrivingEncoderVelocityFactor = ((PhysicalProperties.kWheelDiameterMeters * Math.PI)
-          / kDrivingMotorReduction) / 60.0;
-          public static final double test = 1 / kDrivingEncoderVelocityFactor / 60;
+            / kDrivingMotorReduction) / 60.0;
+        public static final double test = 1 / kDrivingEncoderVelocityFactor / 60;
 
         public static final double kTurningEncoderPositionFactor = (2 * Math.PI);
         public static final double kTurningEncoderVelocityFactor = (2 * Math.PI) / 60.0;
@@ -140,43 +149,77 @@ public final class Constants {
   }
 
   public static final class PhotonvisionConstants {
-    public static final String cameraName = "Global_Shutter_Camera (1)";
+    public static final AprilTag tag = new AprilTag(1,
+        new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
+    public static final List<AprilTag> tags = Arrays.asList(tag);
+    public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
-    public static final Pose3d cameraPosition =
-      new Pose3d(new Translation3d(Units.inchesToMeters(10.5),
-        Units.inchesToMeters(0),
-        Units.inchesToMeters(13)),
-        new Rotation3d(0, Math.PI / 4, 0));
-    public static final Transform3d robotToCamera = new Transform3d(new Pose3d(), cameraPosition);
+    public static final List<PhotonUnit> photonUnits = Arrays
+        .asList(new PhotonUnit("FrontCamera", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+            new Transform3d(new Pose3d(),
+                new Pose3d(new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), Units.inchesToMeters(0)),
+                    new Rotation3d(0, Units.degreesToRadians(2), 0))),
+            fieldLayout));
+
+    public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
+    public static final double photonUnitAmbiguityCutoff = 0.05;
   }
 
-  public static final class DataManagerConstants {
-    /**
-     * Takes photon ambiguity and turns it into pose estimator ambiguity @author :3
-     */
-    public static final double photonPoseEstimatorAmbiguity(Double photonAmbiguity) {
-      return 5 * photonAmbiguity * photonAmbiguity;
-    }
-  }
-
-  public static final class CurveConstants {
-    /**
-     * As the robot drifts from the spline, the speed at
-     * which the setpoint travels across the spline decreases.
-     * This function determines the speed multiplier as a function
-     * of robot offset from the spline. @author :3
-     */
-    public static final double splineOffsetVelocityDampen(double offset) {
-      return 1 / (1 + 1.5 * offset * offset);
+  public static final class SplineConstants {
+    public static final class NumericalConstants {
+      public static final int compositeGaussianQuadratureIntervals = 3;
+      public static final int newtonRaphsonIterations = 10;
     }
 
-    public static final double halfLoopTime = 0.01;
-    public static final int newtonIterations = 4;
+    public static final class TaskConstants {
+      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(8);
+      public static final double defaultPositionTolerance = 0.05;
+      public static final double defaultPositionBuffer = 0.3;
+    }
 
-    public static final double baseVelocity = 2;
-    public static final double dropVelocity = 0.4;
-    public static final double maxCentrifugalAcceleration = 2.4;
+    public static final class FollowConstants {
+      public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
+      public static final double maxSpeed = 4;
+      public static final double maxCentrifugalAcceleration = 2;
+      public static final double maxAccelAfterTask = 1.5;
+      public static final boolean interpolateFromStart = true;
 
-    public static final double maxGoalTolerance = 0.05;
+      /**
+       * As the robot drifts from the spline, the speed at
+       * which the setpoint travels across the spline decreases.
+       * This function determines the speed multiplier as a function
+       * of robot offset from the spline.
+       */
+      public static final double splineOffsetVelocityDampen(double offset) {
+        return 1 / (1 + 1.5 * offset * offset);
+      }
+
+      /**
+       * To avoid harsh acceleration, slow the robot's movement as it starts following
+       * the path. This function gives a hard velocity cap as a function of length
+       * traversed.
+       */
+      public static final double splineStartVelocityDampen(double length) {
+        return 5 * length + 0.2;
+      }
+
+      /**
+       * To avoid harsh stops, slow the robot's movement as it
+       * finishes the path. This function gives a hard velocity
+       * cap as a function of remaining length.
+       */
+      public static final double splineCompleteVelocityDampen(double remainingLength) {
+        return 5 * remainingLength + 0.2;
+      }
+
+      /**
+       * The robot needs to slow down to ensure it executes tasks in the correct
+       * position. This command dictates the max velocity of the robot as a function
+       * of remaining valid length to execute a task.
+       */
+      public static final double splineTaskVelocityDampen(double remainingLength) {
+        return 5 * remainingLength + 0.2;
+      }
+    }
   }
 }

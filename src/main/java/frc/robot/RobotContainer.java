@@ -5,34 +5,36 @@
 package frc.robot;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
-import frc.robot.splines.Spline;
-import frc.robot.splines.SplineMetadata;
-import frc.robot.splines.SplineSegmentFactory;
-import frc.robot.splines.cubicsegments.hermitefactories.C2HermiteSegmentFactory;
-import frc.robot.splines.linearsegments.LinearSegmentFactory;
+import frc.robot.splines.PathFactory;
+import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
- * This class is where the bulk of the robot should be declared. Since Command-based is a
- * "declarative" paradigm, very little robot logic should actually be handled in the {@link Robot}
- * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
+ * This class is where the bulk of the robot should be declared. Since
+ * Command-based is a
+ * "declarative" paradigm, very little robot logic should actually be handled in
+ * the {@link Robot}
+ * periodic methods (other than the scheduler calls). Instead, the structure of
+ * the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class RobotContainer {
-  // H! Auto Selector
-  AutoSelector autoSelector;
-  
-  /** :3 Used as a reference for Robot to call periodically */
-  public DataManager dataManager;
+  // H! Main shuffleboard tab
+  ShuffleboardTab mainTab = Shuffleboard.getTab("Main");
 
-  // :3 controllers
+  // H! Auto Selector
+  AutoSelector autoSelector = new AutoSelector(mainTab);
+
+  // controllers
   private JoyUtil primaryController = new JoyUtil(0);
 
   //
@@ -45,65 +47,58 @@ public class RobotContainer {
   // Commands
   //
 
-  private CommandSwerveTeleopDrive commandSwerveTeleopDrive =
-    new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain, primaryController);
+  private CommandSwerveTeleopDrive commandSwerveTeleopDrive = new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain,
+      primaryController);
 
-  /** The container for the robot. Contains subsystems, OI devices, and commands. */
+  /**
+   * The container for the robot. Contains subsystems, OI devices, and commands.
+   */
   public RobotContainer() {
-    // :3 constructs a DataManager instance using runtime-initialized RobotContainer members
-    dataManager = new DataManager(this);
+    // we construct the DataManager instance here since it is the
+    // absolute soonest we have access to a RobotContainer object
+    new DataManager(this);
 
-    // :3 set sensible default commands
-    subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
+    // set sensible default commands
+    setDefaultCommands();
 
-    // Configure the trigger bindings
+    // H! Set all commands in auto selector
+    setAutoCommands();
+
+    // configure the controller bindings
     configureBindings();
   }
 
   /**
-   * Use this method to define your trigger->command mappings. Triggers can be created via the
-   * {@link Trigger#Trigger(java.util.function.BooleanSupplier)} constructor with an arbitrary
-   * predicate, or via the named factories in {@link
-   * edu.wpi.first.wpilibj2.command.button.CommandGenericHID}'s subclasses for {@link
-   * CommandXboxController Xbox}/{@link edu.wpi.first.wpilibj2.command.button.CommandPS4Controller
-   * PS4} controllers or {@link edu.wpi.first.wpilibj2.command.button.CommandJoystick Flight
-   * joysticks}.
+   * Used to set default commands for subsystems.
+   */
+  private void setDefaultCommands() {
+    subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
+  }
+
+  private void setAutoCommands() {
+    autoSelector
+      .add(new InstantCommand(() -> {System.out.println("\n\n\nPRINT COMMAND RUN!\n\n\n");}), "Print Command")
+      .add(new InstantCommand(() -> {System.out.println("\n\n\nOTHER COMMAND RUN!\n\n\n");}), "Other Command");
+  }
+
+  /**
+   * Used to configure controller bindings.
    */
   private void configureBindings() {
-    SplineSegmentFactory segment1 = new LinearSegmentFactory(new Translation2d(0, 0),
-      new Translation2d(-0.5, 0));
-    SplineSegmentFactory segment2 = new C2HermiteSegmentFactory(new Translation2d(-1.25, 0.5),
-      new Translation2d(0, 1));
-    SplineSegmentFactory segment3 = new C2HermiteSegmentFactory(new Translation2d(-0.8, 1),
-      new Translation2d(0.6, 0));
-    SplineSegmentFactory segment4 = new C2HermiteSegmentFactory(new Translation2d(-2, 0.4), 
-      new Translation2d(-1, 0));
-    SplineSegmentFactory segment5 = new C2HermiteSegmentFactory(new Translation2d(0, 0), 
-      new Translation2d(1, 0));
+    PIDController xController = new PIDController(1.2, 0, 0.1);
+    PIDController yController = new PIDController(1.2, 0, 0.1);
+    ProfiledPIDController thetaController = new ProfiledPIDController(0.7, 0, 0.0,
+        new Constraints(3 * Math.PI, 6 * Math.PI));
 
-    SplineMetadata rotationMetadata = new SplineMetadata();
-    rotationMetadata.rotation.set(Rotation2d.fromDegrees(180));
-    segment2.addMetadata(rotationMetadata);
-    segment3.addMetadata(rotationMetadata);
-    segment4.addMetadata(rotationMetadata);
-    segment5.addMetadata(rotationMetadata);
-      
-    Spline spline = new Spline();
-    spline.addSegment(segment1);
-    spline.addSegment(segment2);
-    spline.addSegment(segment3);
-    spline.addSegment(segment4);
-    spline.addSegment(segment5);
-    spline.applyDropVelocities();
+    CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
+        .addPoint(1, 0)
+        .addPoint(4, 0)
+        .addPoint(4, -0.5)
+        .addPoint(3, 0)
+        .addTask(1, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
+        .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
-    PIDController xController = new PIDController(1, 0, 0);
-    PIDController yController = new PIDController(1, 0, 0);
-    PIDController thetaController = new PIDController(1.2, 0, 0);
-
-    CommandSwerveFollowSpline splineCommand = new CommandSwerveFollowSpline(subsystemSwerveDrivetrain,
-      spline, xController, yController, thetaController);
-
-    primaryController.b().whileTrue(splineCommand);
+    primaryController.a().onTrue(followCommand);
   }
 
   /**

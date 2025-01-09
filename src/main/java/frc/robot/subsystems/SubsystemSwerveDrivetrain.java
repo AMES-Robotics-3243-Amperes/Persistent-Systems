@@ -1,39 +1,46 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Second;
+
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.BaseUnits;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Voltage;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Constants.SwerveConstants.DriveTrainConstants;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
+import frc.robot.test.SubsystemBaseTestable;
+import frc.robot.test.Test;
+import frc.robot.test.TestUtil;
 
-public class SubsystemSwerveDrivetrain extends SubsystemBase {
+public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   private final SubsystemSwerveModule m_frontLeft = new SubsystemSwerveModule(
-    DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
-    DriveTrainConstants.IDs.kFrontLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
+      DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
+      DriveTrainConstants.IDs.kFrontLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
 
   private final SubsystemSwerveModule m_frontRight = new SubsystemSwerveModule(
-    DriveTrainConstants.IDs.kFrontRightDrivingCanId,
-    DriveTrainConstants.IDs.kFrontRightTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
+      DriveTrainConstants.IDs.kFrontRightDrivingCanId,
+      DriveTrainConstants.IDs.kFrontRightTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
 
   private final SubsystemSwerveModule m_rearLeft = new SubsystemSwerveModule(
-    DriveTrainConstants.IDs.kRearLeftDrivingCanId,
-    DriveTrainConstants.IDs.kRearLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
+      DriveTrainConstants.IDs.kRearLeftDrivingCanId,
+      DriveTrainConstants.IDs.kRearLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
 
   private final SubsystemSwerveModule m_rearRight = new SubsystemSwerveModule(
-    DriveTrainConstants.IDs.kRearRightDrivingCanId,
-    DriveTrainConstants.IDs.kRearRightTurningCanId, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
+      DriveTrainConstants.IDs.kRearRightDrivingCanId,
+      DriveTrainConstants.IDs.kRearRightTurningCanId, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
 
-  public SubsystemSwerveDrivetrain() {}
+  public SubsystemSwerveDrivetrain() {
+  }
 
   /**
    * Set the swerve modules' desired states
@@ -74,14 +81,14 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    * @return the positions of the swerve modules
    */
   public SwerveModulePosition[] getModulePositions() {
-    return new SwerveModulePosition[]{
-      m_frontLeft.getPosition(), m_frontRight.getPosition(),
-      m_rearLeft.getPosition(), m_rearRight.getPosition()
+    return new SwerveModulePosition[] {
+        m_frontLeft.getPosition(), m_frontRight.getPosition(),
+        m_rearLeft.getPosition(), m_rearRight.getPosition()
     };
   }
 
   @Override
-  public void periodic() {
+  public void doPeriodic() {
     m_frontLeft.update();
     m_frontRight.update();
     m_rearLeft.update();
@@ -89,23 +96,21 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
   }
 
   public SysIdRoutine driveRoutine = new SysIdRoutine(
-    new Config(BaseUnits.Voltage.of(0.75).per(BaseUnits.Time.of(1)),
-      BaseUnits.Voltage.of(3),
-      BaseUnits.Time.of(8),
-      null),
-    new Mechanism(
-      this::sysIdDrive, 
-      this::sysIdDriveLog, 
-      this
-    )
-  );
+      new Config(BaseUnits.VoltageUnit.of(0.75).per(Second),
+          BaseUnits.VoltageUnit.of(3),
+          BaseUnits.TimeUnit.of(8),
+          null),
+      new Mechanism(
+          this::sysIdDrive,
+          this::sysIdDriveLog,
+          this));
 
   /**
    * Sets the modules' drive voltages to a specific value
    * 
    * @param voltage the value to set the drive voltages to
    */
-  public void sysIdDrive(Measure<Voltage> voltage) {
+  public void sysIdDrive(Voltage voltage) {
     m_frontLeft.driveVoltage(voltage.baseUnitMagnitude());
     m_frontRight.driveVoltage(voltage.baseUnitMagnitude());
     m_rearLeft.driveVoltage(voltage.baseUnitMagnitude());
@@ -138,5 +143,69 @@ public class SubsystemSwerveDrivetrain extends SubsystemBase {
    */
   public Command sysIdDriveDynamic(SysIdRoutine.Direction direction) {
     return driveRoutine.dynamic(direction);
+  }
+
+  // #################
+  // INTEGRATION TESTS
+  // #################
+
+  @Override
+  public Test[] getTests() {
+    return tests;
+  }
+
+  private boolean moduleRotationTest2Done = false;
+  private Future<Boolean> moduleRotationTestUserQuestion;
+  @SuppressWarnings("unchecked")
+  private Test[] tests = {
+    new TestUtil.MultiphaseTest(
+      new Runnable[] {this::moduleRotationTest1, this::moduleRotationTest2, this::moduleRotationTest3},
+      (Supplier<Boolean>[]) new Supplier[] {() -> true, () -> moduleRotationTest2Done, () -> true}, 
+      "Module Rotation Test"
+    )
+  };
+
+  /**
+   * Ensures the {@link setModuleRotations} method functions properly, according
+   * to user viewing, and encoders.
+   * 
+   * Part 1.
+   */
+  private void moduleRotationTest1() {
+    setModuleRotations(new Rotation2d[] {
+      new Rotation2d(0), 
+      new Rotation2d(0), 
+      new Rotation2d(0), 
+      new Rotation2d(0)
+    });
+
+    moduleRotationTest2Done = false;
+    moduleRotationTestUserQuestion = TestUtil.askUserBool("Are all wheels pointing forward?");
+  }
+
+  private void moduleRotationTest2() {
+    if (moduleRotationTestUserQuestion.isDone()) {
+      boolean areWheelsCorrect;
+      try {
+        areWheelsCorrect = moduleRotationTestUserQuestion.get();
+      } catch (Exception e) {
+        throw new AssertionError(e);
+      }
+
+      TestUtil.assertBool(areWheelsCorrect, "Wheels did not point forward when given that command.");
+
+      moduleRotationTest2Done = true;
+    }
+  }
+
+  private void moduleRotationTest3() {
+    SwerveModulePosition[] positions = getModulePositions();
+
+    for (SwerveModulePosition position : positions) {
+      double angleDif = position.angle.minus(new Rotation2d()).getDegrees() % 360;
+      if (angleDif > 10 || angleDif < -10) {
+        throw new AssertionError("Swerve module encoder did not show forward facing direction.");
+      }
+    }
   }
 }

@@ -17,7 +17,6 @@ import frc.robot.test.TestManager;
  * project.
  */
 public class Robot extends TimedRobot {
-  public static Boolean managerFirst = null;
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
 
@@ -46,6 +45,8 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+
+    DataManager.instance().update();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -53,9 +54,7 @@ public class Robot extends TimedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {
-    managerFirst = null;
-  }
+  public void disabledPeriodic() {}
 
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
