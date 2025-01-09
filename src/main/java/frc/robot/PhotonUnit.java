@@ -3,6 +3,8 @@ package frc.robot;
  * Represents a PhotonCamera with the full code pipeline built in.
  */
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
@@ -41,28 +43,32 @@ public class PhotonUnit extends PhotonCamera {
       AprilTagFieldLayout fieldLayout) {
     super(cameraName);
 
-    poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, this, robotToCamera);
+    poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, robotToCamera);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
   }
 
-  public Optional<Measurement> getMeasurement() {
-    var poseLatestOptional = poseEstimator.update();
-    PhotonPipelineResult pipelineResult = this.getLatestResult();
+  public List<Measurement> getMeasurement() {
+    List<Measurement> measurements = new ArrayList<Measurement>();
+    List<PhotonPipelineResult> pipelineResults = this.getAllUnreadResults();
 
-    if (poseLatestOptional.isPresent() && pipelineResult.targets.size() != 0) {
-      EstimatedRobotPose poseLatest = poseLatestOptional.get();
-      if (pipelineResult.getBestTarget().getPoseAmbiguity() > PhotonvisionConstants.poseEstimatorAmbiguityScaleFactor) {
-        return Optional.empty();
+    for (PhotonPipelineResult result : pipelineResults) {
+      var poseLatestOptional = poseEstimator.update(result);
+
+      if (poseLatestOptional.isPresent() && !result.targets.isEmpty()) {
+        EstimatedRobotPose poseLatest = poseLatestOptional.get();
+        if (result.getBestTarget().getPoseAmbiguity() > PhotonvisionConstants.poseEstimatorAmbiguityScaleFactor) {
+          continue;
+        }
+
+        Translation2d targetPosition = poseEstimator.getFieldTags()
+            .getTagPose(result.getBestTarget().getFiducialId()).get().getTranslation().toTranslation2d();
+        Measurement measurement = new Measurement(poseLatest.estimatedPose.toPose2d(),
+            poseLatest.timestampSeconds, result.getBestTarget().getPoseAmbiguity(), targetPosition);
+
+        measurements.add(measurement);
       }
-
-      Translation2d targetPosition = poseEstimator.getFieldTags()
-          .getTagPose(pipelineResult.getBestTarget().getFiducialId()).get().getTranslation().toTranslation2d();
-      Measurement measurement = new Measurement(poseLatest.estimatedPose.toPose2d(),
-          poseLatest.timestampSeconds, pipelineResult.getBestTarget().getPoseAmbiguity(), targetPosition);
-
-      return Optional.of(measurement);
     }
 
-    return Optional.empty();
+    return measurements;
   }
 }

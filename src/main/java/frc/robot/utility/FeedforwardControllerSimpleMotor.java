@@ -16,7 +16,7 @@ public class FeedforwardControllerSimpleMotor extends SimpleMotorFeedforward imp
 
     @Override
     public double calculateVoltage(double velocity, double acceleration) {
-        return calculate(velocity, acceleration);
+        return calculateWithVelocities(velocity, acceleration);
     }
 
 }

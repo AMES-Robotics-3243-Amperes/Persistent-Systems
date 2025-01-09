@@ -4,8 +4,8 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -15,13 +15,13 @@ import frc.robot.utility.PIDFMotorController;
 
 public class SubsystemArm extends SubsystemBase {
 
-  protected CANSparkMax motor;
+  protected SparkMax motor;
   protected ArbitraryEncoder encoder;
   protected PIDFMotorController pidf;
 
   /** Creates a new SubsystemArm. */
   public SubsystemArm() {
-    motor = new CANSparkMax(11, MotorType.kBrushless);
+    motor = new SparkMax(11, MotorType.kBrushless);
     encoder = new ArbitraryEncoder(motor.getAbsoluteEncoder());
     pidf = new PIDFMotorController(
       motor, 

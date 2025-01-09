@@ -1,5 +1,7 @@
 package frc.robot.subsystems;
 
+import static edu.wpi.first.units.Units.Second;
+
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
@@ -8,11 +10,9 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.BaseUnits;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Voltage;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
@@ -96,9 +96,9 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   }
 
   public SysIdRoutine driveRoutine = new SysIdRoutine(
-      new Config(BaseUnits.Voltage.of(0.75).per(BaseUnits.Time.of(1)),
-          BaseUnits.Voltage.of(3),
-          BaseUnits.Time.of(8),
+      new Config(BaseUnits.VoltageUnit.of(0.75).per(Second),
+          BaseUnits.VoltageUnit.of(3),
+          BaseUnits.TimeUnit.of(8),
           null),
       new Mechanism(
           this::sysIdDrive,
@@ -110,7 +110,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
    * 
    * @param voltage the value to set the drive voltages to
    */
-  public void sysIdDrive(Measure<Voltage> voltage) {
+  public void sysIdDrive(Voltage voltage) {
     m_frontLeft.driveVoltage(voltage.baseUnitMagnitude());
     m_frontRight.driveVoltage(voltage.baseUnitMagnitude());
     m_rearLeft.driveVoltage(voltage.baseUnitMagnitude());
@@ -156,6 +156,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
 
   private boolean moduleRotationTest2Done = false;
   private Future<Boolean> moduleRotationTestUserQuestion;
+  @SuppressWarnings("unchecked")
   private Test[] tests = {
     new TestUtil.MultiphaseTest(
       new Runnable[] {this::moduleRotationTest1, this::moduleRotationTest2, this::moduleRotationTest3},
