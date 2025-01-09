@@ -2,7 +2,6 @@ package frc.robot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -55,10 +54,7 @@ public class DataManager {
       poseEstimator.update(imu.getRotation(), subsystemSwerveDrivetrain.getModulePositions());
 
       for (var unit : photonUnits) {
-        Optional<Measurement> measurementOptional = unit.getMeasurement();
-
-        if (measurementOptional.isPresent()) {
-          Measurement measurement = measurementOptional.get();
+        for (Measurement measurement : unit.getMeasurement()) {
           poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds,
               measurement.ambiguity.times(PhotonvisionConstants.poseEstimatorAmbiguityScaleFactor
                   * (poseEstimator.getEstimatedPosition().getTranslation().getDistance(measurement.targetPosition)

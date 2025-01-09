@@ -5,7 +5,6 @@ package frc.robot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
