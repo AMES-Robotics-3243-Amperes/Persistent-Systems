@@ -72,8 +72,8 @@ public class SubsystemSwerveModule {
     // :3 apply position and velocity conversion factors
     drivingConfig.encoder.positionConversionFactor(ModuleConstants.EncoderFactors.kDrivingEncoderPositionFactor);
     drivingConfig.encoder.velocityConversionFactor(ModuleConstants.EncoderFactors.kDrivingEncoderVelocityFactor);
-    turningConfig.encoder.positionConversionFactor(ModuleConstants.EncoderFactors.kTurningEncoderPositionFactor);
-    turningConfig.encoder.velocityConversionFactor(ModuleConstants.EncoderFactors.kTurningEncoderVelocityFactor);
+    turningConfig.absoluteEncoder.positionConversionFactor(ModuleConstants.EncoderFactors.kTurningEncoderPositionFactor);
+    turningConfig.absoluteEncoder.velocityConversionFactor(ModuleConstants.EncoderFactors.kTurningEncoderVelocityFactor);
 
     // :3 invert the turning encoder
     turningConfig.inverted(ModuleConstants.PhysicalProperties.kTurningEncoderInverted);
@@ -97,10 +97,11 @@ public class SubsystemSwerveModule {
 
     drivingConfig.encoder.uvwAverageDepth(4);
     drivingConfig.encoder.quadratureMeasurementPeriod(8);
-    turningConfig.encoder.uvwAverageDepth(8);
+    turningConfig.absoluteEncoder.averageDepth(8);
 
     // finish up configuration
     m_drivingSparkMax.configure(drivingConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_turningSparkMax.configure(turningConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
     m_drivingEncoder = m_drivingSparkMax.getEncoder();
     m_turningEncoder = m_turningSparkMax.getAbsoluteEncoder();
