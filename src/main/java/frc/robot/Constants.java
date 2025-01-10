@@ -150,8 +150,8 @@ public final class Constants {
 
   public static class Elevator {
     public static class Motors {
-        public static final int leaderCanId = 0;
-        public static final int followerCanId = 0;
+        public static final int leaderCanId = 10;
+        public static final int followerCanId = 11;
 
         public static final double positionConversionRatio = 1.0;
 
