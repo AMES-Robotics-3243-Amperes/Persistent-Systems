@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.PhotonvisionConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 import frc.robot.PhotonUnit.Measurement;
+import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.utility.AHRS_IMU;
 import frc.robot.utility.IMU;
@@ -18,6 +19,13 @@ public class DataManager {
   /** Singleton instance */
   private static DataManager instance;
 
+  // PROPOSAL: Deprecate or remove this method.
+  // REASON: Maintaining Dependency Inversion (the D in SOLID) to avoid
+  //   DataManager being used before it is configured, or used in places
+  //   another system would be better. The DataManager instance should always
+  //   be accessed through dependency injection (passing a thing into a constructor)
+  //   to this end.
+  // H!
   public static DataManager instance() {
     return instance;
   }
@@ -72,6 +80,58 @@ public class DataManager {
 
     public Pose2d get() {
       return poseEstimator.getEstimatedPosition();
+    }
+  }
+
+  public static enum ElevatorSetpoint {
+    Between(null),
+    L1(0.5),
+    L2(2.0),
+    L3(3.0),
+    L4(4.0);
+
+    public final Double position;
+
+    private ElevatorSetpoint(Double position) {
+      this.position = position;
+    }
+  }
+
+  public static class ElevatorPositionData {
+    public static final double DELTAP = 0.15;
+    public static final double DELTAV = 0.05;
+
+    public final double exactPos;
+    public final double exactVel;
+    public final ElevatorSetpoint setpoint;
+
+    public ElevatorPositionData(double position, double velocity) {
+      this.exactPos = position;
+      this.exactVel = velocity;
+
+      ElevatorSetpoint generalPosToBeSet = ElevatorSetpoint.Between;
+      double minPositionDif = DELTAP;
+      for (ElevatorSetpoint value : ElevatorSetpoint.values()) {
+        if (value.position == null) {continue;}
+        if (Math.abs(velocity) < DELTAV && Math.abs(value.position - position) < minPositionDif) {
+          generalPosToBeSet = value;
+          minPositionDif = Math.abs(value.position - position);
+        }
+      }
+
+      setpoint = generalPosToBeSet;
+    }
+  }
+
+  public class ElevatorPosition extends DataManagerEntry<ElevatorPositionData> {
+    private SubsystemElevator elevator;
+    public ElevatorPosition(RobotContainer robotContainer) {
+      elevator = robotContainer.subsystemElevator;
+    }
+
+    @Override
+    public ElevatorPositionData get() {
+      return new ElevatorPositionData(elevator.getPosition(), elevator.getVelocity());
     }
   }
 

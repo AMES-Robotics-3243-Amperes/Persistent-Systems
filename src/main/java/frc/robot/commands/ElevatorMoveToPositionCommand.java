@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemElevator;
 import static frc.robot.Constants.Elevator.MoveToPosition.*;
 
@@ -60,10 +61,10 @@ public class ElevatorMoveToPositionCommand extends Command {
   public enum Positions {
     Starting(0.0),
     Loading(1.0),
-    L1(0.5),
-    L2(2.0),
-    L3(3.0),
-    L4(4.0);
+    L1(DataManager.ElevatorSetpoint.L1.position),
+    L2(DataManager.ElevatorSetpoint.L2.position),
+    L3(DataManager.ElevatorSetpoint.L3.position),
+    L4(DataManager.ElevatorSetpoint.L4.position);
 
     public final double position;
 
