@@ -107,4 +107,8 @@ public class SubsystemLeds extends SubsystemBase {
 
     timer++;
   }
+
+  public void setState(Mode state) {
+    this.state = state;
+  }
 }
