@@ -150,20 +150,20 @@ public final class Constants {
 
   public static class Elevator {
     public static class Motors {
-        public static final int leaderCanId = 10;
-        public static final int followerCanId = 11;
+      public static final int leaderCanId = 10;
+      public static final int followerCanId = 11;
 
-        public static final double positionConversionRatio = 1.0;
+      public static final double positionConversionRatio = 1.0;
 
-        public static final double P = 0.01;
-        public static final double I = 0.0;
-        public static final double D = 0.0;
-        public static final double FF = 0.01;
+      public static final double P = 0.01;
+      public static final double I = 0.0;
+      public static final double D = 0.0;
+      public static final double FF = 0.01;
     }
 
     public static class MoveToPosition {
-        public static final double defaultDeltaP = 0.05;
-        public static final double defaultDeltaV = 0.05;
+      public static final double defaultDeltaP = 0.05;
+      public static final double defaultDeltaV = 0.05;
     }
 
     public static final double minPos = 0.0;

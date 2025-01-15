@@ -83,6 +83,7 @@ public class DataManager {
     }
   }
 
+  // H! TODO Put constants in Constants.java
   public static enum ElevatorSetpoint {
     Between(null),
     L1(0.5),
@@ -98,6 +99,7 @@ public class DataManager {
   }
 
   public static class ElevatorPositionData {
+    // H! TODO Put constants in Constants.java
     public static final double DELTAP = 0.15;
     public static final double DELTAV = 0.05;
 
@@ -110,12 +112,13 @@ public class DataManager {
       this.exactVel = velocity;
 
       ElevatorSetpoint generalPosToBeSet = ElevatorSetpoint.Between;
-      double minPositionDif = DELTAP;
+      double minPositionDif = DELTAP; // Position dif must always be than DELTAP
       for (ElevatorSetpoint value : ElevatorSetpoint.values()) {
-        if (value.position == null) {continue;}
+        if (value.position == null) {continue;} // Skip over ElevatorSetpoint.Between
         if (Math.abs(velocity) < DELTAV && Math.abs(value.position - position) < minPositionDif) {
           generalPosToBeSet = value;
           minPositionDif = Math.abs(value.position - position);
+          // Continue in case a future setpoint is closer.
         }
       }
 

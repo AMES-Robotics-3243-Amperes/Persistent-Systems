@@ -91,6 +91,7 @@ public class SubsystemElevator extends SubsystemBaseTestable {
     return encoderLeader.getVelocity();
   }
 
+  // TODO H! move to utils class to make nicer
   private static double clamp(double min, double max, double x) {
     if (x < min) { return min; }
     if (x > max) { return max; }

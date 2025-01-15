@@ -31,7 +31,7 @@ public class ElevatorMoveToPositionCommand extends Command {
     this(elevator, target, defaultDeltaP, defaultDeltaV);
   }
 
-  public ElevatorMoveToPositionCommand(SubsystemElevator elevator, Positions target) {
+  public ElevatorMoveToPositionCommand(SubsystemElevator elevator, Position target) {
     this(elevator, target.position, defaultDeltaP, defaultDeltaV);
   }
 
@@ -58,7 +58,8 @@ public class ElevatorMoveToPositionCommand extends Command {
     ;
   }
 
-  public enum Positions {
+  // H! TODO Put constants in Constants.java
+  public enum Position {
     Starting(0.0),
     Loading(1.0),
     L1(DataManager.ElevatorSetpoint.L1.position),
@@ -68,7 +69,7 @@ public class ElevatorMoveToPositionCommand extends Command {
 
     public final double position;
 
-    private Positions(double position) {
+    private Position(double position) {
       this.position = position;
     }
   }
