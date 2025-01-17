@@ -35,7 +35,7 @@ public class SubsystemArm extends SubsystemBase {
     pidf.setSetpoint(position);
   }
 
-  public void setPosition(Setpoint position) {
+  public void setPosition(SetpointIntake position) {
     setPosition(position.rotations);
   }
 
@@ -45,12 +45,12 @@ public class SubsystemArm extends SubsystemBase {
   }
 
 
-  public enum Setpoint {
+  public enum SetpointIntake {
     GROUND(0.065),
     MIDDLE(0.127),
     TOP(0.284);
     public final double rotations;
-    private Setpoint(double rotations) {
+    private SetpointIntake(double rotations) {
       this.rotations = rotations;
     }
   }
