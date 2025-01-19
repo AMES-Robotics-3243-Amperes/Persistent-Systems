@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.awt.Container;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -33,6 +35,7 @@ import javax.swing.text.html.HTMLDocument;
 import frc.robot.Robot;
 import frc.robot.test.TestUtil.InstantTest;
 import frc.robot.test.TestUtil.InstantTestMethod;
+import frc.robot.test.networking.Workstation;
 
 /** A system which will run all tests queued to it and display their results. @author H! */
 public class TestManager {
@@ -109,6 +112,9 @@ public class TestManager {
 
     protected static int cyclesRun = 0;
 
+    protected static Workstation driverStationClient = new Workstation();
+    private static Future<boolean[]> selectedTestGroups;
+
 
 
 
@@ -170,7 +176,7 @@ public class TestManager {
         testIndex = 0;
         initialPauseTimer = initialPauseLength;
         testsFinished = false;
-        testSelectionMade = false;
+        selectedTestGroups = null;
         cyclesRun = 0;
         results = new HashMap<String, Map<String, TestResults>>();
         testsRun = new HashMap<Test, TestSuccess>();
@@ -192,6 +198,24 @@ public class TestManager {
         }
 
         if (!testSelectionMade) {
+            // Check if decision was made, if it was, apply the changes and move on.
+            if (selectedTestGroups.isDone()) {
+                try {
+                    boolean[] selectedGroupsUnwrapped = selectedTestGroups.get();
+                    // Remove those test groups not selected
+                    int numberRemoved = 0;
+                    for (int i = 0; i < selectedGroupsUnwrapped.length; i++) {
+                        if (!selectedGroupsUnwrapped[i]) {
+                            groupsToTest.remove(i - numberRemoved);
+                            numberRemoved++;
+                        }
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+
+                testSelectionMade = true;
+            }
             return;
         }
 
@@ -398,6 +422,10 @@ public class TestManager {
      * @author H!
      */
     public static void displayTestResults() {
+
+        driverStationClient.publishResults(results);
+
+        /* 
         JTextPane textPane = new JTextPane();
         textPane.setContentType("text/html");
         textPane.setText("<!DOCTYPE html><html><head><style>.fail{color:red}.success{color:green}.notRun{color:grey}</style></head><body><h1>Integrated Test Results</h1><ul id=testGroupList></ul></body></html>");
@@ -431,7 +459,7 @@ public class TestManager {
             scrollPane,
             "Integrated Test Results",
             JOptionPane.PLAIN_MESSAGE
-        );
+        );*/
     }
 
 
@@ -442,6 +470,9 @@ public class TestManager {
             testGroupNames[i] = groupsToTest.get(i).getName();
         }
 
+        selectedTestGroups = driverStationClient.getChosenTestGroups(testGroupNames);
+
+        /* 
         // Root component
         JFrame frame = new JFrame();
         frame.setLayout(new GridBagLayout());
@@ -495,7 +526,7 @@ public class TestManager {
 
         frame.pack();
 
-        frame.setVisible(true);
+        frame.setVisible(true);*/
     }
 
 

@@ -51,7 +51,7 @@ public class Workstation implements AutoCloseable {
         executor.submit(this::findConnection);
     }
 
-    public synchronized Future<boolean[]> getChosenTestGroups(List<String> testGroups) {
+    public synchronized Future<boolean[]> getChosenTestGroups(String[] testGroups) {
         verifyProtocolState(ProtocolState.Holding);
         verifyConnection();
         final PrintWriter writer = getWriter();
@@ -66,7 +66,7 @@ public class Workstation implements AutoCloseable {
 
             String response = reader.readLine();
             char[] responseChars = response.toCharArray();
-            boolean[] out = new boolean[testGroups.size()];
+            boolean[] out = new boolean[testGroups.length];
 
             for (int i = 0; i < responseChars.length; i++) {
                 switch (responseChars[i]) {

@@ -44,6 +44,8 @@ public class TestUtil {
      * @author H!
      */
     public static Future<Boolean> askUserBool(String question, String optionYes, String optionNo) {
+        return TestManager.driverStationClient.askQuestion(question, optionYes, optionNo);
+        /*
         return executor.submit(() -> {
             Object[] options = {
                 optionYes,
@@ -63,7 +65,7 @@ public class TestUtil {
                 default:
                     return null;
             }
-        });
+        });*/
     }
 
     /**An overload where {@code optionYes} and {@code optionNo} are presumed to be "Yes" and "No"
