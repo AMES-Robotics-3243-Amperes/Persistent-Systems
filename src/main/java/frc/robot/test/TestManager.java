@@ -69,30 +69,18 @@ public class TestManager {
      * @author H!
      */
     public static class TestResults {
-        public TestSuccess m_succeessResult;
+        public TestSuccess m_successResult;
         public String m_message;
 
-        public TestResults(TestSuccess succeessResult, String message) {
-            m_succeessResult = succeessResult;
+        public TestResults(TestSuccess successResult, String message) {
+            m_successResult = successResult;
             m_message = message;
         }
 
-        public TestResults(TestSuccess succeessResult) {
-            this(succeessResult, "");
+        public TestResults(TestSuccess successResult) {
+            this(successResult, "");
         }
     }
-
-    /**
-     * Used for storing the progression of a test.
-     * 
-     * @author H!
-     */
-    protected static enum TestState {
-        SETUP,
-        RUNNING,
-        CLOSEDOWN
-    }
-
 
 
     public static Map<String, Map<String, TestResults>> results = new HashMap<String, Map<String, TestResults>>();
@@ -314,7 +302,7 @@ public class TestManager {
     }
 
     /** Runs all logic that must run when a tests finishes.
-     * This invloves managing reseting counters and preparing the next tests.
+     * This involves managing resetting counters and preparing the next tests.
      */
     public static void onTestDone(Test test) {
         test.closedown();
@@ -351,11 +339,12 @@ public class TestManager {
     }
 
     /** The format used to generate the HTML group headers in the test results @author H! */
-    protected static final String groupFormat = "<li><h2 class='%2$s'>%1$s | %3$s %4$s </h2> <p><em class='success'>%5$d/%7$d/%8$d Succeess</em> | <em class='fail'>%6$d/%7$d/%8$d Fails</em></p><ul></ul></li>";
-    /**A utility method for getting the proper HTML to make a subsytem test result wrapper be displayed
+    protected static final String groupFormat = "<li><h2 class='%2$s'>%1$s | %3$s %4$s </h2> <p><em class='success'>%5$d/%7$d/%8$d Success</em> | <em class='fail'>%6$d/%7$d/%8$d Fails</em></p><ul></ul></li>";
+    /**
+     * A utility method for getting the proper HTML to make a subsystem test result wrapper be displayed
      * 
      * @param resultEntry One entry of the map corresponding to the test group to display
-     * @return A {@link String} with the HTML in plaintext repersenting the group header
+     * @return A {@link String} with the HTML in plaintext representing the group header
      * 
      * @author H!
      */
@@ -365,10 +354,10 @@ public class TestManager {
         int totalCount = resultEntry.getValue().size();
 
         for (TestResults testResult : resultEntry.getValue().values()) {
-            if (testResult.m_succeessResult == TestSuccess.SUCCESS) {
+            if (testResult.m_successResult == TestSuccess.SUCCESS) {
                 successCount++;
                 performedCount++;
-            } else if (testResult.m_succeessResult != TestSuccess.NOTRUN) {
+            } else if (testResult.m_successResult != TestSuccess.NOTRUN) {
                 performedCount++;
             }
         }
@@ -391,20 +380,20 @@ public class TestManager {
     /**A utility method for getting the proper HTML to make a test result be displayed
      * 
      * @param testEntry One entry of the map corresponding to the test to display
-     * @return A {@link String} with the HTML in plaintext repersenting the test result
+     * @return A {@link String} with the HTML in plaintext representing the test result
      * 
      * @author H!
      */
     protected static String getTestHTMLFormat(Entry<String, TestResults> testEntry) {
         String cssClass = "";
         String resultIcon = "";
-        if        (testEntry.getValue().m_succeessResult == TestSuccess.SUCCESS) {
+        if        (testEntry.getValue().m_successResult == TestSuccess.SUCCESS) {
             cssClass = "success";
             resultIcon = "✔";
-        } else if (testEntry.getValue().m_succeessResult == TestSuccess.FAIL) {
+        } else if (testEntry.getValue().m_successResult == TestSuccess.FAIL) {
             cssClass = "fail";
             resultIcon = "✗";
-        } else if (testEntry.getValue().m_succeessResult == TestSuccess.NOTRUN) {
+        } else if (testEntry.getValue().m_successResult == TestSuccess.NOTRUN) {
             cssClass = "notRun";
             resultIcon = "-";
         }

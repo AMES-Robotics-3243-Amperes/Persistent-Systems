@@ -125,7 +125,7 @@ public class Workstation implements AutoCloseable {
 
                 for (Entry<String, TestResults> test : testGroup.getValue().entrySet()) {
                     String prefix = "0:";
-                    switch (test.getValue().m_succeessResult) {
+                    switch (test.getValue().m_successResult) {
                         case SUCCESS:
                             prefix = "S:";
                             break;
