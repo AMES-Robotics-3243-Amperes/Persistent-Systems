@@ -42,14 +42,14 @@ public class Workstation implements AutoCloseable {
     private Socket client;
 
     public Workstation() {
-        System.out.println("\n\n\nTCP Server Started\n\n\n");
+        System.out.println("TCP Server Started");
         try {
             server = new ServerSocket(6001);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         
-        executor.submit(this::findConnection);
+        executor.execute(this::findConnection);
     }
 
     public synchronized Future<boolean[]> getChosenTestGroups(String[] testGroups) {
@@ -197,9 +197,14 @@ public class Workstation implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         executor.shutdownNow();
-        client.close();
+        try {
+            if (client != null) client.close();
+            if (server != null) server.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         protocolState = ProtocolState.Disconnected;
     }
 }

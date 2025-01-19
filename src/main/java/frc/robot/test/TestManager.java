@@ -13,6 +13,9 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
+import edu.wpi.first.wpilibj.DriverStation;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -153,16 +156,17 @@ public class TestManager {
         testsRun = new HashMap<Test, TestSuccess>();
     }
 
+    public static void onDisable() {
+        driverStationClient.close();
+        driverStationClient = new Workstation();
+    }
+
     /**
      * Should be run as soon as possible, and only once. Configures some things such
      * as starting the TCP server. These won't happen until the first method call otherwise.
      */
     public static void load() {
         driverStationClient = new Workstation();
-    }
-
-    public static void debug() {
-
     }
 
     /**

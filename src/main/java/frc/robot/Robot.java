@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -17,6 +18,7 @@ import frc.robot.test.TestManager;
  * project.
  */
 public class Robot extends TimedRobot {
+  public boolean disableFlag = false;
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
 
@@ -48,13 +50,16 @@ public class Robot extends TimedRobot {
     CommandScheduler.getInstance().run();
 
     DataManager.instance().update();
-
-    TestManager.debug();
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    if (DriverStation.isTest()) {
+      TestManager.onDisable();
+    }
+    disableFlag = false;
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -110,4 +115,14 @@ public class Robot extends TimedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {}
+
+  @Override
+  public boolean isDisabled() {
+    return super.isDisabled() || disableFlag;
+  }
+
+  @Override
+  public boolean isEnabled() {
+    return !isDisabled();
+  }
 }
