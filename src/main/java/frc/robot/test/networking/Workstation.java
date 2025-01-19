@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
@@ -42,6 +42,7 @@ public class Workstation implements AutoCloseable {
     private Socket client;
 
     public Workstation() {
+        System.out.println("\n\n\nTCP Server Started\n\n\n");
         try {
             server = new ServerSocket(6001);
         } catch (IOException e) {
@@ -52,8 +53,8 @@ public class Workstation implements AutoCloseable {
     }
 
     public synchronized Future<boolean[]> getChosenTestGroups(String[] testGroups) {
-        verifyProtocolState(ProtocolState.Holding);
         verifyConnection();
+        verifyProtocolState(ProtocolState.Holding);
         final PrintWriter writer = getWriter();
         final BufferedReader reader = getReader();
         
@@ -63,8 +64,10 @@ public class Workstation implements AutoCloseable {
                 writer.println(testGroupName);
             }
             writer.println(GROUP_SELECTION_TERMINATOR);
+            System.out.println("Groups sent");
 
             String response = reader.readLine();
+            System.out.println("Response received: " + response);
             char[] responseChars = response.toCharArray();
             boolean[] out = new boolean[testGroups.length];
 
@@ -90,8 +93,8 @@ public class Workstation implements AutoCloseable {
     }
 
     public synchronized Future<Boolean> askQuestion(String question, String trueOption, String falseOption) {
-        verifyProtocolState(ProtocolState.Running);
         verifyConnection();
+        verifyProtocolState(ProtocolState.Running);
         final PrintWriter writer = getWriter();
         final BufferedReader reader = getReader();
 
@@ -115,8 +118,8 @@ public class Workstation implements AutoCloseable {
     }
 
     public synchronized Future<?> publishResults(Map<String, Map<String, TestResults>> results) {
-        verifyProtocolState(ProtocolState.Running);
         verifyConnection();
+        verifyProtocolState(ProtocolState.Running);
         final PrintWriter writer = getWriter();
 
         return executor.submit(() -> {
@@ -151,7 +154,8 @@ public class Workstation implements AutoCloseable {
     }
 
     private void findConnection() {
-        try (Socket socket = server.accept()) {
+        try {
+            Socket socket = server.accept();
             synchronized (this) {
                 protocolState = ProtocolState.Holding;
                 client = socket;
@@ -163,6 +167,7 @@ public class Workstation implements AutoCloseable {
 
     private void verifyConnection() {
         if (!hasConnection()) {
+            System.out.println(LocalDateTime.now());
             throw new IllegalStateException("No client Ammeter program has been connected. Please start one on the driver station and try again.");
         }
     }
@@ -197,5 +202,4 @@ public class Workstation implements AutoCloseable {
         client.close();
         protocolState = ProtocolState.Disconnected;
     }
-    
 }

@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.CommandSwerveFollowSpline;
-import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -35,7 +34,7 @@ public class RobotContainer {
   AutoSelector autoSelector = new AutoSelector(mainTab);
 
   // controllers
-  private JoyUtil primaryController = new JoyUtil(0);
+  //private JoyUtil primaryController = new JoyUtil(0);
 
   //
   // Subsystems
@@ -47,8 +46,8 @@ public class RobotContainer {
   // Commands
   //
 
-  private CommandSwerveTeleopDrive commandSwerveTeleopDrive = new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain,
-      primaryController);
+  // private CommandSwerveTeleopDrive commandSwerveTeleopDrive = new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain,
+      // primaryController);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -72,7 +71,7 @@ public class RobotContainer {
    * Used to set default commands for subsystems.
    */
   private void setDefaultCommands() {
-    subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
+    //subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
   }
 
   private void setAutoCommands() {
@@ -98,7 +97,7 @@ public class RobotContainer {
         .addTask(1, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
-    primaryController.a().onTrue(followCommand);
+    //primaryController.a().onTrue(followCommand);
   }
 
   /**
