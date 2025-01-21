@@ -84,7 +84,7 @@ public class SubsystemElevator extends SubsystemBaseTestable {
   // ### Public API used by commands ###
 
   public void setPosition(double position) {
-    position = clamp(minPos, maxPos, position);
+    position = clamp(Positions.min, Positions.max, position);
     currentReference = position;
     controlLoop.setReference(position, ControlType.kPosition);
   }
@@ -197,18 +197,18 @@ public class SubsystemElevator extends SubsystemBaseTestable {
   // Position test
 
   private void positionTest1() {
-    setPosition(minPos);
+    setPosition(Positions.min);
   }
   private void positionTest2() {
-    TestUtil.assertEquals(getPosition(), minPos, "Did not reach min position.", 0.05);
-    setPosition(maxPos);
+    TestUtil.assertEquals(getPosition(), Positions.min, "Did not reach min position.", 0.05);
+    setPosition(Positions.max);
   }
   private void positionTest3() {
-    TestUtil.assertEquals(getPosition(), maxPos, "Did not reach max position", 0.05);
-    setPosition((maxPos + minPos) / 2.0);
+    TestUtil.assertEquals(getPosition(), Positions.max, "Did not reach max position", 0.05);
+    setPosition((Positions.max + Positions.min) / 2.0);
   }
   private void positionTest4() {
-    TestUtil.assertEquals(getPosition(), (maxPos + minPos) / 2.0, "Did not reach mid position", 0.05);
+    TestUtil.assertEquals(getPosition(), (Positions.max + Positions.min) / 2.0, "Did not reach mid position", 0.05);
   }
 
   private Test positionTest =

@@ -86,10 +86,10 @@ public class DataManager {
   // H! TODO Put constants in Constants.java
   public static enum ElevatorSetpoint {
     Between(null),
-    L1(0.5),
-    L2(2.0),
-    L3(3.0),
-    L4(4.0);
+    L1(Constants.Elevator.Positions.L1),
+    L2(Constants.Elevator.Positions.L2),
+    L3(Constants.Elevator.Positions.L3),
+    L4(Constants.Elevator.Positions.L4);
 
     public final Double position;
 

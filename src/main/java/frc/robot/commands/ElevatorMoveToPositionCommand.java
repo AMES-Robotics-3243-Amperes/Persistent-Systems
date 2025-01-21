@@ -5,9 +5,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemElevator;
-import static frc.robot.Constants.Elevator.MoveToPosition.*;
+import static frc.robot.Constants.Elevator.*;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ElevatorMoveToPositionCommand extends Command {
@@ -28,11 +27,11 @@ public class ElevatorMoveToPositionCommand extends Command {
 
   /** Creates a new ClimberMoveToPositionCommand. */
   public ElevatorMoveToPositionCommand(SubsystemElevator elevator, double target) {
-    this(elevator, target, defaultDeltaP, defaultDeltaV);
+    this(elevator, target, PositionChecking.deltaP, PositionChecking.deltaV);
   }
 
   public ElevatorMoveToPositionCommand(SubsystemElevator elevator, Position target) {
-    this(elevator, target.position, defaultDeltaP, defaultDeltaV);
+    this(elevator, target.position, PositionChecking.deltaP, PositionChecking.deltaV);
   }
 
   // Called when the command is initially scheduled.
@@ -58,14 +57,13 @@ public class ElevatorMoveToPositionCommand extends Command {
     ;
   }
 
-  // H! TODO Put constants in Constants.java
   public enum Position {
-    Starting(0.0),
-    Loading(1.0),
-    L1(DataManager.ElevatorSetpoint.L1.position),
-    L2(DataManager.ElevatorSetpoint.L2.position),
-    L3(DataManager.ElevatorSetpoint.L3.position),
-    L4(DataManager.ElevatorSetpoint.L4.position);
+    Starting(Positions.starting),
+    Loading(Positions.loading),
+    L1(Positions.L1),
+    L2(Positions.L2),
+    L3(Positions.L3),
+    L4(Positions.L4);
 
     public final double position;
 

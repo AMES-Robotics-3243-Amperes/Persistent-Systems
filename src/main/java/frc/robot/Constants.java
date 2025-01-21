@@ -161,13 +161,21 @@ public final class Constants {
       public static final double FF = 0.01;
     }
 
-    public static class MoveToPosition {
-      public static final double defaultDeltaP = 0.05;
-      public static final double defaultDeltaV = 0.05;
+    public static class PositionChecking {
+      public static final double deltaP = 0.05;
+      public static final double deltaV = 0.05;
     }
 
-    public static final double minPos = 0.0;
-    public static final double maxPos = 100.0;
+    public static class Positions {
+      public static final double min = 0.0;
+      public static final double starting = min;
+      public static final double loading = 1.0;
+      public static final double L1 = 1.0;
+      public static final double L2 = 1.0;
+      public static final double L3 = 1.0;
+      public static final double L4 = 1.0;
+      public static final double max = 100.0;
+    }
 }
 
   public static final class PhotonvisionConstants {
