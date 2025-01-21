@@ -36,6 +36,7 @@ public class SubsystemElevator extends SubsystemBaseTestable {
   private RelativeEncoder encoderFollower;
 
   private SparkClosedLoopController controlLoop;
+  private double currentReference = 0.0;
 
   /** Creates a new SubsystemElevator. */
   public SubsystemElevator() {
@@ -76,10 +77,15 @@ public class SubsystemElevator extends SubsystemBaseTestable {
     // This method will be called once per scheduler run
   }
 
+  public void nudge(double amount) {
+    setPosition(currentReference += amount);
+  }
+
   // ### Public API used by commands ###
 
   public void setPosition(double position) {
     position = clamp(minPos, maxPos, position);
+    currentReference = position;
     controlLoop.setReference(position, ControlType.kPosition);
   }
 
