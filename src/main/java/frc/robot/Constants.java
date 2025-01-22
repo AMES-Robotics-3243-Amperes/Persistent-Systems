@@ -222,4 +222,22 @@ public final class Constants {
       }
     }
   }
+
+  public static final class DifferentialArmConstants {
+    public static final class Setpoints {
+      // All of these need to be actually figured out, just placeholders for now
+      
+      // Starting position setpoints
+      public static final double startingPosition = 0.0;
+      public static final double startingPower = 0.0;
+
+      // Intake position setpoints
+      public static final double intakePosition = 0.5;
+      public static final double intakePower = 0.5;
+
+      // Deposit position setpoints
+      public static final double depositPosition = -1.0;
+      public static final double depositPower = -1.0;
+    }
+  }
 }

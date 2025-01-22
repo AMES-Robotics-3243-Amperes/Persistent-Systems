@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkBase;
 
 import edu.wpi.first.math.Matrix;
@@ -15,8 +14,9 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
-public class SubsystemEndAffectorDifferential extends SubsystemBase {
+public class SubsystemClaw extends SubsystemBase {
 
   private SparkBase motor1;
   private SparkBase motor2;
@@ -50,13 +50,9 @@ public class SubsystemEndAffectorDifferential extends SubsystemBase {
       Matrix<N2, N1> mechanismOutputs = new Matrix<N2, N1>(N2.instance, N1.instance, new double[] {outsideOutput, insideOutput});
       Vector<N2> mechanismInputs = new Vector<N2>(inverseDifferentialMatrix.times(mechanismOutputs));
       
-      // Normalize output if not achievable
-      if (mechanismInputs.get(0) > 1.0) {
-        mechanismInputs = mechanismInputs.div(mechanismInputs.get(0));
-      }
-
-      if (mechanismInputs.get(1) > 1.0) {
-        mechanismInputs = mechanismInputs.div(mechanismInputs.get(1));
+      double maxOuput = Math.max(mechanismInputs.get(0), mechanismInputs.get(1));
+      if (maxOuput > 1.0) {
+        mechanismInputs.div(maxOuput);
       }
 
       motorForward.set(mechanismInputs.get(0));
@@ -65,12 +61,10 @@ public class SubsystemEndAffectorDifferential extends SubsystemBase {
 
     public void setOutsideOutput(double speed) {
       outsideOutput = clamp(-1.0, 1.0, speed);
-      update();
     }
 
     public void setInsideOutput(double speed) {
       insideOutput = clamp(-1.0, 1.0, speed);
-      update();
     }
   }
 
@@ -82,8 +76,12 @@ public class SubsystemEndAffectorDifferential extends SubsystemBase {
     intakePower = power;
   }
 
+  public boolean isAtTarget() {
+    return targetPivotPosition == pivotEncoder.getDistance();
+  }
+
   /** Creates a new SubsystemEndAffectorDifferential. */
-  public SubsystemEndAffectorDifferential() {
+  public SubsystemClaw() {
     motorGroup = new DifferentialMotorGroup(motor1, motor2);
     pivotController = new PIDController(0, 0, 0);
   }
@@ -93,11 +91,24 @@ public class SubsystemEndAffectorDifferential extends SubsystemBase {
     // This method will be called once per scheduler run
     motorGroup.setOutsideOutput(pivotController.calculate(pivotEncoder.getDistance(), targetPivotPosition));
     motorGroup.setInsideOutput(intakePower);
+    motorGroup.update();
   }
 
   private static double clamp(double min, double max, double x) {
-    if (x < min) { return min; }
-    if (x > max) { return max; }
-    return x;
+    return Math.max(min, Math.min(max, x));
+  }
+
+  public enum SetpointDiffArm {
+    Starting(Constants.DifferentialArmConstants.Setpoints.startingPosition, Constants.DifferentialArmConstants.Setpoints.startingPower),
+    Intake(Constants.DifferentialArmConstants.Setpoints.intakePosition, Constants.DifferentialArmConstants.Setpoints.intakePower),
+    Place(Constants.DifferentialArmConstants.Setpoints.depositPosition, Constants.DifferentialArmConstants.Setpoints.depositPower);
+
+    public final double position;
+    public final double power;
+
+    private SetpointDiffArm(double position, double power) {
+      this.position = position;
+      this.power = power;
+    }
   }
 }
