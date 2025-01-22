@@ -18,7 +18,6 @@ import frc.robot.test.TestManager;
  * project.
  */
 public class Robot extends TimedRobot {
-  public boolean disableFlag = false;
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
 
@@ -58,7 +57,6 @@ public class Robot extends TimedRobot {
     if (DriverStation.isTest()) {
       TestManager.onDisable();
     }
-    disableFlag = false;
   }
 
   @Override
@@ -118,7 +116,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public boolean isDisabled() {
-    return super.isDisabled() || disableFlag;
+    return super.isDisabled();
   }
 
   @Override
