@@ -36,6 +36,7 @@ public class Workstation implements AutoCloseable {
     private final String GROUP_SELECTION_TERMINATOR = "END_SELECTION";
     private final String RESULTS_TERMINATOR = "END_RESULTS";
     private final String QUESTION_HEADER = "BEGIN_QUESTION";
+    private final int CONNECTION_PORT = 5809;
 
     private ExecutorService executor = Executors.newSingleThreadExecutor();
     private ServerSocket server;
@@ -44,7 +45,7 @@ public class Workstation implements AutoCloseable {
     public Workstation() {
         System.out.println("TCP Server Started");
         try {
-            server = new ServerSocket(6001);
+            server = new ServerSocket(CONNECTION_PORT);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
