@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.commands.CommandLedPatternCycle;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.splines.PathFactory;
@@ -51,6 +52,7 @@ public class RobotContainer {
 
   private CommandSwerveTeleopDrive commandSwerveTeleopDrive = new CommandSwerveTeleopDrive(subsystemSwerveDrivetrain,
       primaryController);
+  private CommandLedPatternCycle commandLedPatternCycle = new CommandLedPatternCycle(subsystemLeds);
 
   /**
    * The container for the robot. Contains subsystems, OI devices, and commands.
@@ -75,6 +77,7 @@ public class RobotContainer {
    */
   private void setDefaultCommands() {
     subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
+    subsystemLeds.setDefaultCommand(commandLedPatternCycle);
   }
 
   private void setAutoCommands() {

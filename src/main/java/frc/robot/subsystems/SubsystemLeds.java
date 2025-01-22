@@ -26,12 +26,12 @@ public class SubsystemLeds extends SubsystemBase {
 
   private void loadBufferHueCircle(int timer) {
     for (int i = 0; i < ledBuffer.getLength(); i++) {
-      ledBuffer.setHSV(i, (i * 2 + timer / 10) % 180, 255, 255);
+      ledBuffer.setHSV(i, (i * 3 + timer) % 180, 255, 255);
     }
   }
 
   private void loadBufferTransFlag(int timer) {
-    final Color8Bit blue = new Color8Bit(0, 200, 255);
+    final Color8Bit blue = new Color8Bit(0, 150, 255);
     final Color8Bit pink = new Color8Bit(245, 65, 175);
     final Color8Bit white = new Color8Bit(200, 200, 200);
     final Color8Bit filler = new Color8Bit(0, 0, 0);
@@ -70,8 +70,8 @@ public class SubsystemLeds extends SubsystemBase {
   private int timer = 0;
   /** Creates a new SubsystemLeds. */
   public SubsystemLeds() {
-    led = new AddressableLED(0); // TODO move things to constants
-    ledBuffer = new AddressableLEDBuffer(12);
+    led = new AddressableLED(4); // TODO move things to constants
+    ledBuffer = new AddressableLEDBuffer(33);
 
     loadBufferBlank(0);
 
