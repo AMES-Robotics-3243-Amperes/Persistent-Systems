@@ -81,6 +81,16 @@ public class SubsystemElevator extends SubsystemBaseTestable {
     setPosition(currentReference += amount);
   }
 
+  public void rezero() {
+    encoderLeader.setPosition(Positions.starting);
+    encoderFollower.setPosition(Positions.starting);
+    controlLoop.setReference(Positions.starting, ControlType.kPosition);
+  }
+
+  public double getCurrent() {
+    return (motorLeader.getOutputCurrent() + motorFollower.getOutputCurrent()) / 2.0;
+  }
+
   // ### Public API used by commands ###
 
   public void setPosition(double position) {
