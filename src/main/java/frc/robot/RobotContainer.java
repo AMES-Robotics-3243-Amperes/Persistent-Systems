@@ -125,6 +125,7 @@ public class RobotContainer {
     // Manual intaking and depositing
     secondaryController.leftTrigger().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Intake));
     secondaryController.rightTrigger().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Place));
+    secondaryController.y().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Starting));
 
     // Testing movement - normally just included in composition with elevator
     secondaryController.a().onTrue(moveClawIntake);

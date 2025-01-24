@@ -53,7 +53,7 @@ public class SubsystemClaw extends SubsystemBase {
 
     private static Matrix<N2, N2> inverseDifferentialMatrix = new Matrix<N2, N2>(N2.instance, N2.instance, new double[] {
        1.0, 1.0,
-      -1.0, 1.0
+       1.0, -1.0
     });
 
     public DifferentialMotorGroup(MotorController motorForward, MotorController motorReverse) {
@@ -94,7 +94,7 @@ public class SubsystemClaw extends SubsystemBase {
   /** Creates a new SubsystemEndAffectorDifferential. */
   public SubsystemClaw(/* Ultrasonic rangeFinder */) {
     // Might need to invert this motor
-    reverseConfig.inverted(true);
+    // reverseConfig.inverted(true);
     forwardMotor.configure(forwardConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     reverseMotor.configure(reverseConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -113,6 +113,9 @@ public class SubsystemClaw extends SubsystemBase {
     motorGroup.setOutsideOutput(pivotController.calculate(pivotEncoder.getPosition(), targetPivotPosition));
     motorGroup.setInsideOutput(intakePower);
     motorGroup.update();
+    System.out.println("Intake power: " + intakePower);
+    System.out.println("Motor position: " + targetPivotPosition);
+    System.out.println("Absolute encoder value: " + pivotEncoder.getPosition());
   }
 
   private static double clamp(double min, double max, double x) {

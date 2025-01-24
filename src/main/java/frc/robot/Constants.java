@@ -241,7 +241,7 @@ public final class Constants {
       public static final double intakePower = 0.8;
 
       // Deposit position setpoints
-      public static final double depositPosition = -0.5;
+      public static final double depositPosition = 0.5;
       public static final double depositPower = -0.8;
     }
   }
