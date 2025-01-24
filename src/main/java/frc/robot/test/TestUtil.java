@@ -12,16 +12,18 @@ import java.lang.annotation.Target;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
+import edu.wpi.first.wpilibj.Timer;
+
 /** Add your docs here. */
 public class TestUtil {
   
-  // Prevent instantiating
-  private TestUtil() {}
+    // Prevent instantiating
+    private TestUtil() {}
 
     /**
      * A method for asking the user questions as part of integrated testing. This
      * is something you might want to do because you can't be sure encoders are always
-     * acurate - those need to be checked too.
+     * accurate - those need to be checked too.
      * 
      * @param question  The question to ask the user
      * @param optionYes The text displayed on the button returning true
@@ -138,8 +140,8 @@ public class TestUtil {
          * Creates an InstantTest.
          * @param execute The function to run.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
-         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be omitted)
          */
         public InstantTest(Runnable execute, String name, Test[] dependencies, boolean[] successRequirements) {
             this.execute = execute;
@@ -149,10 +151,10 @@ public class TestUtil {
         }
 
         /**
-         * Creates an InstantTest. This overload assummes all dependencies are required to succeed.
+         * Creates an InstantTest. This overload assumes all dependencies are required to succeed.
          * @param execute The function to run.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
          */
         public InstantTest(Runnable execute, String name, Test[] dependencies) {
             this(execute, name, dependencies, generateBoolArray(dependencies));
@@ -211,8 +213,8 @@ public class TestUtil {
          * @param execute The function to run.
          * @param isDone A function returning whether the test is over yet.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
-         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be omitted)
          */
         public OnePhaseTest(Runnable periodic, Supplier<Boolean> isDone, String name, Test[] dependencies, boolean[] successRequirements) {
             this.periodicFunc = periodic;
@@ -223,11 +225,11 @@ public class TestUtil {
         }
 
         /**
-         * Creates a OnePhaseTest. This overload assummes all dependencies are required to succeed.
+         * Creates a OnePhaseTest. This overload assumes all dependencies are required to succeed.
          * @param execute The function to run.
          * @param isDone A function returning whether the test is over yet.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
          */
         public OnePhaseTest(Runnable execute, Supplier<Boolean> isDone, String name, Test[] dependencies) {
             this(execute, isDone, name, dependencies, generateBoolArray(dependencies));
@@ -283,8 +285,8 @@ public class TestUtil {
          * @param phases An array of the functions to run.
          * @param phaseEndConditions An array of functions specifying whether each phase has ended yet.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
-         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be omitted)
          */
         public MultiphaseTest(Runnable[] phases, Supplier<Boolean>[] phaseEndConditions, String name, Test[] dependencies, boolean[] successRequirements) {
             this.phases = phases;
@@ -304,7 +306,7 @@ public class TestUtil {
          * @param phases An array of the functions to run.
          * @param phaseEndConditions An array of functions specifying whether each phase has ended yet.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
          */
         public MultiphaseTest(Runnable[] phases, Supplier<Boolean>[] phaseEndConditions, String name, Test[] dependencies) {
             this(phases, phaseEndConditions, name, dependencies, generateBoolArray(dependencies));
@@ -376,8 +378,8 @@ public class TestUtil {
          * @param phases An array of the functions to run.
          * @param durations An array describing how long each phase should last.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
-         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be omitted)
          */
         public TimedTest(Runnable[] phases, double[] durations, String name, Test[] dependencies, boolean[] successRequirements) {
             this.phases = phases;
@@ -399,7 +401,7 @@ public class TestUtil {
          * @param phases An array of the functions to run.
          * @param durations An array describing how long each phase should last.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
          */
         public TimedTest(Runnable[] phases, double[] durations, String name, Test[] dependencies) {
             this(phases, durations, name, dependencies, generateBoolArray(dependencies));
@@ -453,8 +455,8 @@ public class TestUtil {
          * Creates a CombinedTest.
          * @param components The test to be joined together in order.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
-         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be omitted)
          */
         public CombinedTest(Test[] components, String name, Test[] dependencies, boolean[] successRequirements) {
             super(phasesFromTests(components), conditionsFromTests(components), name, dependencies, successRequirements);
@@ -467,7 +469,7 @@ public class TestUtil {
          * @param phases An array of the functions to run.
          * @param durations An array describing how long each phase should last.
          * @param name The name of the test.
-         * @param dependencies The dependencies (can be ommitted)
+         * @param dependencies The dependencies (can be omitted)
          */
         public CombinedTest(Test[] components, String name, Test[] dependencies) {
             this(components, name, dependencies, generateBoolArray(dependencies));
