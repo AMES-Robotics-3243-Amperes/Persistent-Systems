@@ -9,32 +9,14 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
-import edu.wpi.first.wpilibj.Timer;
-
-/**
- * A class containing many helpful utilities for test making,
- * including user interaction, assertions, and test builders.
- */
+/** Add your docs here. */
 public class TestUtil {
-
-    // Prevent instantiating
-    private TestUtil() {}
-
-    /** 
-     * Some weird object to allow us to put off execution to another thread and give 
-     * a {@link Future} back instead of a real value.
-     * 
-     * @author H!
-     */
-    private static ExecutorService executor = Executors.newSingleThreadExecutor();
+  
+  // Prevent instantiating
+  private TestUtil() {}
 
     /**
      * A method for asking the user questions as part of integrated testing. This
@@ -51,26 +33,7 @@ public class TestUtil {
      * @author H!
      */
     public static Future<Boolean> askUserBool(String question, String optionYes, String optionNo) {
-        return executor.submit(() -> {
-            Object[] options = {
-                optionYes,
-                optionNo
-            };
-
-            switch (JOptionPane.showOptionDialog(new JFrame(), question, "Test Input", 2, JOptionPane.QUESTION_MESSAGE, null, options, options[0])) {
-                case (JOptionPane.CLOSED_OPTION):
-                    return null;
-                
-                case 0:
-                    return true;
-                
-                case 1:
-                    return false;
-                
-                default:
-                    return null;
-            }
-        });
+        return TestManager.driverStationClient.askQuestion(question, optionYes, optionNo);
     }
 
     /**An overload where {@code optionYes} and {@code optionNo} are presumed to be "Yes" and "No"

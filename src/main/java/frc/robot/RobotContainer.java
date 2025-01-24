@@ -79,7 +79,7 @@ public class RobotContainer {
    * Used to set default commands for subsystems.
    */
   private void setDefaultCommands() {
-    subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
+    //subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
   }
 
   private void setAutoCommands() {
