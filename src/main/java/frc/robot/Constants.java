@@ -148,6 +148,36 @@ public final class Constants {
     }
   }
 
+  public static class Elevator {
+    public static class Motors {
+      public static final int leaderCanId = 10;
+      public static final int followerCanId = 11;
+
+      public static final double positionConversionRatio = 1.0;
+
+      public static final double P = 0.01;
+      public static final double I = 0.0;
+      public static final double D = 0.0;
+      public static final double FF = 0.01;
+    }
+
+    public static class PositionChecking {
+      public static final double deltaP = 0.05;
+      public static final double deltaV = 0.05;
+    }
+
+    public static class Positions {
+      public static final double min = 0.0;
+      public static final double starting = min;
+      public static final double loading = 1.0;
+      public static final double L1 = 1.0;
+      public static final double L2 = 1.0;
+      public static final double L3 = 1.0;
+      public static final double L4 = 1.0;
+      public static final double max = 100.0;
+    }
+}
+
   public static final class PhotonvisionConstants {
     public static final AprilTag tag = new AprilTag(1,
         new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
@@ -220,6 +250,29 @@ public final class Constants {
       public static final double splineTaskVelocityDampen(double remainingLength) {
         return 5 * remainingLength + 0.2;
       }
+    }
+  }
+
+  public static final class DifferentialArm {
+    public static final class MotorIDs {
+      public static final int forwardId = 11;
+      public static final int reverseId = 10;
+    }
+
+    public static final class Setpoints {
+      // All of these need to be actually figured out, just placeholders for now
+      
+      // Starting position setpoints
+      public static final double startingPosition = 0.0;
+      public static final double startingPower = 0.0;
+
+      // Intake position setpoints
+      public static final double intakePosition = 0.25;
+      public static final double intakePower = 0.8;
+
+      // Deposit position setpoints
+      public static final double depositPosition = 0.5;
+      public static final double depositPower = -0.8;
     }
   }
 }
