@@ -5,7 +5,6 @@
 package frc.robot.commands.claw;
 
 import edu.wpi.first.wpilibj2.command.Command;
-// import edu.wpi.first.wpilibj.Ultrasonic;
 import frc.robot.subsystems.SubsystemClaw;
 import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 
@@ -13,13 +12,10 @@ import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 public class CommandIntakeClaw extends Command {
   private SubsystemClaw differentialArm;
   private SetpointDiffArm setpoint;
-  // private Ultrasonic rangeFinder;
 
   public CommandIntakeClaw(SubsystemClaw differentialArm, SetpointDiffArm setpoint /*, Ultrasonic rangeFinder */) {
     this.differentialArm = differentialArm;
     this.setpoint = setpoint;
-    // Decide if we want to use switch, or ultrasonic sensor, etc.
-    // this.rangeFinder = rangeFinder;
 
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(differentialArm);
@@ -28,6 +24,7 @@ public class CommandIntakeClaw extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    System.out.println("Setting intake");
     differentialArm.setIntakePower(setpoint.power);
   }
 
@@ -38,13 +35,13 @@ public class CommandIntakeClaw extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    differentialArm.setIntakePower(0);
+    // differentialArm.setIntakePower(0);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     // Return true when ultrasonic sensor detects decrease in distance, switch is triggered, etc.
-    return false;
+    return true;
   }
 }
