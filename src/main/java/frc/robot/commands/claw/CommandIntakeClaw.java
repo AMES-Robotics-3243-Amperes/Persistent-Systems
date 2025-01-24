@@ -5,7 +5,7 @@
 package frc.robot.commands.claw;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj.Ultrasonic;
+// import edu.wpi.first.wpilibj.Ultrasonic;
 import frc.robot.subsystems.SubsystemClaw;
 import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 
@@ -13,7 +13,7 @@ import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 public class CommandIntakeClaw extends Command {
   private SubsystemClaw differentialArm;
   private SetpointDiffArm setpoint;
-  // Ultrasonic rangeFinder;
+  // private Ultrasonic rangeFinder;
 
   public CommandIntakeClaw(SubsystemClaw differentialArm, SetpointDiffArm setpoint /*, Ultrasonic rangeFinder */) {
     this.differentialArm = differentialArm;
@@ -44,6 +44,7 @@ public class CommandIntakeClaw extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    // Return true when ultrasonic sensor detects decrease in distance, switch is triggered, etc.
     return false;
   }
 }

@@ -50,9 +50,9 @@ public class SubsystemClaw extends SubsystemBase {
       Matrix<N2, N1> mechanismOutputs = new Matrix<N2, N1>(N2.instance, N1.instance, new double[] {outsideOutput, insideOutput});
       Vector<N2> mechanismInputs = new Vector<N2>(inverseDifferentialMatrix.times(mechanismOutputs));
       
-      double maxOuput = Math.max(mechanismInputs.get(0), mechanismInputs.get(1));
-      if (maxOuput > 1.0) {
-        mechanismInputs.div(maxOuput);
+      double maxOutput = Math.max(mechanismInputs.get(0), mechanismInputs.get(1));
+      if (maxOutput > 1.0) {
+        mechanismInputs.div(maxOutput);
       }
 
       motorForward.set(mechanismInputs.get(0));

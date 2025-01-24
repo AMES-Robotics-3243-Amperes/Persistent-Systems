@@ -6,14 +6,18 @@ package frc.robot.commands.claw;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.JoyUtil;
 import frc.robot.subsystems.SubsystemClaw;
 import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class CommandTeleopClaw extends Command {
-  SubsystemClaw differentialClaw;
-  JoyUtil controller;
+  private SubsystemClaw differentialClaw;
+  private JoyUtil controller;
+  private boolean aButtonWasPressed = false;
+  private boolean bButtonWasPressed = false;
 
   /** Creates a new CommandTeleopClaw. */
   public CommandTeleopClaw(SubsystemClaw differentialClaw, JoyUtil controller) {
@@ -33,13 +37,25 @@ public class CommandTeleopClaw extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    // If statements to control setpoint movements (CONTROLLER BUTTONS ARE NOT CORRECT RIGHT NOW)
+    // If statements to control setpoint movements (CONTROLLER BUTTONS ARE PLACEHOLDERS RIGHT NOW)
     if (controller.getAButton()) {
-      CommandScheduler.getInstance().schedule(new CommandMoveClaw(differentialClaw, SetpointDiffArm.Intake));
-      CommandScheduler.getInstance().schedule(new CommandIntakeClaw(differentialClaw, SetpointDiffArm.Intake));
-    } else if (controller.getBButton()) {
-      CommandScheduler.getInstance().schedule(new CommandMoveClaw(differentialClaw, SetpointDiffArm.Place));
-      CommandScheduler.getInstance().schedule(new CommandIntakeClaw(differentialClaw, SetpointDiffArm.Place));
+      if (!aButtonWasPressed) {
+        Commands.parallel(new CommandMoveClaw(differentialClaw, SetpointDiffArm.Intake),
+        new CommandIntakeClaw(differentialClaw, SetpointDiffArm.Intake)).schedule();
+      }
+      aButtonWasPressed = true;
+    } else {
+      aButtonWasPressed = false;
+    }
+    
+    if (controller.getBButton()) {
+      if (!bButtonWasPressed) {
+        Commands.parallel(new CommandMoveClaw(differentialClaw, SetpointDiffArm.Intake),
+        new CommandIntakeClaw(differentialClaw, SetpointDiffArm.Intake)).schedule();
+      }
+      bButtonWasPressed = true;
+    } else {
+      bButtonWasPressed = false;
     }
   }
 
