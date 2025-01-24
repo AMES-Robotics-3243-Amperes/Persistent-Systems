@@ -15,9 +15,13 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.CommandLedPatternCycle;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
+import frc.robot.commands.claw.CommandIntakeClaw;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemLeds;
+import frc.robot.subsystems.SubsystemElevator;
+import frc.robot.subsystems.SubsystemClaw;
+import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -38,6 +42,7 @@ public class RobotContainer {
 
   // controllers
   private JoyUtil primaryController = new JoyUtil(0);
+  private JoyUtil secondaryController = new JoyUtil(1);
 
   //
   // Subsystems
@@ -45,6 +50,8 @@ public class RobotContainer {
 
   public SubsystemSwerveDrivetrain subsystemSwerveDrivetrain = new SubsystemSwerveDrivetrain();
   public SubsystemLeds subsystemLeds = new SubsystemLeds();
+  public SubsystemElevator subsystemElevator = new SubsystemElevator();
+  public SubsystemClaw subsystemClaw = new SubsystemClaw();
 
   //
   // Commands
@@ -76,8 +83,8 @@ public class RobotContainer {
    * Used to set default commands for subsystems.
    */
   private void setDefaultCommands() {
-    subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
     subsystemLeds.setDefaultCommand(commandLedPatternCycle);
+    //subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
   }
 
   private void setAutoCommands() {
@@ -103,7 +110,34 @@ public class RobotContainer {
         .addTask(1, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
+    // Creates new commands for intaking and depositing
+    InstantCommand moveClawIntake = new InstantCommand(
+      () -> { subsystemClaw.setOutsidePosition(SetpointDiffArm.Intake.position); },
+      subsystemClaw
+    );
+
+    InstantCommand moveClawDeploy = new InstantCommand(
+      () -> { subsystemClaw.setOutsidePosition(SetpointDiffArm.Place.position); },
+      subsystemClaw
+    );
+
+    InstantCommand moveClawStart = new InstantCommand(
+      () -> { subsystemClaw.setOutsidePosition(SetpointDiffArm.Starting.position); },
+      subsystemClaw
+    );
+
+    // Keybindings will change
     primaryController.a().onTrue(followCommand);
+
+    // Manual intaking and depositing
+    secondaryController.leftTrigger().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Intake));
+    secondaryController.rightTrigger().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Place));
+    secondaryController.y().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Starting));
+
+    // Testing movement - normally just included in composition with elevator
+    secondaryController.a().onTrue(moveClawIntake);
+    secondaryController.b().onTrue(moveClawDeploy);
+    secondaryController.x().onTrue(moveClawStart);
   }
 
   /**

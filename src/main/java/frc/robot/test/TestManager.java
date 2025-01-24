@@ -10,29 +10,17 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.awt.Container;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GridLayout;
-import java.awt.ScrollPane;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.plaf.DimensionUIResource;
-import javax.swing.text.html.HTMLDocument;
 
 import frc.robot.Robot;
 import frc.robot.test.TestUtil.InstantTest;
 import frc.robot.test.TestUtil.InstantTestMethod;
+import frc.robot.test.networking.Workstation;
 
 /** A system which will run all tests queued to it and display their results. @author H! */
 public class TestManager {
@@ -66,30 +54,18 @@ public class TestManager {
      * @author H!
      */
     public static class TestResults {
-        public TestSuccess m_succeessResult;
+        public TestSuccess m_successResult;
         public String m_message;
 
-        public TestResults(TestSuccess succeessResult, String message) {
-            m_succeessResult = succeessResult;
+        public TestResults(TestSuccess successResult, String message) {
+            m_successResult = successResult;
             m_message = message;
         }
 
-        public TestResults(TestSuccess succeessResult) {
-            this(succeessResult, "");
+        public TestResults(TestSuccess successResult) {
+            this(successResult, "");
         }
     }
-
-    /**
-     * Used for storing the progression of a test.
-     * 
-     * @author H!
-     */
-    protected static enum TestState {
-        SETUP,
-        RUNNING,
-        CLOSEDOWN
-    }
-
 
 
     public static Map<String, Map<String, TestResults>> results = new HashMap<String, Map<String, TestResults>>();
@@ -109,6 +85,9 @@ public class TestManager {
 
     protected static int cyclesRun = 0;
 
+    protected static Workstation driverStationClient;
+    private static Future<boolean[]> selectedTestGroups;
+
 
 
 
@@ -122,7 +101,6 @@ public class TestManager {
      * @author H!
      */
     public static void queueGroupToTest(TestGroup toTest) {
-        //System.out.println("test Queued");
         groupsToTest.add(toTest);
     }
 
@@ -164,16 +142,29 @@ public class TestManager {
      * @author H!
      */
     public static void init() {
-        //System.out.println("init!");
         groupsToTest.clear();
         testsToTest.clear();
         testIndex = 0;
         initialPauseTimer = initialPauseLength;
         testsFinished = false;
+        selectedTestGroups = new CompletableFuture<>();
         testSelectionMade = false;
         cyclesRun = 0;
         results = new HashMap<String, Map<String, TestResults>>();
         testsRun = new HashMap<Test, TestSuccess>();
+    }
+
+    public static void onDisable() {
+        driverStationClient.close();
+        driverStationClient = new Workstation();
+    }
+
+    /**
+     * Should be run as soon as possible, and only once. Configures some things such
+     * as starting the TCP server. These won't happen until the first method call otherwise.
+     */
+    public static void load() {
+        driverStationClient = new Workstation();
     }
 
     /**
@@ -192,16 +183,29 @@ public class TestManager {
         }
 
         if (!testSelectionMade) {
+            // Check if decision was made, if it was, apply the changes and move on.
+            if (selectedTestGroups.isDone()) {
+                System.out.println("Test group selection received");
+                try {
+                    boolean[] selectedGroupsUnwrapped = selectedTestGroups.get();
+                    // Remove those test groups not selected
+                    int numberRemoved = 0;
+                    for (int i = 0; i < selectedGroupsUnwrapped.length; i++) {
+                        if (!selectedGroupsUnwrapped[i]) {
+                            groupsToTest.remove(i - numberRemoved);
+                            numberRemoved++;
+                        }
+                    }
+                } catch (InterruptedException | ExecutionException e) {
+                    throw new RuntimeException(e);
+                }
+
+                testSelectionMade = true;
+            }
             return;
         }
 
-        /*if (cyclesRun == 0) {
-            // DEBUG
-            //System.err.println("Tests Started");
-        }*/
-
         cyclesRun++;
-        //System.out.println("#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#\n#");
         String[] testGroupNames = new String[groupsToTest.size()];
         for (int i = 0; i < groupsToTest.size(); i++) {
             testGroupNames[i] = groupsToTest.get(i).getName();
@@ -231,10 +235,6 @@ public class TestManager {
         if (testsToTest.size() == 0) {
             testsToTest = new ArrayList<Test>(Arrays.asList(getTestsFromGroup(testGroup)));
         }
-
-        /*if (testsToTest.get(0).getName() == "Example Dependent Test") {
-            System.out.println("it's time");
-        }*/
 
         if (!testStarted) {
             /* DEPENDENCY LOGIC:
@@ -290,7 +290,7 @@ public class TestManager {
     }
 
     /** Runs all logic that must run when a tests finishes.
-     * This invloves managing reseting counters and preparing the next tests.
+     * This involves managing resetting counters and preparing the next tests.
      */
     public static void onTestDone(Test test) {
         test.closedown();
@@ -319,119 +319,17 @@ public class TestManager {
                 onTestDone(test);
             }
         } catch (AssertionError e) {
-            //System.out.println("\n\n\n\n\n\nFAILURE\n\n\n\n\n\n\n");
             results.get(groupsToTest.get(0).getName()).put(test.getName(), new TestResults(TestSuccess.FAIL, e.getMessage()));
             testsRun.put(test, TestSuccess.FAIL);
             onTestDone(test);
         }
     }
 
-    /** The format used to generate the HTML group headers in the test results @author H! */
-    protected static final String groupFormat = "<li><h2 class='%2$s'>%1$s | %3$s %4$s </h2> <p><em class='success'>%5$d/%7$d/%8$d Succeess</em> | <em class='fail'>%6$d/%7$d/%8$d Fails</em></p><ul></ul></li>";
-    /**A utility method for getting the proper HTML to make a subsytem test result wrapper be displayed
-     * 
-     * @param resultEntry One entry of the map corresponding to the test group to display
-     * @return A {@link String} with the HTML in plaintext repersenting the group header
-     * 
-     * @author H!
-     */
-    protected static String getGroupHTMLElement(Entry<String, Map<String, TestResults>> resultEntry) {
-        int successCount = 0;
-        int performedCount = 0;
-        int totalCount = resultEntry.getValue().size();
-
-        for (TestResults testResult : resultEntry.getValue().values()) {
-            if (testResult.m_succeessResult == TestSuccess.SUCCESS) {
-                successCount++;
-                performedCount++;
-            } else if (testResult.m_succeessResult != TestSuccess.NOTRUN) {
-                performedCount++;
-            }
-        }
-
-        return String.format(
-            groupFormat, 
-            resultEntry.getKey(), 
-            successCount == performedCount ? "success" : "fail",
-            successCount == performedCount ? "✔" : "✗",
-            performedCount == totalCount ? "" : "*",
-            successCount,
-            performedCount - successCount,
-            performedCount,
-            totalCount
-        );
-    }
-
-    /** The format used to generate the HTML for individual tests in the test results @author H! */
-    protected static final String testFormat = "<li><h3 class='%2$s'>%1$s | %3$s</h3>%4$s</li>";
-    /**A utility method for getting the proper HTML to make a test result be displayed
-     * 
-     * @param testEntry One entry of the map corresponding to the test to display
-     * @return A {@link String} with the HTML in plaintext repersenting the test result
-     * 
-     * @author H!
-     */
-    protected static String getTestHTMLFormat(Entry<String, TestResults> testEntry) {
-        String cssClass = "";
-        String resultIcon = "";
-        if        (testEntry.getValue().m_succeessResult == TestSuccess.SUCCESS) {
-            cssClass = "success";
-            resultIcon = "✔";
-        } else if (testEntry.getValue().m_succeessResult == TestSuccess.FAIL) {
-            cssClass = "fail";
-            resultIcon = "✗";
-        } else if (testEntry.getValue().m_succeessResult == TestSuccess.NOTRUN) {
-            cssClass = "notRun";
-            resultIcon = "-";
-        }
-
-        return String.format(
-            testFormat, 
-            testEntry.getKey(), 
-            cssClass,
-            resultIcon,
-            testEntry.getValue().m_message.equals("") ? "" : "<p>" + testEntry.getValue().m_message + "</p>"
-        );
-    }
-
     /**Displays the latest results of the integrated tests in a Swing dialog
      * @author H!
      */
     public static void displayTestResults() {
-        JTextPane textPane = new JTextPane();
-        textPane.setContentType("text/html");
-        textPane.setText("<!DOCTYPE html><html><head><style>.fail{color:red}.success{color:green}.notRun{color:grey}</style></head><body><h1>Integrated Test Results</h1><ul id=testGroupList></ul></body></html>");
-        HTMLDocument doc = (HTMLDocument) textPane.getDocument();
-
-        for (Entry<String, Map<String, TestResults>> groupEntry : results.entrySet()) {
-            try {
-                doc.insertAfterStart(doc.getElement("testGroupList"), getGroupHTMLElement(groupEntry));
-                
-                for (Entry<String, TestResults> testResultEntry : groupEntry.getValue().entrySet()) {
-                    doc.insertAfterStart(doc.getElement("testGroupList").getElement(0).getElement(2), getTestHTMLFormat(testResultEntry));
-                }
-
-
-            } catch (Exception e) {
-                System.err.println("Test result display generation failed:");
-                e.printStackTrace();
-            }
-        }
-        
-        JScrollPane scrollPane = new JScrollPane(textPane);
-
-        
-        scrollPane.setPreferredSize(new DimensionUIResource(
-            600, 
-            500
-        ));
-        
-        JOptionPane.showMessageDialog(
-            new JTextPane(), 
-            scrollPane,
-            "Integrated Test Results",
-            JOptionPane.PLAIN_MESSAGE
-        );
+        driverStationClient.publishResults(results);
     }
 
 
@@ -442,60 +340,7 @@ public class TestManager {
             testGroupNames[i] = groupsToTest.get(i).getName();
         }
 
-        // Root component
-        JFrame frame = new JFrame();
-        frame.setLayout(new GridBagLayout());
-        // Constraints to be used to arrange the button and list properly
-        GridBagConstraints constraints = new GridBagConstraints();
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
-        // Holds the checkboxes
-        Container groupList = new Container();
-        groupList.setLayout(new GridLayout(testGroupNames.length, 1));
-        ScrollPane groupListPane = new ScrollPane();
-        groupListPane.add(groupList);
-        // Add all checkboxes
-        for (String name : testGroupNames) {
-            JCheckBox checkBox = new JCheckBox(name, true);
-            groupList.add(checkBox);
-        }
-
-        // Confirm button
-        JButton button = new JButton("Start Tests");
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int numberRemoved = 0;
-                // System.err.println(groupList.getComponentCount());
-                // System.err.println(groupsToTest.size());
-                for (int i = 0; i < groupList.getComponentCount(); i++) {
-                    if (!((JCheckBox) groupList.getComponent(i)).isSelected()) {
-                        groupsToTest.remove(i - numberRemoved);
-                        numberRemoved++;
-                    }
-                }
-                testSelectionMade = true;
-                frame.dispose();
-            }
-        });
-        
-        // Assemble components into frame
-        constraints.fill = GridBagConstraints.BOTH;
-        constraints.gridx = 0;
-        constraints.gridy = 0;
-        constraints.weightx = 1;
-        constraints.weighty = 9;
-        frame.add(groupListPane, constraints);
-
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.gridx = 0;
-        constraints.gridy = 1;
-        constraints.weightx = 1;
-        constraints.weighty = 1;
-        frame.add(button, constraints);
-
-        frame.pack();
-
-        frame.setVisible(true);
+        selectedTestGroups = driverStationClient.getChosenTestGroups(testGroupNames);
     }
 
 

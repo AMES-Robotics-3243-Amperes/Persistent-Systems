@@ -9,25 +9,14 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 /** Add your docs here. */
 public class TestUtil {
-
-
-    /** 
-     * Some weird object to allow us to put off execution to another thread and give 
-     * a {@link Future} back instead of a real value.
-     * 
-     * @author H!
-     */
-    private static ExecutorService executor = Executors.newSingleThreadExecutor();
+  
+  // Prevent instantiating
+  private TestUtil() {}
 
     /**
      * A method for asking the user questions as part of integrated testing. This
@@ -44,26 +33,7 @@ public class TestUtil {
      * @author H!
      */
     public static Future<Boolean> askUserBool(String question, String optionYes, String optionNo) {
-        return executor.submit(() -> {
-            Object[] options = {
-                optionYes,
-                optionNo
-            };
-
-            switch (JOptionPane.showOptionDialog(new JFrame(), question, "Test Input", 2, JOptionPane.QUESTION_MESSAGE, null, options, options[0])) {
-                case (JOptionPane.CLOSED_OPTION):
-                    return null;
-                
-                case 0:
-                    return true;
-                
-                case 1:
-                    return false;
-                
-                default:
-                    return null;
-            }
-        });
+        return TestManager.driverStationClient.askQuestion(question, optionYes, optionNo);
     }
 
     /**An overload where {@code optionYes} and {@code optionNo} are presumed to be "Yes" and "No"
@@ -297,7 +267,7 @@ public class TestUtil {
 
 
 
-     /** A test that runs until a specified condition is met. Intended to be created from two existing functions. */
+     /** A test with several phases, each of which have an end condition. Intended to be created from several existing functions. */
     public static class MultiphaseTest implements Test {
 
         protected Runnable[] phases;
@@ -306,12 +276,12 @@ public class TestUtil {
         protected boolean[] successRequirements;
         protected Supplier<Boolean>[] phaseEndConditions;
         protected int phase = 0;
-        protected final int phaseCount;
+        protected int phaseCount;
 
         /**
          * Creates a MultiphaseTest.
-         * @param execute The function to run.
-         * @param isDone A function returning whether the test is over yet.
+         * @param phases An array of the functions to run.
+         * @param phaseEndConditions An array of functions specifying whether each phase has ended yet.
          * @param name The name of the test.
          * @param dependencies The dependencies (can be ommitted)
          * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
@@ -330,9 +300,9 @@ public class TestUtil {
         }
 
         /**
-         * Creates a MultiphaseTest. This overload assummes all dependencies are required to succeed.
-         * @param execute The function to run.
-         * @param isDone A function returning whether the test is over yet.
+         * Creates a MultiphaseTest.
+         * @param phases An array of the functions to run.
+         * @param phaseEndConditions An array of functions specifying whether each phase has ended yet.
          * @param name The name of the test.
          * @param dependencies The dependencies (can be ommitted)
          */
@@ -341,14 +311,19 @@ public class TestUtil {
         }
 
         /**
-         * Creates a MultiphaseTest. This overload assumes there are no dependencies.
-         * @param execute The function to run.
-         * @param isDone A function returning whether the test is over yet.
+         * Creates a MultiphaseTest.
+         * @param phases An array of the functions to run.
+         * @param phaseEndConditions An array of functions specifying whether each phase has ended yet.
          * @param name The name of the test.
          */
         public MultiphaseTest(Runnable[] phases, Supplier<Boolean>[] phaseEndConditions, String name) {
             this(phases, phaseEndConditions, name, new Test[0], new boolean[0]);
         }
+
+        /**
+         * Only used for extension, so not everything has to specified immediately.
+         */
+        private MultiphaseTest() {}
 
         protected static boolean[] generateBoolArray(Test[] list) {
             boolean[] out = new boolean[list.length];
@@ -384,6 +359,156 @@ public class TestUtil {
         public Test[] getDependencies() { return dependencies; }
         @Override
         public boolean[] getDependencySuccessRequirements() { return successRequirements; }
+    }
+
+    /**
+     * <h2>WARNING: UNTESTED CODE</h2>
+     * <em>This should work, it's fairly simple, but you never know.</em>
+     * A test with multiple phases that execute according to a timer. Created from several methods and timer values 
+     */
+    public static class TimedTest extends MultiphaseTest {
+        protected Timer timer = new Timer();
+
+        /**
+         * <h2>WARNING: UNTESTED CODE</h2>
+         * <em>This should work, it's fairly simple, but you never know.</em>
+         * Creates a TimedTest.
+         * @param phases An array of the functions to run.
+         * @param durations An array describing how long each phase should last.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         */
+        public TimedTest(Runnable[] phases, double[] durations, String name, Test[] dependencies, boolean[] successRequirements) {
+            this.phases = phases;
+            this.phaseEndConditions = generatePhaseEndConditions(durations);
+            this.name = name;
+            this.dependencies = dependencies;
+            this.successRequirements = successRequirements;
+            this.phaseCount = phases.length;
+            
+            if (phaseEndConditions.length != phaseCount) {
+                throw new IllegalArgumentException("Number of phases must equal number of phase end conditions");
+            }
+        }
+
+        /**
+         * <h2>WARNING: UNTESTED CODE</h2>
+         * <em>This should work, it's fairly simple, but you never know.</em>
+         * Creates a TimedTest.
+         * @param phases An array of the functions to run.
+         * @param durations An array describing how long each phase should last.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         */
+        public TimedTest(Runnable[] phases, double[] durations, String name, Test[] dependencies) {
+            this(phases, durations, name, dependencies, generateBoolArray(dependencies));
+        }
+
+        /**
+         * <h2>WARNING: UNTESTED CODE</h2>
+         * <em>This should work, it's fairly simple, but you never know.</em>
+         * Creates a TimedTest.
+         * @param phases An array of the functions to run.
+         * @param durations An array describing how long each phase should last.
+         * @param name The name of the test.
+         */
+        public TimedTest(Runnable[] phases, double[] durations, String name) {
+            this(phases, durations, name, new Test[0], new boolean[0]);
+        }
+
+        @Override
+        public void setup() {
+            super.setup();
+            timer.restart();
+        }
+
+        /** A helper method to get the suppliers used by the underlying MultiphaseTest. */
+        @SuppressWarnings("unchecked")
+        private Supplier<Boolean>[] generatePhaseEndConditions(double[] durations) {
+            Supplier<Boolean>[] out = (Supplier<Boolean>[]) new Supplier[durations.length];
+
+            double total = 0.0;
+            for (int i = 0; i < durations.length; i++) {
+                total += durations[i];
+                // Store each closure separately.
+                final double timeLimit = total;
+                out[i] = () -> timer.hasElapsed(timeLimit);
+            }
+            return out;
+        }
+    }
+
+    /**
+     * <h2>WARNING: UNTESTED CODE</h2>
+     * <em>This should work, it's fairly simple, but you never know.</em>
+     * Combines multiple tests into one test which runs each in succession. Similar
+     * to SequentialCommandGroup.
+     */
+    public static class CombinedTest extends MultiphaseTest {
+        
+        /**
+         * <h2>WARNING: UNTESTED CODE</h2>
+         * <em>This should work, it's fairly simple, but you never know.</em>
+         * Creates a CombinedTest.
+         * @param components The test to be joined together in order.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         * @param successRequirements Which dependencies must succeed and which must fail (can be ommitted)
+         */
+        public CombinedTest(Test[] components, String name, Test[] dependencies, boolean[] successRequirements) {
+            super(phasesFromTests(components), conditionsFromTests(components), name, dependencies, successRequirements);
+        }
+
+        /**
+         * <h2>WARNING: UNTESTED CODE</h2>
+         * <em>This should work, it's fairly simple, but you never know.</em>
+         * Creates a TimedTest.
+         * @param phases An array of the functions to run.
+         * @param durations An array describing how long each phase should last.
+         * @param name The name of the test.
+         * @param dependencies The dependencies (can be ommitted)
+         */
+        public CombinedTest(Test[] components, String name, Test[] dependencies) {
+            this(components, name, dependencies, generateBoolArray(dependencies));
+        }
+
+        /**
+         * <h2>WARNING: UNTESTED CODE</h2>
+         * <em>This should work, it's fairly simple, but you never know.</em>
+         * Creates a TimedTest.
+         * @param phases An array of the functions to run.
+         * @param durations An array describing how long each phase should last.
+         * @param name The name of the test.
+         */
+        public CombinedTest(Test[] components, String name) {
+            this(components, name, new Test[0], new boolean[0]);
+        }
+
+        private static Runnable[] phasesFromTests(Test[] components) {
+            Runnable[] out = new Runnable[components.length * 3];
+
+            for (int i = 0; i < components.length; i++) {
+                out[i*3]   = components[i]::setup;
+                out[i*3+1] = components[i]::periodic;
+                out[i*3+2] = components[i]::closedown;
+            }
+
+            return out;
+        }
+
+        private static Supplier<Boolean>[] conditionsFromTests(Test[] components) {
+            @SuppressWarnings("unchecked")
+            Supplier<Boolean>[] out = (Supplier<Boolean>[]) new Supplier[components.length * 3];
+
+            for (int i = 0; i < components.length; i++) {
+                out[i*3]   = () -> true;
+                out[i*3+1] = components[i]::isDone;
+                out[i*3+2] = () -> true;
+            }
+
+            return out;
+        }
     }
 
 }
