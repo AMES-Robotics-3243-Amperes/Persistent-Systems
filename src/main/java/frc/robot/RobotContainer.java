@@ -17,6 +17,7 @@ import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.commands.claw.CommandIntakeClaw;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.tasks.PerformAtTask;
+import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemClaw;
 import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -46,6 +47,7 @@ public class RobotContainer {
   //
 
   public SubsystemSwerveDrivetrain subsystemSwerveDrivetrain = new SubsystemSwerveDrivetrain();
+  public SubsystemElevator subsystemElevator = new SubsystemElevator();
   public SubsystemClaw subsystemClaw = new SubsystemClaw();
 
   //

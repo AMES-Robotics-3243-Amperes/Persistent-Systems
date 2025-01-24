@@ -328,10 +328,10 @@ public class TestManager {
 
     /** The format used to generate the HTML group headers in the test results @author H! */
     protected static final String groupFormat = "<li><h2 class='%2$s'>%1$s | %3$s %4$s </h2> <p><em class='success'>%5$d/%7$d/%8$d Succeess</em> | <em class='fail'>%6$d/%7$d/%8$d Fails</em></p><ul></ul></li>";
-    /**A utility method for getting the proper HTML to make a subsytem test result wrapper be displayed
+    /**A utility method for getting the proper HTML to make a subsystem test result wrapper be displayed
      * 
      * @param resultEntry One entry of the map corresponding to the test group to display
-     * @return A {@link String} with the HTML in plaintext repersenting the group header
+     * @return A {@link String} with the HTML in plaintext representing the group header
      * 
      * @author H!
      */
@@ -367,7 +367,7 @@ public class TestManager {
     /**A utility method for getting the proper HTML to make a test result be displayed
      * 
      * @param testEntry One entry of the map corresponding to the test to display
-     * @return A {@link String} with the HTML in plaintext repersenting the test result
+     * @return A {@link String} with the HTML in plaintext representing the test result
      * 
      * @author H!
      */
@@ -400,7 +400,7 @@ public class TestManager {
     public static void displayTestResults() {
         JTextPane textPane = new JTextPane();
         textPane.setContentType("text/html");
-        textPane.setText("<!DOCTYPE html><html><head><style>.fail{color:red}.success{color:green}.notRun{color:grey}</style></head><body><h1>Integrated Test Results</h1><ul id=testGroupList></ul></body></html>");
+        textPane.setText("<!DOCTYPE html><html><head><style>.fail{color:red}.success{color:green}.notRun{color:grey}</style></head><body><h1>&#9889;Ammeter Live Tester Results&#9889;</h1><ul id=testGroupList></ul></body></html>");
         HTMLDocument doc = (HTMLDocument) textPane.getDocument();
 
         for (Entry<String, Map<String, TestResults>> groupEntry : results.entrySet()) {
