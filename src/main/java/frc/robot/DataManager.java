@@ -7,8 +7,12 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.DifferentialArm.Setpoints;
 import frc.robot.Constants.PhotonvisionConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
+// import frc.robot.Constants.Setpoints;
+import frc.robot.Constants.Setpoints.LevelAngles;
+import frc.robot.Constants.Setpoints.LevelHeights;
 import frc.robot.PhotonUnit.Measurement;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -135,6 +139,36 @@ public class DataManager {
     @Override
     public ElevatorPositionData get() {
       return new ElevatorPositionData(elevator.getPosition(), elevator.getVelocity());
+    }
+  }
+
+  // public enum SetpointDiffArm {
+  //   Starting(Setpoints.startingPosition, Setpoints.startingPower),
+  //   Intake(Setpoints.intakePosition, Setpoints.intakePower),
+  //   PlaceL1(Setpoints.depositPositionL1, Setpoints.depositPower);
+
+  //   public final double position;
+  //   public final double power;
+
+  //   private SetpointDiffArm(double position, double power) {
+  //     this.position = position;
+  //     this.power = power;
+  //   }
+  // }
+
+  public enum Setpoint {
+    Intake(LevelHeights.Intake, LevelAngles.Intake),
+    L1(LevelHeights.L1, LevelAngles.L1),
+    L2(LevelHeights.L2, LevelAngles.L23),
+    L3(LevelHeights.L3, LevelAngles.L23),
+    L4(LevelHeights.L4, LevelAngles.L4);
+
+    public final double height;
+    public final double angle;
+
+    private Setpoint(double height, double angle) {
+      this.height = height;
+      this.angle = angle;
     }
   }
 

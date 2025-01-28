@@ -5,17 +5,17 @@
 package frc.robot.commands.claw;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemClaw;
-import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class CommandIntakeClaw extends Command {
+public class IntakeClawCommand extends Command {
   private SubsystemClaw differentialArm;
-  private SetpointDiffArm setpoint;
+  private double power;
 
-  public CommandIntakeClaw(SubsystemClaw differentialArm, SetpointDiffArm setpoint /*, Ultrasonic rangeFinder */) {
+  public IntakeClawCommand(SubsystemClaw differentialArm, double power /*, Ultrasonic rangeFinder */) {
     this.differentialArm = differentialArm;
-    this.setpoint = setpoint;
+    this.power = power;
 
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(differentialArm);
@@ -24,8 +24,7 @@ public class CommandIntakeClaw extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    System.out.println("Setting intake");
-    differentialArm.setIntakePower(setpoint.power);
+    differentialArm.setIntakePower(power);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

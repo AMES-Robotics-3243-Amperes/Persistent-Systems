@@ -7,6 +7,7 @@ package frc.robot.subsystems;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -22,8 +23,7 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 // Decide if we want to use switch, or ultrasonic sensor, etc.
 import edu.wpi.first.wpilibj.Ultrasonic;
-
-
+import frc.robot.Constants.DifferentialArm;
 import frc.robot.Constants.DifferentialArm.*;
 
 public class SubsystemClaw extends SubsystemBase {
@@ -43,6 +43,7 @@ public class SubsystemClaw extends SubsystemBase {
   private double intakePower = 0.0;
 
   private AbsoluteEncoder pivotEncoder;
+  private AbsoluteEncoderConfig pivotEncoderConfig =  new AbsoluteEncoderConfig();
 
   private static class DifferentialMotorGroup {
     private MotorController motorForward;
@@ -84,11 +85,15 @@ public class SubsystemClaw extends SubsystemBase {
   }
 
   public void setOutsidePosition(double position) {
-    targetPivotPosition = position;
+    targetPivotPosition = convertRadiansToRotations(position);
   }
 
   public void setIntakePower(double power) {
     intakePower = power;
+  }
+
+  private double convertRadiansToRotations(double angle) {
+    return (angle / (2 * Math.PI)) + DifferentialArm.encoderOffset;
   }
 
   /** Creates a new SubsystemEndAffectorDifferential. */
@@ -99,7 +104,8 @@ public class SubsystemClaw extends SubsystemBase {
     reverseMotor.configure(reverseConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     pivotEncoder = forwardMotor.getAbsoluteEncoder();
-
+    pivotEncoderConfig.positionConversionFactor(intakePower);
+    
     motorGroup = new DifferentialMotorGroup(forwardMotor, reverseMotor);
     pivotController = new PIDController(0.1, 0, 0);
 
@@ -120,19 +126,5 @@ public class SubsystemClaw extends SubsystemBase {
 
   private static double clamp(double min, double max, double x) {
     return Math.max(min, Math.min(max, x));
-  }
-
-  public enum SetpointDiffArm {
-    Starting(Setpoints.startingPosition, Setpoints.startingPower),
-    Intake(Setpoints.intakePosition, Setpoints.intakePower),
-    Place(Setpoints.depositPosition, Setpoints.depositPower);
-
-    public final double position;
-    public final double power;
-
-    private SetpointDiffArm(double position, double power) {
-      this.position = position;
-      this.power = power;
-    }
   }
 }

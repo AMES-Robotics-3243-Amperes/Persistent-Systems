@@ -12,16 +12,17 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.Constants.DifferentialArm;
+import frc.robot.Constants.DifferentialArm.Setpoints;
 import frc.robot.commands.CommandLedPatternCycle;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
-import frc.robot.commands.claw.CommandIntakeClaw;
+import frc.robot.commands.claw.IntakeClawCommand;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemLeds;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemClaw;
-import frc.robot.subsystems.SubsystemClaw.SetpointDiffArm;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -112,17 +113,17 @@ public class RobotContainer {
 
     // Creates new commands for intaking and depositing
     InstantCommand moveClawIntake = new InstantCommand(
-      () -> { subsystemClaw.setOutsidePosition(SetpointDiffArm.Intake.position); },
+      () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.Intake.angle); },
       subsystemClaw
     );
 
     InstantCommand moveClawDeploy = new InstantCommand(
-      () -> { subsystemClaw.setOutsidePosition(SetpointDiffArm.Place.position); },
+      () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.L2.angle); },
       subsystemClaw
     );
 
     InstantCommand moveClawStart = new InstantCommand(
-      () -> { subsystemClaw.setOutsidePosition(SetpointDiffArm.Starting.position); },
+      () -> { subsystemClaw.setOutsidePosition(DifferentialArm.encoderOffset); },
       subsystemClaw
     );
 
@@ -130,9 +131,9 @@ public class RobotContainer {
     primaryController.a().onTrue(followCommand);
 
     // Manual intaking and depositing
-    secondaryController.leftTrigger().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Intake));
-    secondaryController.rightTrigger().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Place));
-    secondaryController.y().onTrue(new CommandIntakeClaw(subsystemClaw, SetpointDiffArm.Starting));
+    secondaryController.leftTrigger().onTrue(new IntakeClawCommand(subsystemClaw, Setpoints.intakePower));
+    secondaryController.rightTrigger().onTrue(new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower));
+    secondaryController.y().onTrue(new IntakeClawCommand(subsystemClaw, DifferentialArm.encoderOffset));
 
     // Testing movement - normally just included in composition with elevator
     secondaryController.a().onTrue(moveClawIntake);
