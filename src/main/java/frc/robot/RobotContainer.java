@@ -12,7 +12,10 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CommandSwerveFollowSpline;
+import frc.robot.commands.CommandSwerveModulesForward;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.tasks.PerformAtTask;
@@ -98,6 +101,17 @@ public class RobotContainer {
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
     primaryController.a().onTrue(followCommand);
+    primaryController.b().onTrue(new InstantCommand(commandSwerveTeleopDrive::toggleFieldRelative));
+
+    SequentialCommandGroup drivetrainSysIdCommand = new SequentialCommandGroup(
+      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kForward),
+      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kReverse),
+      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kForward),
+      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kReverse)
+    );
+    
+    primaryController.start().onTrue(drivetrainSysIdCommand);
+    primaryController.back().whileTrue(new CommandSwerveModulesForward(subsystemSwerveDrivetrain));
   }
 
   /**

@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.modules;
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
@@ -31,7 +31,7 @@ import frc.robot.Constants.SwerveConstants.ModuleConstants.PIDF;
  * 
  * @author :3
  */
-public class SubsystemSwerveModule {
+public class REVModule implements SwerveModule {
   private final SparkMax m_drivingSparkMax;
   private final SparkMax m_turningSparkMax;
 
@@ -47,7 +47,7 @@ public class SubsystemSwerveModule {
   private final Rotation2d m_wheelOffset;
 
   /**
-   * Constructs a {@link SubsystemSwerveModule}
+   * Constructs a {@link ThriftyModule}
    * 
    * @param drivingCANId the id of the {@link CANSparkMax} for driving
    * @param turningCANId the id of the {@link CANSparkMax} for turning
@@ -55,7 +55,7 @@ public class SubsystemSwerveModule {
    * 
    * @author :3
    */
-  public SubsystemSwerveModule(int drivingCANId, int turningCANId, Rotation2d wheelOffset) {
+  public REVModule(int drivingCANId, int turningCANId, Rotation2d wheelOffset) {
     // :3 initialize spark maxes
     m_drivingSparkMax = new SparkMax(drivingCANId, MotorType.kBrushless);
     m_turningSparkMax = new SparkMax(turningCANId, MotorType.kBrushless);

@@ -25,6 +25,8 @@ public class CommandSwerveTeleopDrive extends Command {
   // :3 teleop driving should be reversed depending on field side
   private boolean reverse = false;
 
+  private boolean fieldRelative = true;
+
   /**
    * Creates a new SwerveTeleopCommand.
    * 
@@ -37,6 +39,10 @@ public class CommandSwerveTeleopDrive extends Command {
     addRequirements(subsystem);
   }
 
+  public void toggleFieldRelative() {
+    this.fieldRelative = !this.fieldRelative;
+  }
+
   @Override
   public void initialize() {
   }
@@ -45,7 +51,8 @@ public class CommandSwerveTeleopDrive extends Command {
   public void execute() {
     Translation2d speeds = controller.getLeftAxis().times(ControlConstants.movingSpeed).times(reverse ? 1 : -1);
     speeds = new Translation2d(speeds.getY(), speeds.getX()); // :3 convert to robot coordinates
-    speeds = speeds.rotateBy(DataManager.instance().robotPosition.get().getRotation().times(-1));
+    if (fieldRelative)
+      speeds = speeds.rotateBy(DataManager.instance().robotPosition.get().getRotation().times(-1));
 
     double controllerRightX = controller.getRightX();
     double rotationSpeed = -controllerRightX * ControlConstants.rotationSpeed;

@@ -70,15 +70,15 @@ public final class Constants {
 
     public static final class DriveTrainConstants {
       public static final class IDs {
-        public static final int kFrontLeftDrivingCanId = 2;
-        public static final int kRearLeftDrivingCanId = 8;
-        public static final int kFrontRightDrivingCanId = 4;
-        public static final int kRearRightDrivingCanId = 6;
+        public static final int kFrontLeftDrivingCanId = 8;//1;
+        public static final int kRearLeftDrivingCanId = 3;
+        public static final int kFrontRightDrivingCanId = 2;
+        public static final int kRearRightDrivingCanId = 4;
 
-        public static final int kFrontLeftTurningCanId = 1;
-        public static final int kRearLeftTurningCanId = 7;
-        public static final int kFrontRightTurningCanId = 3;
-        public static final int kRearRightTurningCanId = 5;
+        public static final int kFrontLeftTurningCanId = 7;//1;
+        public static final int kRearLeftTurningCanId = 3;
+        public static final int kFrontRightTurningCanId = 4;
+        public static final int kRearRightTurningCanId = 2;
       }
 
       public static final class ModuleOffsets {
@@ -132,12 +132,12 @@ public final class Constants {
     public static final List<AprilTag> tags = Arrays.asList(tag);
     public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
-    public static final List<PhotonUnit> photonUnits = Arrays
-        .asList(new PhotonUnit("FrontCamera", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            new Transform3d(new Pose3d(),
-                new Pose3d(new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), Units.inchesToMeters(0)),
-                    new Rotation3d(0, Units.degreesToRadians(2), 0))),
-            fieldLayout));
+    public static final List<PhotonUnit> photonUnits = Arrays.asList();
+        //.asList(new PhotonUnit("FrontCamera", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        //    new Transform3d(new Pose3d(),
+        //        new Pose3d(new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), Units.inchesToMeters(0)),
+        //            new Rotation3d(0, Units.degreesToRadians(2), 0))),
+        //    fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
     public static final double photonUnitAmbiguityCutoff = 0.05;

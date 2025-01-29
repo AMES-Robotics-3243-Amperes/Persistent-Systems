@@ -18,26 +18,28 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Constants.SwerveConstants.DriveTrainConstants;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
+import frc.robot.subsystems.modules.SwerveModule;
+import frc.robot.subsystems.modules.ThriftyModule;
 import frc.robot.test.SubsystemBaseTestable;
 import frc.robot.test.Test;
 import frc.robot.test.TestUtil;
 
 public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
-  private final SubsystemSwerveModule m_frontLeft = new SubsystemSwerveModule(
+  private final SwerveModule m_frontLeft = new ThriftyModule(
       DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
-      DriveTrainConstants.IDs.kFrontLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
+      DriveTrainConstants.IDs.kFrontLeftTurningCanId, 0, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
 
-  private final SubsystemSwerveModule m_frontRight = new SubsystemSwerveModule(
-      DriveTrainConstants.IDs.kFrontRightDrivingCanId,
-      DriveTrainConstants.IDs.kFrontRightTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
+  //private final SwerveModule m_frontRight = new ThriftyModule(
+  //    DriveTrainConstants.IDs.kFrontRightDrivingCanId,
+  //    DriveTrainConstants.IDs.kFrontRightTurningCanId, 1, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
 
-  private final SubsystemSwerveModule m_rearLeft = new SubsystemSwerveModule(
+  private final SwerveModule m_rearLeft = new ThriftyModule(
       DriveTrainConstants.IDs.kRearLeftDrivingCanId,
-      DriveTrainConstants.IDs.kRearLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
+      DriveTrainConstants.IDs.kRearLeftTurningCanId, 2, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
 
-  private final SubsystemSwerveModule m_rearRight = new SubsystemSwerveModule(
+  private final SwerveModule m_rearRight = new ThriftyModule(
       DriveTrainConstants.IDs.kRearRightDrivingCanId,
-      DriveTrainConstants.IDs.kRearRightTurningCanId, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
+      DriveTrainConstants.IDs.kRearRightTurningCanId, 3, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
 
   public SubsystemSwerveDrivetrain() {
   }
@@ -54,7 +56,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
 
     // :3 set the desired states
     m_frontLeft.setDesiredState(desiredStates[0]);
-    m_frontRight.setDesiredState(desiredStates[1]);
+    //m_frontRight.setDesiredState(desiredStates[1]);
     m_rearLeft.setDesiredState(desiredStates[2]);
     m_rearRight.setDesiredState(desiredStates[3]);
   }
@@ -69,7 +71,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   public void setModuleRotations(Rotation2d[] desiredRotations) {
     // :3 set the desired states
     m_frontLeft.setDesiredRotation(desiredRotations[0]);
-    m_frontRight.setDesiredRotation(desiredRotations[1]);
+    //m_frontRight.setDesiredRotation(desiredRotations[1]);
     m_rearLeft.setDesiredRotation(desiredRotations[2]);
     m_rearRight.setDesiredRotation(desiredRotations[3]);
   }
@@ -82,7 +84,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
    */
   public SwerveModulePosition[] getModulePositions() {
     return new SwerveModulePosition[] {
-        m_frontLeft.getPosition(), m_frontRight.getPosition(),
+        m_frontLeft.getPosition(), new SwerveModulePosition(), // m_frontRight.getPosition(),
         m_rearLeft.getPosition(), m_rearRight.getPosition()
     };
   }
@@ -90,7 +92,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   @Override
   public void doPeriodic() {
     m_frontLeft.update();
-    m_frontRight.update();
+    //m_frontRight.update();
     m_rearLeft.update();
     m_rearRight.update();
   }
@@ -112,7 +114,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
    */
   public void sysIdDrive(Voltage voltage) {
     m_frontLeft.driveVoltage(voltage.baseUnitMagnitude());
-    m_frontRight.driveVoltage(voltage.baseUnitMagnitude());
+    //m_frontRight.driveVoltage(voltage.baseUnitMagnitude());
     m_rearLeft.driveVoltage(voltage.baseUnitMagnitude());
     m_rearRight.driveVoltage(voltage.baseUnitMagnitude());
   }
@@ -124,7 +126,7 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
    */
   public void sysIdDriveLog(SysIdRoutineLog log) {
     m_frontLeft.driveLog(log.motor("front_left_drive"));
-    m_frontRight.driveLog(log.motor("front_right_drive"));
+    //m_frontRight.driveLog(log.motor("front_right_drive"));
     m_rearLeft.driveLog(log.motor("rear_left_drive"));
     m_rearRight.driveLog(log.motor("rear_right_drive"));
   }
