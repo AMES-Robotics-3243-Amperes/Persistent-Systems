@@ -4,13 +4,8 @@
 
 package frc.robot.commands;
 
-import java.lang.constant.Constable;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Supplier;
-
-import org.opencv.photo.Photo;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -20,7 +15,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.PhotonUnit;
-import frc.robot.splines.Path;
 import frc.robot.splines.PathFactory;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
@@ -29,6 +23,8 @@ public class AlignToClosestTagCommand extends Command {
     private final PhotonUnit photonUnit;
     private SubsystemSwerveDrivetrain drivetrain;
     private Supplier<Pose2d> odometryPose;
+    private Pose2d targetPose;
+    private CommandSwerveFollowSpline driveToPosCommand;
   
     /** Creates a new AlignToClosestTagCommand. */
     public AlignToClosestTagCommand(PhotonUnit photonUnit, SubsystemSwerveDrivetrain drivetrain, Supplier<Pose2d> odometry) {
@@ -45,13 +41,6 @@ public class AlignToClosestTagCommand extends Command {
     public void initialize() {
       // Get a list of the most recent tag positions
       List<PhotonUnit.Measurement> latestTags = photonUnit.getMeasurement();
-  
-      // Extract the tag positions from measurements into a Set
-      // Set<Translation2d> tagPositions = new HashSet<Translation2d>();
-
-      // for (PhotonUnit.Measurement tag : latestTags) {
-      //   tagPositions.add(tag.targetPosition);
-      // }
 
       // If there are no tags, abort the command
       if (latestTags.isEmpty()) {
@@ -78,30 +67,40 @@ public class AlignToClosestTagCommand extends Command {
 
       double distanceFromTag = 0.1;
       Transform2d offset = new Transform2d(new Translation2d(distanceFromTag, 0.0), new Rotation2d());
-      Pose2d targetPose = angleTargetPose.plus(offset);
+      targetPose = angleTargetPose.plus(offset);
 
       PIDController xController = new PIDController(0.1, 0, 0);
       PIDController yController = new PIDController(0.1, 0, 0);
       ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0, null);
       
-      CommandSwerveFollowSpline driveToPosCommand = PathFactory.newFactory().addPoint(targetPose.getTranslation()).finalRotation(targetPose.getRotation())
-      .interpolateFromStart(true).buildCommand(drivetrain, xController, yController, null);
+      driveToPosCommand = PathFactory.newFactory().addPoint(targetPose.getTranslation()).finalRotation(targetPose.getRotation())
+      .interpolateFromStart(true).buildCommand(drivetrain, xController, yController, thetaController);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+    driveToPosCommand.execute();
+  }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    // Stop the drivetrain
+    // Drivetrain will no longer run since execute is no longer being called
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     // Should stop when the drivetrain is facing the tag within angle and position tolerance
-    return false;
+    Pose2d currentPose = odometryPose.get();
+    
+    double xTolerance = 0.05; // Calibrate these and move to constants
+    double yTolerance = 0.05;
+    double thetaTolerance = 0.05;
+
+    return (currentPose.getX() - targetPose.getX() < xTolerance)
+        && (currentPose.getY() - targetPose.getY() < yTolerance)
+        && (currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians() < thetaTolerance);
   }
 }
