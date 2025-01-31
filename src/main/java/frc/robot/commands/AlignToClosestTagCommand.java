@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import java.lang.constant.Constable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,12 +12,16 @@ import java.util.function.Supplier;
 
 import org.opencv.photo.Photo;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.PhotonUnit;
+import frc.robot.splines.Path;
+import frc.robot.splines.PathFactory;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -74,6 +79,13 @@ public class AlignToClosestTagCommand extends Command {
       double distanceFromTag = 0.1;
       Transform2d offset = new Transform2d(new Translation2d(distanceFromTag, 0.0), new Rotation2d());
       Pose2d targetPose = angleTargetPose.plus(offset);
+
+      PIDController xController = new PIDController(0.1, 0, 0);
+      PIDController yController = new PIDController(0.1, 0, 0);
+      ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0, null);
+      
+      CommandSwerveFollowSpline driveToPosCommand = PathFactory.newFactory().addPoint(targetPose.getTranslation()).finalRotation(targetPose.getRotation())
+      .interpolateFromStart(true).buildCommand(drivetrain, xController, yController, null);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
