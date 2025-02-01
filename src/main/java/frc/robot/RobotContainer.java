@@ -133,7 +133,7 @@ public class RobotContainer {
     // Manual intaking and depositing
     secondaryController.leftTrigger().onTrue(new IntakeClawCommand(subsystemClaw, Setpoints.intakePower));
     secondaryController.rightTrigger().onTrue(new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower));
-    secondaryController.y().onTrue(new IntakeClawCommand(subsystemClaw, DifferentialArm.encoderOffset));
+    secondaryController.y().onTrue(new IntakeClawCommand(subsystemClaw, DifferentialArm.encoderOffset)); // This constant is wrong, but I don't know what it's supposed to be
 
     // Testing movement - normally just included in composition with elevator
     secondaryController.a().onTrue(moveClawIntake);
