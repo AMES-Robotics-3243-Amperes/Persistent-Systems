@@ -283,9 +283,12 @@ public final class Constants {
     }
   }
 
+  // Important setpoints for the claw
   public static final class Setpoints {
+    // Constant intake power (just invert to deposit)
     public static final double intakePower = 0.5;
 
+    // Heights of the different pipe deposit levels, and a height for intake
     public static final class LevelHeights {
       public static final double Intake = 0;
       public static final double L1 = 1;
@@ -294,11 +297,12 @@ public final class Constants {
       public static final double L4 = 4;
     }
 
+    // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
       public static final double Intake = 0.959931;
       public static final double L1 = 0;
-      public static final double L23 = 5.32325;
-      public static final double L4 = 4.71239;
+      public static final double L23 = -0.959931;
+      public static final double L4 = -1.5708;
     }
   }
 }

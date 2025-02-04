@@ -27,8 +27,10 @@ import frc.robot.Constants.DifferentialArm;
 import frc.robot.Constants.DifferentialArm.*;
 
 public class SubsystemClaw extends SubsystemBase {
+  // Some sort of sensor or limit switch to detect the PVC pipe
   public Ultrasonic rangeFinder;
 
+  // Differential motors
   private SparkMax forwardMotor = new SparkMax(MotorIDs.forwardId, MotorType.kBrushless);
   private SparkMax reverseMotor = new SparkMax(MotorIDs.reverseId, MotorType.kBrushless);
   
@@ -52,20 +54,25 @@ public class SubsystemClaw extends SubsystemBase {
     private double outsideOutput;
     private double insideOutput;
 
+    // Matrix used to calculate the required inputs
     private static Matrix<N2, N2> inverseDifferentialMatrix = new Matrix<N2, N2>(N2.instance, N2.instance, new double[] {
        1.0, 1.0,
        1.0, -1.0
     });
 
+    // Class to represent the differential motors
     public DifferentialMotorGroup(MotorController motorForward, MotorController motorReverse) {
       this.motorForward = motorForward;
       this.motorReverse = motorReverse;
     }
 
+    // Calculates the rate at which to spin the motors based on where they should be
+    // Basically, we calculate the required inputs given outputs
     private void update() {
       Matrix<N2, N1> mechanismOutputs = new Matrix<N2, N1>(N2.instance, N1.instance, new double[] {outsideOutput, insideOutput});
       Vector<N2> mechanismInputs = new Vector<N2>(inverseDifferentialMatrix.times(mechanismOutputs));
       
+      // Scales the motor values to be between 0 and 1
       double maxMotorOutput = Math.max(mechanismInputs.get(0), mechanismInputs.get(1));
       if (maxMotorOutput > 1.0) {
         mechanismInputs.div(maxMotorOutput);
@@ -84,14 +91,16 @@ public class SubsystemClaw extends SubsystemBase {
     }
   }
 
-  public void setOutsidePosition(double position) {
-    targetPivotPosition = convertRadiansToRotations(position);
+  // Sets the target position for the absolute encoder
+  public void setOutsidePosition(double angle) {
+    targetPivotPosition = convertRadiansToRotations(angle);
   }
 
   public void setIntakePower(double power) {
     intakePower = power;
   }
 
+  // Helper function for setOutsidePosition()
   private double convertRadiansToRotations(double angle) {
     return (angle / (2 * Math.PI)) + DifferentialArm.encoderOffset;
   }

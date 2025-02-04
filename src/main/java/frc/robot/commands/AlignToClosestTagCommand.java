@@ -69,6 +69,7 @@ public class AlignToClosestTagCommand extends Command {
       Transform2d offset = new Transform2d(new Translation2d(distanceFromTag, 0.0), new Rotation2d());
       targetPose = angleTargetPose.plus(offset);
 
+      // PID controllers for the drivetrain
       PIDController xController = new PIDController(0.1, 0, 0);
       PIDController yController = new PIDController(0.1, 0, 0);
       ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0, null);
