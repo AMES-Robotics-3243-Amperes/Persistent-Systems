@@ -168,17 +168,20 @@ public final class Constants {
       public static final double deltaV = 0.05;
     }
 
+    /** Positions are measured by the pivot position height above minimum. All heights are in meters. */
     public static class Positions {
+      /** The vertical distance from the ground to the minimum height on the elevator. */
+      private static final double minHeightOffset = Units.inchesToMeters(9.307579);
       public static final double min = 0.0;
       public static final double starting = min;
-      public static final double loading = 1.0;
-      public static final double L1 = 1.0;
-      public static final double L2 = 1.0;
-      public static final double L3 = 1.0;
-      public static final double L4 = 1.0;
-      public static final double max = 100.0;
+      public static final double loading = Units.inchesToMeters(28.807579) - minHeightOffset;
+      public static final double L1 = Units.inchesToMeters(28.807579) - minHeightOffset; // Not from CAD, but should be similar to loading.
+      public static final double L2 = Units.inchesToMeters(37.807579) - minHeightOffset;
+      public static final double L3 = Units.inchesToMeters(52.807579) - minHeightOffset;
+      public static final double L4 = Units.inchesToMeters(79.807579) - minHeightOffset;
+      public static final double max = Units.inchesToMeters(79.807579) - minHeightOffset;
     }
-}
+  }
 
   public static final class PhotonvisionConstants {
     public static final AprilTag tag = new AprilTag(1,

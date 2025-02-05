@@ -93,6 +93,7 @@ public class AlignToClosestTagCommand extends Command {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    // SUGGESTION: add velocity tolerance as well H!
     // Should stop when the drivetrain is facing the tag within angle and position tolerance
     Pose2d currentPose = odometryPose.get();
     
@@ -100,8 +101,10 @@ public class AlignToClosestTagCommand extends Command {
     double yTolerance = 0.05;
     double thetaTolerance = 0.05;
 
-    return (currentPose.getX() - targetPose.getX() < xTolerance)
-        && (currentPose.getY() - targetPose.getY() < yTolerance)
-        && (currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians() < thetaTolerance);
+    return (Math.abs(currentPose.getX() - targetPose.getX()) < xTolerance)
+        && (Math.abs(currentPose.getY() - targetPose.getY()) < yTolerance)
+        && (Math.abs(currentPose.getRotation().plus(targetPose.getRotation().unaryMinus()).getRadians()) < thetaTolerance);
+    // The strange a + -b pattern for rotations is because .plus() returns a value bounded from pi to -pi,
+    // sidestepping the fact that WPILib Rotations can be greater than 360 degrees. H!
   }
 }
