@@ -257,29 +257,17 @@ public final class Constants {
 
   public static final class DifferentialArm {
     // Test this once claw is finished - absolute encoder value at horizontal
-    public static final double encoderOffset = 0.5;
+    public static final double encoderOffset = 0.510;
 
     public static final class MotorIDs {
-      public static final int forwardId = 11;
-      public static final int reverseId = 10;
+      public static final int leftID = 13;
+      public static final int rightID = 14;
     }
 
-    public static final class Setpoints {
-      // All of these need to be actually figured out, just placeholders for now
-      
-      // Starting position setpoints
-      public static final double startingPosition = encoderOffset;
-      public static final double startingPower = 0.0;
-
-      // Intake position setpoints
-      public static final double intakePosition = 0.;
-      public static final double intakePower = 0.8;
-
-      // Deposit position setpoints
-      public static final double depositPositionL1 = 0.0;
-      public static final double depositPositionL23 = 5.32325;
-      public static final double depositPositionL4 = 4.71239;
-      public static final double depositPower = -0.8;
+    public static final class PID {
+      public static final double P = 1.5;
+      public static final double I = 0.02;
+      public static final double D = 0.06;
     }
   }
 
@@ -291,6 +279,7 @@ public final class Constants {
     // Heights of the different pipe deposit levels, and a height for intake
     public static final class LevelHeights {
       public static final double Intake = 0;
+      public static final double Start = 0;
       public static final double L1 = 1;
       public static final double L2 = 2;
       public static final double L3 = 3;
@@ -299,8 +288,9 @@ public final class Constants {
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
+      public static final double Start = 1.5708;
       public static final double Intake = 0.959931;
-      public static final double L1 = 0;
+      public static final double L1 = 0.0;
       public static final double L23 = -0.959931;
       public static final double L4 = -1.5708;
     }

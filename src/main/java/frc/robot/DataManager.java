@@ -7,7 +7,6 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.DifferentialArm.Setpoints;
 import frc.robot.Constants.PhotonvisionConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 // import frc.robot.Constants.Setpoints;
@@ -142,22 +141,9 @@ public class DataManager {
     }
   }
 
-  // public enum SetpointDiffArm {
-  //   Starting(Setpoints.startingPosition, Setpoints.startingPower),
-  //   Intake(Setpoints.intakePosition, Setpoints.intakePower),
-  //   PlaceL1(Setpoints.depositPositionL1, Setpoints.depositPower);
-
-  //   public final double position;
-  //   public final double power;
-
-  //   private SetpointDiffArm(double position, double power) {
-  //     this.position = position;
-  //     this.power = power;
-  //   }
-  // }
-
   // Setpoints for different positions for the elevator and claw
   public enum Setpoint {
+    Start(LevelHeights.Start, LevelAngles.Start),
     Intake(LevelHeights.Intake, LevelAngles.Intake),
     L1(LevelHeights.L1, LevelAngles.L1),
     L2(LevelHeights.L2, LevelAngles.L23),

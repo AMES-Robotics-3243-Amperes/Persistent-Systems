@@ -13,7 +13,6 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.DifferentialArm;
-import frc.robot.Constants.DifferentialArm.Setpoints;
 import frc.robot.commands.CommandLedPatternCycle;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
@@ -123,7 +122,7 @@ public class RobotContainer {
     );
 
     InstantCommand moveClawStart = new InstantCommand(
-      () -> { subsystemClaw.setOutsidePosition(DifferentialArm.encoderOffset); },
+      () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.Start.angle); },
       subsystemClaw
     );
 
@@ -131,9 +130,9 @@ public class RobotContainer {
     primaryController.a().onTrue(followCommand);
 
     // Manual intaking and depositing
-    secondaryController.leftTrigger().onTrue(new IntakeClawCommand(subsystemClaw, Setpoints.intakePower));
-    secondaryController.rightTrigger().onTrue(new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower));
-    secondaryController.y().onTrue(new IntakeClawCommand(subsystemClaw, DifferentialArm.encoderOffset));
+    secondaryController.leftTrigger().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.rightTrigger().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.y().onTrue(new IntakeClawCommand(subsystemClaw, 0.0));
 
     // Testing movement - normally just included in composition with elevator
     secondaryController.a().onTrue(moveClawIntake);

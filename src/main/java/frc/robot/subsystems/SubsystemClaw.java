@@ -20,6 +20,9 @@ import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 // Decide if we want to use switch, or ultrasonic sensor, etc.
 import edu.wpi.first.wpilibj.Ultrasonic;
@@ -31,16 +34,16 @@ public class SubsystemClaw extends SubsystemBase {
   public Ultrasonic rangeFinder;
 
   // Differential motors
-  private SparkMax forwardMotor = new SparkMax(MotorIDs.forwardId, MotorType.kBrushless);
-  private SparkMax reverseMotor = new SparkMax(MotorIDs.reverseId, MotorType.kBrushless);
+  private SparkMax rightMotor = new SparkMax(MotorIDs.rightID, MotorType.kBrushless); // Previously forward
+  private SparkMax leftMotor = new SparkMax(MotorIDs.leftID, MotorType.kBrushless); // Previously reverse
   
-  private SparkMaxConfig forwardConfig = new SparkMaxConfig();
-  private SparkMaxConfig reverseConfig = new SparkMaxConfig();
+  private SparkMaxConfig rightConfig = new SparkMaxConfig();
+  private SparkMaxConfig leftConfig = new SparkMaxConfig();
 
   private DifferentialMotorGroup motorGroup;
   private PIDController pivotController;
 
-  private static double startingPivotPosition = 0.0;
+  private static double startingPivotPosition = DifferentialArm.encoderOffset;
   private double targetPivotPosition = startingPivotPosition;
   private double intakePower = 0.0;
 
@@ -48,11 +51,11 @@ public class SubsystemClaw extends SubsystemBase {
   private AbsoluteEncoderConfig pivotEncoderConfig =  new AbsoluteEncoderConfig();
 
   private static class DifferentialMotorGroup {
-    private MotorController motorForward;
-    private MotorController motorReverse;
+    private MotorController rightMotor;
+    private MotorController leftMotor;
 
-    private double outsideOutput;
-    private double insideOutput;
+    private double pivotOutput;
+    private double rollerOutput;
 
     // Matrix used to calculate the required inputs
     private static Matrix<N2, N2> inverseDifferentialMatrix = new Matrix<N2, N2>(N2.instance, N2.instance, new double[] {
@@ -62,14 +65,14 @@ public class SubsystemClaw extends SubsystemBase {
 
     // Class to represent the differential motors
     public DifferentialMotorGroup(MotorController motorForward, MotorController motorReverse) {
-      this.motorForward = motorForward;
-      this.motorReverse = motorReverse;
+      this.rightMotor = motorForward;
+      this.leftMotor = motorReverse;
     }
 
     // Calculates the rate at which to spin the motors based on where they should be
     // Basically, we calculate the required inputs given outputs
     private void update() {
-      Matrix<N2, N1> mechanismOutputs = new Matrix<N2, N1>(N2.instance, N1.instance, new double[] {outsideOutput, insideOutput});
+      Matrix<N2, N1> mechanismOutputs = new Matrix<N2, N1>(N2.instance, N1.instance, new double[] {pivotOutput, rollerOutput});
       Vector<N2> mechanismInputs = new Vector<N2>(inverseDifferentialMatrix.times(mechanismOutputs));
       
       // Scales the motor values to be between 0 and 1
@@ -78,16 +81,16 @@ public class SubsystemClaw extends SubsystemBase {
         mechanismInputs.div(maxMotorOutput);
       }
 
-      motorForward.set(mechanismInputs.get(0));
-      motorReverse.set(mechanismInputs.get(1));
+      rightMotor.set(mechanismInputs.get(0));
+      leftMotor.set(mechanismInputs.get(1));
     }
 
-    public void setOutsideOutput(double speed) {
-      outsideOutput = clamp(-1.0, 1.0, speed);
+    public void setPivotOutput(double speed) {
+      pivotOutput = clamp(-1.0, 1.0, speed);
     }
 
-    public void setInsideOutput(double speed) {
-      insideOutput = clamp(-1.0, 1.0, speed);
+    public void setRollerOutput(double speed) {
+      rollerOutput = clamp(-1.0, 1.0, speed);
     }
   }
 
@@ -108,15 +111,20 @@ public class SubsystemClaw extends SubsystemBase {
   /** Creates a new SubsystemEndAffectorDifferential. */
   public SubsystemClaw(/* Ultrasonic rangeFinder */) {
     // Might need to invert this motor
-    // reverseConfig.inverted(true);
-    forwardMotor.configure(forwardConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    reverseMotor.configure(reverseConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    rightConfig.inverted(true);
+    rightConfig.smartCurrentLimit(5);
+    leftConfig.smartCurrentLimit(5);
 
-    pivotEncoder = forwardMotor.getAbsoluteEncoder();
+    rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    leftMotor.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    pivotEncoder = rightMotor.getAbsoluteEncoder();
     pivotEncoderConfig.positionConversionFactor(intakePower);
     
-    motorGroup = new DifferentialMotorGroup(forwardMotor, reverseMotor);
-    pivotController = new PIDController(0.1, 0, 0);
+    motorGroup = new DifferentialMotorGroup(rightMotor, leftMotor);
+    pivotController = new PIDController(DifferentialArm.PID.P, DifferentialArm.PID.I, DifferentialArm.PID.D);
+
+    Shuffleboard.getTab("Tuning").add(pivotController).withWidget(BuiltInWidgets.kPIDController);
 
     // Decide if we want to use switch, or ultrasonic sensor, etc.
     // this.rangeFinder = rangeFinder;
@@ -125,12 +133,12 @@ public class SubsystemClaw extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    motorGroup.setOutsideOutput(pivotController.calculate(pivotEncoder.getPosition(), targetPivotPosition));
-    motorGroup.setInsideOutput(intakePower);
+    double pivotControllerCalculate = pivotController.calculate(pivotEncoder.getPosition(), targetPivotPosition);
+    motorGroup.setPivotOutput(pivotControllerCalculate);
+    motorGroup.setRollerOutput(intakePower);
     motorGroup.update();
-    System.out.println("Intake power: " + intakePower);
-    System.out.println("Motor position: " + targetPivotPosition);
-    System.out.println("Absolute encoder value: " + pivotEncoder.getPosition());
+    SmartDashboard.putNumber("Arm Absolute Encoder Rotations", pivotEncoder.getPosition());
+    SmartDashboard.putNumber("Arm PID pivot controller output", pivotControllerCalculate);
   }
 
   private static double clamp(double min, double max, double x) {
