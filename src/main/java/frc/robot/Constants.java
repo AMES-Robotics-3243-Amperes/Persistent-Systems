@@ -155,7 +155,9 @@ public final class Constants {
       public static final int leaderCanId = 10;
       public static final int followerCanId = 11;
 
-      public static final double positionConversionRatio = 1.0;
+      public static final double positionConversionRatio = 
+        Math.pow(18.0/50.0, 2) * // Gear ratio
+        (44.0 / 1000.0) * Math.PI; // Wheel circumference
 
       public static final double P = 0.01;
       public static final double I = 0.0;
