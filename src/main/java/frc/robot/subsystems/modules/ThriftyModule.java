@@ -14,6 +14,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -43,7 +44,7 @@ public class ThriftyModule implements SwerveModule {
 
   private final Rotation2d m_wheelOffset;
 
-  double turningFactor = 2 * Math.PI * 25;
+  double turningFactor = 2 * Math.PI;
   double id = 0;
 
   /**
@@ -95,7 +96,7 @@ public class ThriftyModule implements SwerveModule {
 
     m_turningEncoder = new AnalogEncoder(encoderID);
     m_turningPIDController = new PIDController(PIDF.kTurningP, PIDF.kTurningI, PIDF.kTurningD);
-    m_turningPIDController.enableContinuousInput(0, 2 * Math.PI);
+    m_turningPIDController.enableContinuousInput(-Math.PI, Math.PI);
 
     // finish up configuration
     m_drivingTalonFX.getConfigurator().apply(drivingConfig);
@@ -117,7 +118,7 @@ public class ThriftyModule implements SwerveModule {
     SwerveModuleState offsetState = new SwerveModuleState();
     offsetState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
     offsetState.angle = desiredState.angle.plus(m_wheelOffset);
-    offsetState.optimize(new Rotation2d(m_turningEncoder.get()));
+    offsetState.optimize(new Rotation2d(m_turningEncoder.get() * Math.PI * 2));
 
     // :3 command driving
     m_drivingVelocitySetpoint = offsetState.speedMetersPerSecond;
@@ -146,8 +147,9 @@ public class ThriftyModule implements SwerveModule {
     m_drivingTalonFX.setVoltage(drivingPIDOutput + drivingFFOutput);
 
     SmartDashboard.putNumber("module" + id, m_turningEncoder.get());
+    SmartDashboard.putNumber("setpoint" + id, m_turningPIDController.getSetpoint() / turningFactor);
     
-    double turningOutput = m_turningPIDController.calculate(m_turningEncoder.get() * turningFactor);
+    double turningOutput = m_turningPIDController.calculate(MathUtil.angleModulus(m_turningEncoder.get() * turningFactor));
     m_turningSparkMax.setVoltage(turningOutput);
   }
 

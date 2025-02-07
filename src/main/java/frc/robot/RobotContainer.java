@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveModulesForward;
 import frc.robot.commands.CommandSwerveTeleopDrive;
+import frc.robot.commands.CommandSwerveGetOffset;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -101,6 +102,7 @@ public class RobotContainer {
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
     primaryController.a().onTrue(followCommand);
+    primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
     primaryController.b().onTrue(new InstantCommand(commandSwerveTeleopDrive::toggleFieldRelative));
 
     SequentialCommandGroup drivetrainSysIdCommand = new SequentialCommandGroup(

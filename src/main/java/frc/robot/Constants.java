@@ -70,12 +70,12 @@ public final class Constants {
 
     public static final class DriveTrainConstants {
       public static final class IDs {
-        public static final int kFrontLeftDrivingCanId = 8;//1;
+        public static final int kFrontLeftDrivingCanId = 1;
         public static final int kRearLeftDrivingCanId = 3;
         public static final int kFrontRightDrivingCanId = 2;
         public static final int kRearRightDrivingCanId = 4;
 
-        public static final int kFrontLeftTurningCanId = 7;//1;
+        public static final int kFrontLeftTurningCanId = 1;
         public static final int kRearLeftTurningCanId = 3;
         public static final int kFrontRightTurningCanId = 4;
         public static final int kRearRightTurningCanId = 2;
@@ -99,7 +99,7 @@ public final class Constants {
         public static final double kDrivingKv = 2.4783;
         public static final double kDrivingKa = 0.36003;
 
-        public static final double kTurningP = 0.23;
+        public static final double kTurningP = 1.5;
         public static final double kTurningI = 0;
         public static final double kTurningD = 0;
         public static final double kTurningFF = 0;

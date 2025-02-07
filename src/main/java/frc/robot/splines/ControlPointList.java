@@ -66,9 +66,9 @@ public class ControlPointList {
   }
 
   public List<Translation2d> getInterpolationTranslations(Optional<Translation2d> interpolateFromStartTranslation) {
-    if (interpolateFromStartTranslation.isEmpty()) {
-      return getTranslations();
-    } else if (interpolateFromStartTranslation.get().getDistance(getTranslations().get(0)) < 1e-2) {
+    if (interpolateFromStartTranslation.isEmpty()
+        || (interpolateFromStartTranslation.get().getDistance(getTranslations().get(0)) < 1e-2
+            && getTranslations().size() > 1)) {
       return getTranslations();
     }
 
@@ -91,7 +91,8 @@ public class ControlPointList {
     List<Task> activeTasks = new ArrayList<Task>();
     HashSet<Subsystem> activeSubsystems = new HashSet<Subsystem>();
     for (Task task : upcomingTasks) {
-      if (!task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem)) && task.isActive(length)) {
+      if (!task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem))
+          && task.isActive(length)) {
         activeTasks.add(task);
       }
 
