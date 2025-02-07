@@ -22,6 +22,23 @@ public class SubsystemLeds extends SubsystemBase {
     Red,
     HueCircle,
     TransFlag,
+    L1Color,
+    L2Color,
+    L3Color,
+    L4Color,
+    ElevatorMovingColor
+  }
+
+  private void loadBufferSolidColorRGB(int r, int g, int b) {
+    for (int i = 0; i < ledBuffer.getLength(); i++) {
+      ledBuffer.setRGB(i, r, g, b);
+    }
+  }
+
+  private void loadBufferSolidColorHSV(int h, int s, int v) {
+    for (int i = 0; i < ledBuffer.getLength(); i++) {
+      ledBuffer.setHSV(i, h, s, v);
+    }
   }
 
   private void loadBufferHueCircle(int timer) {
@@ -40,12 +57,6 @@ public class SubsystemLeds extends SubsystemBase {
 
     for (int i = 0; i < ledBuffer.getLength(); i++) {
       ledBuffer.setLED(i, pattern[(i + timer / 50) % pattern.length]);
-    }
-  }
-
-  private void loadBufferRed(int timer) {
-    for (int i = 0; i < ledBuffer.getLength(); i++) {
-      ledBuffer.setRGB(i, 255, 0, 0);
     }
   }
 
@@ -88,17 +99,31 @@ public class SubsystemLeds extends SubsystemBase {
           loadBufferError(timer);
           break;
         case Blank:
-          loadBufferBlank(timer);
+          loadBufferSolidColorRGB(0, 0, 0);
           break;
         case HueCircle:
           loadBufferHueCircle(timer);
           break;
         case Red:
-          loadBufferRed(timer);
+          loadBufferSolidColorRGB(255, 0, 0);
           break;
         case TransFlag:
           loadBufferTransFlag(timer);
           break;
+        case L1Color:
+          loadBufferSolidColorHSV(255, 255, 200);
+          break;
+        case L2Color:
+          loadBufferSolidColorHSV(205, 255, 200);
+          break;
+        case L3Color:
+          loadBufferSolidColorHSV(155, 255, 200);
+          break;
+        case L4Color:
+          loadBufferSolidColorHSV(105, 255, 200);
+          break;
+        case ElevatorMovingColor:
+          loadBufferSolidColorHSV(0, 128, 120);
       }
 
       led.setData(ledBuffer);

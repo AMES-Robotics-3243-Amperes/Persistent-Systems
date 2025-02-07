@@ -163,6 +163,7 @@ public class DataManager {
   private ArrayList<DataManagerEntry> entries = new ArrayList<>();
 
   public DataManagerEntry<Pose2d> robotPosition;
+  public ElevatorPosition elevatorPosition;
 
   public void update() {
     entries.forEach(entry -> entry.update());
@@ -174,6 +175,7 @@ public class DataManager {
    */
   public DataManager(RobotContainer robotContainer) {
     robotPosition = new RobotPosition(robotContainer);
+    elevatorPosition = new ElevatorPosition(robotContainer);
 
     instance = this;
   }
