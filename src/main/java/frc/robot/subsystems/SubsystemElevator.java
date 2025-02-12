@@ -57,11 +57,11 @@ public class SubsystemElevator extends SubsystemBaseTestable {
 
     leaderConfig.encoder
       .positionConversionFactor(Motors.positionConversionRatio)
-      .velocityConversionFactor(Motors.positionConversionRatio);
+      .velocityConversionFactor(Motors.velocityConversionRatio);
     
     followerConfig.encoder
       .positionConversionFactor(Motors.positionConversionRatio)
-      .velocityConversionFactor(Motors.positionConversionRatio);
+      .velocityConversionFactor(Motors.velocityConversionRatio);
     
     leaderConfig.closedLoop
       .pidf(Motors.P, Motors.I, Motors.D, Motors.FF)
