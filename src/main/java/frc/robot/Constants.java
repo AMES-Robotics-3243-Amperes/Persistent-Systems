@@ -152,8 +152,8 @@ public final class Constants {
 
   public static class Elevator {
     public static class Motors {
-      public static final int leaderCanId = 10;
-      public static final int followerCanId = 11;
+      public static final int leaderCanId = 10; // Leader is the right motor, update this if that changes
+      public static final int followerCanId = 11; // Follower is the left motor, update this if that changes
 
       public static final double positionConversionRatio = 
         Math.pow(18.0/50.0, 2) * // Gear ratio
@@ -190,6 +190,11 @@ public final class Constants {
       public static final double L3 = Units.inchesToMeters(52.807579) - minHeightOffset;
       public static final double L4 = Units.inchesToMeters(79.807579) - minHeightOffset;
       public static final double max = Units.inchesToMeters(79.807579) - minHeightOffset;
+    }
+
+    public static class Control {
+      public static final double upNudgeVelocity = 0.1;
+      public static final double downNudgeVelocity = -0.1;
     }
   }
 

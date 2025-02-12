@@ -144,10 +144,10 @@ public class RobotContainer {
     secondaryController.b().onTrue(new ElevatorMoveToPositionCommand(subsystemElevator, Position.L3));
     secondaryController.x().onTrue(new ElevatorMoveToPositionCommand(subsystemElevator, Position.Starting));
 
-    secondaryController.povUp().whileTrue(new ElevatorNudgeCommand(subsystemElevator, 0.1));
-    secondaryController.povDown().whileTrue(new ElevatorNudgeCommand(subsystemElevator, -0.1));
+    secondaryController.povUp().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity));
+    secondaryController.povDown().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
 
-    mainTab.add(new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
+    mainTab.add("Zero Elevator", new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
   }
 
   /**

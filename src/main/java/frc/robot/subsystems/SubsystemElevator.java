@@ -10,6 +10,7 @@ import frc.robot.test.TestUtil;
 
 import static frc.robot.Constants.Elevator.*;
 
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -82,9 +83,26 @@ public class SubsystemElevator extends SubsystemBaseTestable {
 
     rezero();
 
-    tab.addDouble("Elevator Position", this::getPosition);
-    tab.addDouble("Elevator Velocity", this::getVelocity);
-    tab.addDouble("Elevator Target", () -> currentReference);
+    tab.addDouble("ElevatorPosition", this::getPosition)
+      .withPosition(0, 0)
+      .withSize(5, 1)
+      .withWidget(BuiltInWidgets.kNumberSlider)
+      .withProperties(Map.of("min", Positions.min, "max", Positions.max))
+    ;
+    
+    tab.addDouble("ElevatorVelocity", this::getVelocity)
+      .withPosition(0, 3)
+      .withSize(5, 1)
+      .withWidget(BuiltInWidgets.kNumberSlider)
+      .withProperties(Map.of("min", -10.0, "max", 10.0))
+      ;
+    
+    tab.addDouble("ElevatorTarget", () -> currentReference)
+      .withPosition(0, 1)
+      .withSize(5, 1)
+      .withWidget(BuiltInWidgets.kNumberSlider)
+      .withProperties(Map.of("min", Positions.min, "max", Positions.max))
+    ;
   }
 
   @Override
