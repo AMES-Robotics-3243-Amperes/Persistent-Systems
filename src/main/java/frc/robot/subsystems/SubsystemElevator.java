@@ -22,8 +22,14 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 
 public class SubsystemElevator extends SubsystemBaseTestable {
 
@@ -38,10 +44,12 @@ public class SubsystemElevator extends SubsystemBaseTestable {
   private SparkClosedLoopController controlLoop;
   private double currentReference = 0.0;
 
+  private ShuffleboardTab tab = Shuffleboard.getTab("Elevator");
+
   /** Creates a new SubsystemElevator. */
   public SubsystemElevator() {
-    motorLeader = new SparkFlex(Motors.leaderCanId, MotorType.kBrushless);
-    motorFollower = new SparkFlex(Motors.followerCanId, MotorType.kBrushless);
+    motorLeader = new SparkMax(Motors.leaderCanId, MotorType.kBrushless);
+    motorFollower = new SparkMax(Motors.followerCanId, MotorType.kBrushless);
 
     // Create configuration
     SparkBaseConfig leaderConfig = new SparkFlexConfig();
@@ -56,9 +64,10 @@ public class SubsystemElevator extends SubsystemBaseTestable {
       .velocityConversionFactor(Motors.positionConversionRatio);
     
     leaderConfig.closedLoop
-      .pidf(Motors.P, Motors.I, Motors.D, Motors.FF);
+      .pidf(Motors.P, Motors.I, Motors.D, Motors.FF)
+      .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
 
-    followerConfig.follow(motorLeader);
+    followerConfig.follow(motorLeader, true);
 
     // Apply configuration
     motorLeader.configure(leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -70,6 +79,12 @@ public class SubsystemElevator extends SubsystemBaseTestable {
 
     // Set PID loop
     controlLoop = motorLeader.getClosedLoopController();
+
+    rezero();
+
+    tab.addDouble("Elevator Position", this::getPosition);
+    tab.addDouble("Elevator Velocity", this::getVelocity);
+    tab.addDouble("Elevator Target", () -> currentReference);
   }
 
   @Override
@@ -78,13 +93,13 @@ public class SubsystemElevator extends SubsystemBaseTestable {
   }
 
   public void nudge(double amount) {
-    setPosition(currentReference += amount);
+    setPosition(currentReference + amount);
   }
 
   public void rezero() {
     encoderLeader.setPosition(Positions.starting);
     encoderFollower.setPosition(Positions.starting);
-    controlLoop.setReference(Positions.starting, ControlType.kPosition);
+    setPosition(Positions.starting);
   }
 
   public double getCurrent() {
@@ -96,7 +111,9 @@ public class SubsystemElevator extends SubsystemBaseTestable {
   public void setPosition(double position) {
     position = clamp(Positions.min, Positions.max, position);
     currentReference = position;
-    controlLoop.setReference(position, ControlType.kPosition);
+    System.out.println("positioning stuff ########");
+    System.out.println(position);
+    controlLoop.setReference(position / 2.0, ControlType.kPosition); // Cursed offset, do not question the REV gods
   }
 
   public double getPosition() {

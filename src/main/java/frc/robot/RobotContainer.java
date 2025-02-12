@@ -8,6 +8,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -17,6 +18,10 @@ import frc.robot.commands.leds.CommandLedPatternCycle;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.commands.claw.IntakeClawCommand;
+import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
+import frc.robot.commands.elevator.ElevatorNudgeCommand;
+import frc.robot.commands.elevator.ElevatorZeroCommand;
+import frc.robot.commands.elevator.ElevatorMoveToPositionCommand.Position;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemLeds;
@@ -134,10 +139,15 @@ public class RobotContainer {
     secondaryController.rightTrigger().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
     secondaryController.y().onTrue(new IntakeClawCommand(subsystemClaw, 0.0));
 
-    // Testing movement - normally just included in composition with elevator
-    secondaryController.a().onTrue(moveClawIntake);
-    secondaryController.b().onTrue(moveClawDeploy);
-    secondaryController.x().onTrue(moveClawStart);
+    // Testing movement - normally just included in composition with claw
+    secondaryController.a().onTrue(new ElevatorMoveToPositionCommand(subsystemElevator, Position.L2));
+    secondaryController.b().onTrue(new ElevatorMoveToPositionCommand(subsystemElevator, Position.L3));
+    secondaryController.x().onTrue(new ElevatorMoveToPositionCommand(subsystemElevator, Position.Starting));
+
+    secondaryController.povUp().whileTrue(new ElevatorNudgeCommand(subsystemElevator, 0.1));
+    secondaryController.povDown().whileTrue(new ElevatorNudgeCommand(subsystemElevator, -0.1));
+
+    mainTab.add(new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
   }
 
   /**

@@ -157,12 +157,20 @@ public final class Constants {
 
       public static final double positionConversionRatio = 
         Math.pow(18.0/50.0, 2) * // Gear ratio
-        (44.0 / 1000.0) * Math.PI; // Wheel circumference
+        22 * // Number of sprocket teeth
+        Units.inchesToMeters(1.0/4.0) * // Distance between chain links
+        4.0 // Elevator stages
+      ;
+      
+      public static final double velocityConversionRatio = 
+        (1.0 / 60.0) * // Convert RPM to RPS
+        positionConversionRatio // The normal stuff
+      ;
 
-      public static final double P = 0.01;
+      public static final double P = 3;
       public static final double I = 0.0;
-      public static final double D = 0.0;
-      public static final double FF = 0.01;
+      public static final double D = 0.5;
+      public static final double FF = 3;
     }
 
     public static class PositionChecking {
