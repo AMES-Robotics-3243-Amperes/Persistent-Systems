@@ -25,21 +25,21 @@ import frc.robot.test.Test;
 import frc.robot.test.TestUtil;
 
 public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
-  private final SwerveModule m_frontLeft = new ThriftyModule(
+  private final ThriftyModule m_frontLeft = new ThriftyModule(
       DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
       DriveTrainConstants.IDs.kFrontLeftTurningCanId, 0, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
 
-  private final SwerveModule m_frontRight = new ThriftyModule(
+  private final ThriftyModule m_frontRight = new ThriftyModule(
       DriveTrainConstants.IDs.kFrontRightDrivingCanId,
       DriveTrainConstants.IDs.kFrontRightTurningCanId, 1, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
 
-  private final SwerveModule m_rearLeft = new ThriftyModule(
+  private final ThriftyModule m_rearLeft = new ThriftyModule(
       DriveTrainConstants.IDs.kRearLeftDrivingCanId,
       DriveTrainConstants.IDs.kRearLeftTurningCanId, 2, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
 
-  private final SwerveModule m_rearRight = new ThriftyModule(
+  private final ThriftyModule m_rearRight = new ThriftyModule(
       DriveTrainConstants.IDs.kRearRightDrivingCanId,
-      DriveTrainConstants.IDs.kRearRightTurningCanId, 0, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
+      DriveTrainConstants.IDs.kRearRightTurningCanId, 3, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
 
   public SubsystemSwerveDrivetrain() {
   }
@@ -89,6 +89,19 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
     };
   }
 
+  /**
+   * Used for pose estimation.
+   * 
+   * @author :3
+   * @return the positions of the swerve modules
+   */
+  public SwerveModulePosition[] getAbsoluteModulePositions() {
+    return new SwerveModulePosition[] {
+        m_frontLeft.getAbsolutePosition(), m_frontRight.getAbsolutePosition(),
+        m_rearLeft.getAbsolutePosition(), m_rearRight.getAbsolutePosition()
+    };
+  }
+
   @Override
   public void doPeriodic() {
     m_frontLeft.update();
@@ -98,8 +111,8 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   }
 
   public SysIdRoutine driveRoutine = new SysIdRoutine(
-      new Config(BaseUnits.VoltageUnit.of(0.75).per(Second),
-          BaseUnits.VoltageUnit.of(3),
+      new Config(BaseUnits.VoltageUnit.of(0.4).per(Second),
+          BaseUnits.VoltageUnit.of(2),
           BaseUnits.TimeUnit.of(8),
           null),
       new Mechanism(

@@ -15,7 +15,7 @@ public class CommandSwerveGetOffset extends InstantCommand {
 
   @Override
   public void execute() {
-    SwerveModulePosition[] positions = drivetrain.getModulePositions();
+    SwerveModulePosition[] positions = drivetrain.getAbsoluteModulePositions();
     SmartDashboard.putNumber("Front Left Offset", positions[0].angle.getRadians());
     SmartDashboard.putNumber("Front Right Offset", positions[1].angle.getRadians());
     SmartDashboard.putNumber("Rear Left Offset", positions[2].angle.getRadians());

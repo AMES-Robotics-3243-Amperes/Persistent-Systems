@@ -22,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.AnalogEncoder;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.MotorLog;
 import frc.robot.Constants.SwerveConstants.ModuleConstants.PIDF;
@@ -45,7 +46,7 @@ public class ThriftyModule implements SwerveModule {
   private final Rotation2d m_wheelOffset;
 
   double turningFactor = 2 * Math.PI;
-  double id = 0;
+  double drivingConversion = edu.wpi.first.math.util.Units.inchesToMeters(4) * Math.PI / (5.14);
 
   /**
    * Constructs a {@link ThriftyModule}
@@ -57,8 +58,6 @@ public class ThriftyModule implements SwerveModule {
    * @author :3
    */
   public ThriftyModule(int drivingCANId, int turningCANId, int encoderID, Rotation2d wheelOffset) {
-    id = encoderID;
-
     // :3 initialize spark maxes
     m_drivingTalonFX = new TalonFX(drivingCANId);
     m_turningSparkMax = new SparkMax(turningCANId, MotorType.kBrushless);
@@ -75,7 +74,7 @@ public class ThriftyModule implements SwerveModule {
 
     turningConfig
         .idleMode(IdleMode.kBrake)
-        .smartCurrentLimit(20);
+        .smartCurrentLimit(40);
     //turningConfig.alternateEncoder
         // Invert the turning encoder, since the output shaft rotates in the opposite
         // direction of the steering motor in the MAXSwerve Module.
@@ -141,13 +140,10 @@ public class ThriftyModule implements SwerveModule {
    * Updates the feedforward and PID controllers of the module.
    */
   public void update() {
-    double drivingPIDOutput = m_drivingPIDController.calculate(m_drivingTalonFX.getVelocity().getValueAsDouble() / 5.79,
+    double drivingPIDOutput = m_drivingPIDController.calculate(m_drivingTalonFX.getVelocity().getValueAsDouble() * drivingConversion,
         m_drivingVelocitySetpoint);
     double drivingFFOutput = m_drivingFeedforwardController.calculate(m_drivingVelocitySetpoint);
     m_drivingTalonFX.setVoltage(drivingPIDOutput + drivingFFOutput);
-
-    SmartDashboard.putNumber("module" + id, m_turningEncoder.get());
-    SmartDashboard.putNumber("setpoint" + id, m_turningPIDController.getSetpoint() / turningFactor);
     
     double turningOutput = m_turningPIDController.calculate(MathUtil.angleModulus(m_turningEncoder.get() * turningFactor));
     m_turningSparkMax.setVoltage(turningOutput);
@@ -159,8 +155,20 @@ public class ThriftyModule implements SwerveModule {
    * @author :3
    */
   public SwerveModulePosition getPosition() {
-    double position = m_drivingTalonFX.getPosition().getValueAsDouble();
+    double position = m_drivingTalonFX.getPosition().getValueAsDouble() * drivingConversion;
     Rotation2d rotation = new Rotation2d(m_turningEncoder.get() * turningFactor - m_wheelOffset.getRadians());
+
+    return new SwerveModulePosition(position, rotation);
+  }
+
+  /**
+   * @return the {@link SwerveModulePosition} of the module
+   * 
+   * @author :3
+   */
+  public SwerveModulePosition getAbsolutePosition() {
+    double position = m_drivingTalonFX.getPosition().getValueAsDouble() * drivingConversion;
+    Rotation2d rotation = new Rotation2d(m_turningEncoder.get() * turningFactor);
 
     return new SwerveModulePosition(position, rotation);
   }
@@ -192,8 +200,8 @@ public class ThriftyModule implements SwerveModule {
    */
   public void driveLog(MotorLog motorLog) {
     motorLog.current(Units.Amps.of(m_drivingTalonFX.getSupplyCurrent().getValueAsDouble()));
-    motorLog.linearPosition(Units.Meters.of(m_drivingTalonFX.getPosition().getValueAsDouble()));
-    motorLog.linearVelocity(Units.MetersPerSecond.of(m_drivingTalonFX.getVelocity().getValueAsDouble()));
+    motorLog.linearPosition(Units.Meters.of(m_drivingTalonFX.getPosition().getValueAsDouble() * drivingConversion));
+    motorLog.linearVelocity(Units.MetersPerSecond.of(m_drivingTalonFX.getVelocity().getValueAsDouble() * drivingConversion));
     motorLog.voltage(Units.Volts.of(m_drivingTalonFX.getMotorVoltage().getValueAsDouble()));
   }
 }

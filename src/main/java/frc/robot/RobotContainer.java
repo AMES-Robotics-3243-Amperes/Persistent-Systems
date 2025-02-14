@@ -95,10 +95,10 @@ public class RobotContainer {
         new Constraints(3 * Math.PI, 6 * Math.PI));
 
     CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
+        .addPoint(0, 0)
         .addPoint(2, 0)
-        .addPoint(4, 0)
-        .addPoint(4, 1)
-        .addTask(2, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
+        .addPoint(2, 2)
+        .addTask(0, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
     primaryController.a().onTrue(followCommand);
