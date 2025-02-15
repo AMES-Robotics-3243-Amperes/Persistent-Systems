@@ -57,20 +57,24 @@ public class SubsystemElevator extends SubsystemBaseTestable {
     motorFollower = new SparkMax(Motors.followerCanId, MotorType.kBrushless);
 
     // Create configuration
-    SparkBaseConfig leaderConfig = new SparkFlexConfig();
-    SparkBaseConfig followerConfig = new SparkFlexConfig();
+    SparkBaseConfig leaderConfig = new SparkMaxConfig();
+    SparkBaseConfig followerConfig = new SparkMaxConfig();
 
     leaderConfig.encoder
       .positionConversionFactor(Motors.positionConversionRatio)
-      .velocityConversionFactor(Motors.velocityConversionRatio);
+      .velocityConversionFactor(Motors.velocityConversionRatio)
+    ;
     
     followerConfig.encoder
       .positionConversionFactor(Motors.positionConversionRatio)
-      .velocityConversionFactor(Motors.velocityConversionRatio);
+      .velocityConversionFactor(Motors.velocityConversionRatio)
+    ;
     
     leaderConfig.closedLoop
       .pidf(Motors.P, Motors.I, Motors.D, Motors.FF)
-      .feedbackSensor(FeedbackSensor.kPrimaryEncoder);
+      .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+      .outputRange(-1, 1)
+    ;
 
     followerConfig.follow(motorLeader, true);
 
@@ -99,7 +103,7 @@ public class SubsystemElevator extends SubsystemBaseTestable {
       .withSize(5, 1)
       .withWidget(BuiltInWidgets.kNumberSlider)
       .withProperties(Map.of("min", -10.0, "max", 10.0))
-      ;
+    ;
     
     tab.addDouble("ElevatorTarget", () -> currentReference)
       .withPosition(0, 1)
@@ -115,6 +119,7 @@ public class SubsystemElevator extends SubsystemBaseTestable {
     powerSetting.onChange((speed) -> {
       SparkBaseConfig config = new SparkMaxConfig();
       config.closedLoop.outputRange(-speed, speed);
+      System.out.println("Updated elevator speed to " + speed);
 
       motorLeader.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
     });
