@@ -196,6 +196,12 @@ public final class Constants {
       public static final double upNudgeVelocity = 0.1;
       public static final double downNudgeVelocity = -0.1;
     }
+
+    public static class SpeedSettings {
+      public static final double highSpeed = 1.0;
+      public static final double midSpeed = 0.5;
+      public static final double lowSpeed = 0.2;
+    }
   }
 
   public static final class PhotonvisionConstants {

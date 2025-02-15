@@ -26,11 +26,13 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 public class SubsystemElevator extends SubsystemBaseTestable {
 
@@ -46,6 +48,8 @@ public class SubsystemElevator extends SubsystemBaseTestable {
   private double currentReference = 0.0;
 
   private ShuffleboardTab tab = Shuffleboard.getTab("Elevator");
+
+  private SendableChooser<Double> powerSetting = new SendableChooser<Double>();
 
   /** Creates a new SubsystemElevator. */
   public SubsystemElevator() {
@@ -103,6 +107,23 @@ public class SubsystemElevator extends SubsystemBaseTestable {
       .withWidget(BuiltInWidgets.kNumberSlider)
       .withProperties(Map.of("min", Positions.min, "max", Positions.max))
     ;
+
+    powerSetting.setDefaultOption("Ludicrous Speed (100%)", SpeedSettings.highSpeed);
+    powerSetting.addOption("Normal Speed (50%)", SpeedSettings.midSpeed);
+    powerSetting.addOption("Slow Speed (20%)", SpeedSettings.lowSpeed);
+
+    powerSetting.onChange((speed) -> {
+      SparkBaseConfig config = new SparkMaxConfig();
+      config.closedLoop.outputRange(-speed, speed);
+
+      motorLeader.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+    });
+
+    tab.add(powerSetting)
+      .withPosition(5, 0)
+      .withSize(2, 1)
+      .withWidget(BuiltInWidgets.kComboBoxChooser)
+    ;
   }
 
   @Override
@@ -112,6 +133,11 @@ public class SubsystemElevator extends SubsystemBaseTestable {
 
   public void nudge(double amount) {
     setPosition(currentReference + amount);
+  }
+
+  /** Bypasses limits and PID */
+  public void rawNudge(double power) {
+    motorLeader.set(power);
   }
 
   public void rezero() {
@@ -129,8 +155,8 @@ public class SubsystemElevator extends SubsystemBaseTestable {
   public void setPosition(double position) {
     position = clamp(Positions.min, Positions.max, position);
     currentReference = position;
-    System.out.println("positioning stuff ########");
-    System.out.println(position);
+    //System.out.println("positioning stuff ########");
+    //System.out.println(position);
     controlLoop.setReference(position / 2.0, ControlType.kPosition); // Cursed offset, do not question the REV gods
   }
 
