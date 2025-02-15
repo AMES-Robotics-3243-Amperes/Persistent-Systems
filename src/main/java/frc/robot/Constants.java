@@ -159,8 +159,7 @@ public final class Constants {
         Math.pow(18.0/50.0, 2) * // Gear ratio
         22 * // Number of sprocket teeth
         Units.inchesToMeters(1.0/4.0) * // Distance between chain links
-        3.0 //* // Elevator stages
-        //0.7273 // Empirical correction, no idea where this is coming from.
+        3.0 // Elevator stages
       ;
       
       public static final double velocityConversionRatio = 
