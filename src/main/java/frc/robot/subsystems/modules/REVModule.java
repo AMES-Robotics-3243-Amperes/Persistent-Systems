@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems;
+package frc.robot.subsystems.modules;
 
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
@@ -14,6 +14,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -30,7 +31,7 @@ import frc.robot.Constants.SwerveConstants.ModuleConstants.PIDF;
  * 
  * @author :3
  */
-public class SubsystemSwerveModule {
+public class REVModule implements SwerveModule {
   private final SparkMax m_drivingSparkMax;
   private final SparkMax m_turningSparkMax;
 
@@ -46,7 +47,7 @@ public class SubsystemSwerveModule {
   private final Rotation2d m_wheelOffset;
 
   /**
-   * Constructs a {@link SubsystemSwerveModule}
+   * Constructs a {@link ThriftyModule}
    * 
    * @param drivingCANId the id of the {@link CANSparkMax} for driving
    * @param turningCANId the id of the {@link CANSparkMax} for turning
@@ -54,7 +55,7 @@ public class SubsystemSwerveModule {
    * 
    * @author :3
    */
-  public SubsystemSwerveModule(int drivingCANId, int turningCANId, Rotation2d wheelOffset) {
+  public REVModule(int drivingCANId, int turningCANId, Rotation2d wheelOffset) {
     // :3 initialize spark maxes
     m_drivingSparkMax = new SparkMax(drivingCANId, MotorType.kBrushless);
     m_turningSparkMax = new SparkMax(turningCANId, MotorType.kBrushless);
@@ -66,45 +67,46 @@ public class SubsystemSwerveModule {
     m_drivingFeedforwardController = new SimpleMotorFeedforward(PIDF.kDrivingKs, PIDF.kDrivingKv, PIDF.kDrivingKv);
     m_drivingPIDController = new PIDController(PIDF.kDrivingP, PIDF.kDrivingI, PIDF.kDrivingD);
 
-    // :3 setup turning encoder feedback sensor
-    turningConfig.closedLoop.feedbackSensor(FeedbackSensor.kAbsoluteEncoder);
+    // Use module constants to calculate conversion factors and feed forward gain.
+    double drivingFactor = ModuleConstants.kWheelDiameterMeters * Math.PI
+        / ModuleConstants.kDrivingMotorReduction;
+    double turningFactor = 2 * Math.PI;
 
-    // :3 apply position and velocity conversion factors
-    drivingConfig.encoder.positionConversionFactor(ModuleConstants.EncoderFactors.kDrivingEncoderPositionFactor);
-    drivingConfig.encoder.velocityConversionFactor(ModuleConstants.EncoderFactors.kDrivingEncoderVelocityFactor);
-    turningConfig.encoder.positionConversionFactor(ModuleConstants.EncoderFactors.kTurningEncoderPositionFactor);
-    turningConfig.encoder.velocityConversionFactor(ModuleConstants.EncoderFactors.kTurningEncoderVelocityFactor);
+    drivingConfig
+        .idleMode(IdleMode.kBrake)
+        .smartCurrentLimit(50);
+    drivingConfig.encoder
+        .positionConversionFactor(drivingFactor) // meters
+        .velocityConversionFactor(drivingFactor / 60.0); // meters per second
 
-    // :3 invert the turning encoder
-    turningConfig.inverted(ModuleConstants.PhysicalProperties.kTurningEncoderInverted);
-
-    // :3 enable pid wrap on 0 to 2 pi, as the wheels rotate freely
-    turningConfig.closedLoop.positionWrappingEnabled(true);
-    turningConfig.closedLoop.positionWrappingInputRange(ModuleConstants.kTurningEncoderPositionPIDMinInput,
-        ModuleConstants.kTurningEncoderPositionPIDMaxInput);
-
-    // :3 configure turning pid
-    turningConfig.closedLoop.pidf(ModuleConstants.PIDF.kTurningP, ModuleConstants.PIDF.kTurningI,
-        ModuleConstants.PIDF.kTurningD, ModuleConstants.PIDF.kTurningFF);
-    turningConfig.closedLoop.outputRange(ModuleConstants.PIDF.kTurningMinOutput,
-        ModuleConstants.PIDF.kTurningMaxOutput);
-
-    // :3 set idle modes and current limits
-    drivingConfig.idleMode(ModuleConstants.kDrivingMotorIdleMode);
-    drivingConfig.smartCurrentLimit(ModuleConstants.kDrivingMotorCurrentLimit);
-    turningConfig.idleMode(ModuleConstants.kTurningMotorIdleMode);
-    turningConfig.smartCurrentLimit(ModuleConstants.kTurningMotorCurrentLimit);
-
-    drivingConfig.encoder.uvwAverageDepth(4);
-    drivingConfig.encoder.quadratureMeasurementPeriod(8);
-    turningConfig.encoder.uvwAverageDepth(8);
-
-    // finish up configuration
-    m_drivingSparkMax.configure(drivingConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    turningConfig
+        .idleMode(IdleMode.kBrake)
+        .smartCurrentLimit(20);
+    turningConfig.absoluteEncoder
+        // Invert the turning encoder, since the output shaft rotates in the opposite
+        // direction of the steering motor in the MAXSwerve Module.
+        .inverted(true)
+        .positionConversionFactor(turningFactor) // radians
+        .velocityConversionFactor(turningFactor / 60.0); // radians per second
+    turningConfig.closedLoop
+        .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
+        // These are example gains you may need to them for your own robot!
+        .pid(PIDF.kTurningP, PIDF.kTurningI, PIDF.kTurningD)
+        .outputRange(-1, 1)
+        // Enable PID wrap around for the turning motor. This will allow the PID
+        // controller to go through 0 to get to the setpoint i.e. going from 350 degrees
+        // to 10 degrees will go through 0 rather than the other direction which is a
+        // longer route.
+        .positionWrappingEnabled(true)
+        .positionWrappingInputRange(0, turningFactor);
 
     m_drivingEncoder = m_drivingSparkMax.getEncoder();
     m_turningEncoder = m_turningSparkMax.getAbsoluteEncoder();
     m_turningPIDController = m_turningSparkMax.getClosedLoopController();
+
+    // finish up configuration
+    m_drivingSparkMax.configure(drivingConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    m_turningSparkMax.configure(turningConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     // :3 reset driving encoder
     resetEncoder();
