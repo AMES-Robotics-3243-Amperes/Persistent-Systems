@@ -13,15 +13,18 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import frc.robot.Constants.DifferentialArm;
 import frc.robot.commands.leds.CommandLedPatternCycle;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CommandSwerveFollowSpline;
+import frc.robot.commands.CommandSwerveModulesForward;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.commands.claw.IntakeClawCommand;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
 import frc.robot.commands.elevator.ElevatorNudgeCommand;
 import frc.robot.commands.elevator.ElevatorZeroCommand;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand.Position;
+import frc.robot.commands.CommandSwerveGetOffset;
 import frc.robot.splines.PathFactory;
 import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemLeds;
@@ -108,11 +111,10 @@ public class RobotContainer {
         new Constraints(3 * Math.PI, 6 * Math.PI));
 
     CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
-        .addPoint(1, 0)
-        .addPoint(4, 0)
-        .addPoint(4, -0.5)
-        .addPoint(3, 0)
-        .addTask(1, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
+        .addPoint(0, 0)
+        .addPoint(2, 0)
+        .addPoint(2, 2)
+        .addTask(0, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
     // Creates new commands for intaking and depositing
@@ -148,6 +150,19 @@ public class RobotContainer {
     secondaryController.povDown().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
 
     mainTab.add("Zero Elevator", new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
+
+    primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
+    primaryController.b().onTrue(new InstantCommand(commandSwerveTeleopDrive::toggleFieldRelative));
+
+    SequentialCommandGroup drivetrainSysIdCommand = new SequentialCommandGroup(
+      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kForward),
+      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kReverse),
+      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kForward),
+      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kReverse)
+    );
+    
+    primaryController.start().onTrue(drivetrainSysIdCommand);
+    primaryController.back().whileTrue(new CommandSwerveModulesForward(subsystemSwerveDrivetrain));
   }
 
   /**

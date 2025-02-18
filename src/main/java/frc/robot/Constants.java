@@ -7,18 +7,11 @@ package frc.robot;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.sound.sampled.AudioFormat.Encoding;
-
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -54,8 +47,8 @@ public final class Constants {
 
   public static final class SwerveConstants {
     public static final class ControlConstants {
-      public static final double movingSpeed = 1.5;
-      public static final double rotationSpeed = 1.5 * Math.PI;
+      public static final double movingSpeed = 4.5;
+      public static final double rotationSpeed = 3 * Math.PI;
     }
 
     public static final class ChassisKinematics {
@@ -74,79 +67,59 @@ public final class Constants {
 
     public static final class DriveTrainConstants {
       public static final class IDs {
-        public static final int kFrontLeftDrivingCanId = 2;
-        public static final int kRearLeftDrivingCanId = 8;
-        public static final int kFrontRightDrivingCanId = 4;
-        public static final int kRearRightDrivingCanId = 6;
+        public static final int kFrontLeftDrivingCanId = 1;
+        public static final int kRearLeftDrivingCanId = 3;
+        public static final int kFrontRightDrivingCanId = 2;
+        public static final int kRearRightDrivingCanId = 4;
 
         public static final int kFrontLeftTurningCanId = 1;
-        public static final int kRearLeftTurningCanId = 7;
-        public static final int kFrontRightTurningCanId = 3;
-        public static final int kRearRightTurningCanId = 5;
+        public static final int kRearLeftTurningCanId = 3;
+        public static final int kFrontRightTurningCanId = 2;
+        public static final int kRearRightTurningCanId = 4;
       }
 
       public static final class ModuleOffsets {
-        public static final Rotation2d kFrontLeftOffset = Rotation2d.fromRadians(-Math.PI * 0.5);
-        public static final Rotation2d kFrontRightOffset = Rotation2d.fromRadians(0);
-        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(Math.PI);
-        public static final Rotation2d kBackRightOffset = Rotation2d.fromRadians(Math.PI * 0.5);
+        public static final Rotation2d kFrontLeftOffset = Rotation2d.fromRadians(-2.224);
+        public static final Rotation2d kFrontRightOffset = Rotation2d.fromRadians(-0.178);
+        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(-0.0315);
+        public static final Rotation2d kBackRightOffset = Rotation2d.fromRadians(-2.763);
       }
     }
 
     public static final class ModuleConstants {
-      // :3 the max physical speed of the modules. NOT drive speed
-      // (for now, I really have no clue what this should
-      // be, so I have it set unreasonably high)
-      public static final double kMaxObtainableModuleSpeed = 100;
-
-      // :3 pid connects at 0 and 2 pi because rotation is continuous
-      public static final double kTurningEncoderPositionPIDMinInput = 0;
-      public static final double kTurningEncoderPositionPIDMaxInput = Math.PI * 2;
-
-      public static final IdleMode kDrivingMotorIdleMode = IdleMode.kBrake;
-      public static final IdleMode kTurningMotorIdleMode = IdleMode.kBrake;
-
-      public static final int kDrivingMotorCurrentLimit = 60;
-      public static final int kTurningMotorCurrentLimit = 25;
-
-      public static final class PhysicalProperties {
-        public static final int kDrivingMotorPinionTeeth = 14;
-        public static final boolean kTurningEncoderInverted = true;
-        public static final double kWheelDiameterMeters = 0.0762;
-      }
-
-      public static final class EncoderFactors {
-        // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
-        // teeth on the bevel pinion
-        public static final double kDrivingMotorReduction = (45.0 * 22)
-            / (PhysicalProperties.kDrivingMotorPinionTeeth * 15);
-
-        public static final double kDrivingEncoderPositionFactor = (PhysicalProperties.kWheelDiameterMeters * Math.PI)
-            / kDrivingMotorReduction;
-        public static final double kDrivingEncoderVelocityFactor = ((PhysicalProperties.kWheelDiameterMeters * Math.PI)
-            / kDrivingMotorReduction) / 60.0;
-        public static final double test = 1 / kDrivingEncoderVelocityFactor / 60;
-
-        public static final double kTurningEncoderPositionFactor = (2 * Math.PI);
-        public static final double kTurningEncoderVelocityFactor = (2 * Math.PI) / 60.0;
-      }
-
       public static final class PIDF {
-        public static final double kDrivingP = 0.21485;
+        public static final double kDrivingP = 0.4;
         public static final double kDrivingI = 0;
         public static final double kDrivingD = 0;
 
-        public static final double kDrivingKs = 0.10469;
-        public static final double kDrivingKv = 2.4783;
-        public static final double kDrivingKa = 0.36003;
+        public static final double kDrivingKs = 0.019237;
+        public static final double kDrivingKv = 0.11324;
+        public static final double kDrivingKa = 0.034615;
 
-        public static final double kTurningP = 0.23;
+        public static final double kTurningP = 3.5;
         public static final double kTurningI = 0;
-        public static final double kTurningD = 0;
+        public static final double kTurningD = 0.0;
         public static final double kTurningFF = 0;
         public static final double kTurningMinOutput = -1;
         public static final double kTurningMaxOutput = 1;
       }
+
+      public static final double kMaxObtainableModuleSpeed = 100;
+
+      // The MAXSwerve module can be configured with one of three pinion gears: 12T,
+      // 13T, or 14T. This changes the drive speed of the module (a pinion gear with
+      // more teeth will result in a robot that drives faster).
+      public static final int kDrivingMotorPinionTeeth = 14;
+
+      // Calculations required for driving motor conversion factors and feed forward
+      public static final double kDrivingMotorFreeSpeedRps = 5676.0 / 60.0;
+      public static final double kWheelDiameterMeters = 0.0762;
+      public static final double kWheelCircumferenceMeters = kWheelDiameterMeters * Math.PI;
+      // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15
+      // teeth on the bevel pinion
+      public static final double kDrivingMotorReduction = (45.0 * 22) / (kDrivingMotorPinionTeeth * 15);
+      public static final double kDriveWheelFreeSpeedRps = (kDrivingMotorFreeSpeedRps * kWheelCircumferenceMeters)
+          / kDrivingMotorReduction;
     }
   }
 
@@ -210,12 +183,12 @@ public final class Constants {
     public static final List<AprilTag> tags = Arrays.asList(tag);
     public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
-    public static final List<PhotonUnit> photonUnits = Arrays
-        .asList(new PhotonUnit("FrontCamera", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-            new Transform3d(new Pose3d(),
-                new Pose3d(new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), Units.inchesToMeters(0)),
-                    new Rotation3d(0, Units.degreesToRadians(2), 0))),
-            fieldLayout));
+    public static final List<PhotonUnit> photonUnits = Arrays.asList();
+        //.asList(new PhotonUnit("FrontCamera", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        //    new Transform3d(new Pose3d(),
+        //        new Pose3d(new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), Units.inchesToMeters(0)),
+        //            new Rotation3d(0, Units.degreesToRadians(2), 0))),
+        //    fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
     public static final double photonUnitAmbiguityCutoff = 0.05;

@@ -18,26 +18,28 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import frc.robot.Constants.SwerveConstants.DriveTrainConstants;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
+import frc.robot.subsystems.modules.SwerveModule;
+import frc.robot.subsystems.modules.ThriftyModule;
 import frc.robot.test.SubsystemBaseTestable;
 import frc.robot.test.Test;
 import frc.robot.test.TestUtil;
 
 public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
-  private final SubsystemSwerveModule m_frontLeft = new SubsystemSwerveModule(
+  private final ThriftyModule m_frontLeft = new ThriftyModule(
       DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
-      DriveTrainConstants.IDs.kFrontLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
+      DriveTrainConstants.IDs.kFrontLeftTurningCanId, 0, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
 
-  private final SubsystemSwerveModule m_frontRight = new SubsystemSwerveModule(
+  private final ThriftyModule m_frontRight = new ThriftyModule(
       DriveTrainConstants.IDs.kFrontRightDrivingCanId,
-      DriveTrainConstants.IDs.kFrontRightTurningCanId, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
+      DriveTrainConstants.IDs.kFrontRightTurningCanId, 1, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
 
-  private final SubsystemSwerveModule m_rearLeft = new SubsystemSwerveModule(
+  private final ThriftyModule m_rearLeft = new ThriftyModule(
       DriveTrainConstants.IDs.kRearLeftDrivingCanId,
-      DriveTrainConstants.IDs.kRearLeftTurningCanId, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
+      DriveTrainConstants.IDs.kRearLeftTurningCanId, 2, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
 
-  private final SubsystemSwerveModule m_rearRight = new SubsystemSwerveModule(
+  private final ThriftyModule m_rearRight = new ThriftyModule(
       DriveTrainConstants.IDs.kRearRightDrivingCanId,
-      DriveTrainConstants.IDs.kRearRightTurningCanId, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
+      DriveTrainConstants.IDs.kRearRightTurningCanId, 3, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
 
   public SubsystemSwerveDrivetrain() {
   }
@@ -87,6 +89,19 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
     };
   }
 
+  /**
+   * Used for pose estimation.
+   * 
+   * @author :3
+   * @return the positions of the swerve modules
+   */
+  public SwerveModulePosition[] getAbsoluteModulePositions() {
+    return new SwerveModulePosition[] {
+        m_frontLeft.getAbsolutePosition(), m_frontRight.getAbsolutePosition(),
+        m_rearLeft.getAbsolutePosition(), m_rearRight.getAbsolutePosition()
+    };
+  }
+
   @Override
   public void doPeriodic() {
     m_frontLeft.update();
@@ -96,8 +111,8 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   }
 
   public SysIdRoutine driveRoutine = new SysIdRoutine(
-      new Config(BaseUnits.VoltageUnit.of(0.75).per(Second),
-          BaseUnits.VoltageUnit.of(3),
+      new Config(BaseUnits.VoltageUnit.of(0.4).per(Second),
+          BaseUnits.VoltageUnit.of(2),
           BaseUnits.TimeUnit.of(8),
           null),
       new Mechanism(
@@ -158,11 +173,10 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   private Future<Boolean> moduleRotationTestUserQuestion;
   @SuppressWarnings("unchecked")
   private Test[] tests = {
-    new TestUtil.MultiphaseTest(
-      new Runnable[] {this::moduleRotationTest1, this::moduleRotationTest2, this::moduleRotationTest3},
-      (Supplier<Boolean>[]) new Supplier[] {() -> true, () -> moduleRotationTest2Done, () -> true}, 
-      "Module Rotation Test"
-    )
+      new TestUtil.MultiphaseTest(
+          new Runnable[] { this::moduleRotationTest1, this::moduleRotationTest2, this::moduleRotationTest3 },
+          (Supplier<Boolean>[]) new Supplier[] { () -> true, () -> moduleRotationTest2Done, () -> true },
+          "Module Rotation Test")
   };
 
   /**
@@ -173,10 +187,10 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
    */
   private void moduleRotationTest1() {
     setModuleRotations(new Rotation2d[] {
-      new Rotation2d(0), 
-      new Rotation2d(0), 
-      new Rotation2d(0), 
-      new Rotation2d(0)
+        new Rotation2d(0),
+        new Rotation2d(0),
+        new Rotation2d(0),
+        new Rotation2d(0)
     });
 
     moduleRotationTest2Done = false;
