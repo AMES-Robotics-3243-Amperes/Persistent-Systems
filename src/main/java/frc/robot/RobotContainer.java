@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import javax.xml.crypto.Data;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -14,9 +16,11 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.DifferentialArm;
+import frc.robot.DataManager.Setpoint;
 import frc.robot.commands.leds.CommandLedPatternCycle;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
+import frc.robot.commands.automatics.ScoreInReefCommand;
 import frc.robot.commands.claw.IntakeClawCommand;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
 import frc.robot.commands.elevator.ElevatorNudgeCommand;
@@ -28,6 +32,8 @@ import frc.robot.subsystems.SubsystemLeds;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemClaw;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
+import frc.robot.Constants.PhotonvisionConstants;
+import frc.robot.Constants.Positions;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -116,36 +122,84 @@ public class RobotContainer {
         .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
 
     // Creates new commands for intaking and depositing
-    InstantCommand moveClawIntake = new InstantCommand(
-      () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.Intake.angle); },
-      subsystemClaw
-    );
+    // InstantCommand moveClawIntake = new InstantCommand(
+    //   () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.Intake.angle); },
+    //   subsystemClaw
+    // );
 
-    InstantCommand moveClawDeploy = new InstantCommand(
-      () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.L2.angle); },
-      subsystemClaw
-    );
+    // InstantCommand moveClawDeploy = new InstantCommand(
+    //   () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.L2.angle); },
+    //   subsystemClaw
+    // );
 
-    InstantCommand moveClawStart = new InstantCommand(
-      () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.Start.angle); },
-      subsystemClaw
-    );
+    // InstantCommand moveClawStart = new InstantCommand(
+    //   () -> { subsystemClaw.setOutsidePosition(DataManager.Setpoint.Start.angle); },
+    //   subsystemClaw
+    // );
 
     // Keybindings will change
     primaryController.a().onTrue(followCommand);
 
-    // Manual intaking and depositing
-    secondaryController.leftTrigger().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
-    secondaryController.rightTrigger().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
-    secondaryController.y().onTrue(new IntakeClawCommand(subsystemClaw, 0.0));
+    // Manual intaking/deposting and elevator
+    secondaryController.leftBumper().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.rightBumper().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
 
-    // Testing movement - normally just included in composition with claw
-    secondaryController.a().onTrue(new ElevatorMoveToPositionCommand(subsystemElevator, Position.L2));
-    secondaryController.b().onTrue(new ElevatorMoveToPositionCommand(subsystemElevator, Position.L3));
-    secondaryController.x().onTrue(new ElevatorMoveToPositionCommand(subsystemElevator, Position.Starting));
+    primaryController.povUp().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity));
+    primaryController.povDown().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
 
-    secondaryController.povUp().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity));
-    secondaryController.povDown().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
+    // Triggers for auto scoring routine for L1
+    secondaryController.leftTrigger().and(secondaryController.a()).and(secondaryController.povLeft())
+    .onTrue(new ScoreInReefCommand(
+      subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L1, PhotonvisionConstants.photonUnits.get(0),
+      DataManager.robotPosition, Positions.tagOffset
+    ));
+    secondaryController.leftTrigger().and(secondaryController.a()).and(secondaryController.povRight())
+    .onTrue(new ScoreInReefCommand(
+      subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L1, PhotonvisionConstants.photonUnits.get(0),
+      DataManager.robotPosition, -Positions.tagOffset
+    ));
+
+    // Triggers for auto scoring routine for L2
+    secondaryController.leftTrigger().and(secondaryController.b()).and(secondaryController.povLeft())
+    .onTrue(new ScoreInReefCommand(
+      subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2, PhotonvisionConstants.photonUnits.get(0),
+      DataManager.robotPosition, Positions.tagOffset
+    ));
+    secondaryController.leftTrigger().and(secondaryController.b()).and(secondaryController.povRight())
+    .onTrue(new ScoreInReefCommand(
+      subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2, PhotonvisionConstants.photonUnits.get(0),
+      DataManager.robotPosition, -Positions.tagOffset
+    ));
+
+    // Triggers for auto scoring routine for L3
+    secondaryController.leftTrigger().and(secondaryController.x()).and(secondaryController.povLeft())
+    .onTrue(new ScoreInReefCommand(
+      subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L3, PhotonvisionConstants.photonUnits.get(0),
+      DataManager.robotPosition, Positions.tagOffset
+    ));
+    secondaryController.leftTrigger().and(secondaryController.x()).and(secondaryController.povRight())
+    .onTrue(new ScoreInReefCommand(
+      subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L3, PhotonvisionConstants.photonUnits.get(0),
+      DataManager.robotPosition, -Positions.tagOffset
+    ));
+
+    // Triggers for auto scoring routine for L4
+    secondaryController.leftTrigger().and(secondaryController.y()).and(secondaryController.povLeft())
+    .onTrue(new ScoreInReefCommand(
+      subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L4, PhotonvisionConstants.photonUnits.get(0),
+      DataManager.robotPosition, Positions.tagOffset
+    ));
+    secondaryController.leftTrigger().and(secondaryController.y()).and(secondaryController.povRight())
+    .onTrue(new ScoreInReefCommand(
+      subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L4, PhotonvisionConstants.photonUnits.get(0),
+      DataManager.robotPosition, -Positions.tagOffset
+    ));
+
+    // secondaryController.leftTrigger().and(
+    //   secondaryController.a().or(secondaryController.b()).or(secondaryController.x()).or(secondaryController.y())
+    // ).onTrue(
+    //   new ScoreInReefCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, null, null, null)
+    // );
 
     mainTab.add("Zero Elevator", new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
   }

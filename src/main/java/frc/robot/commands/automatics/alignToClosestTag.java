@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import frc.robot.DataManager.DataManagerEntry;
 import frc.robot.DataManager.Setpoint;
 import frc.robot.PhotonUnit;
 import frc.robot.commands.CommandSwerveFollowSpline;
@@ -21,9 +22,27 @@ import frc.robot.subsystems.SubsystemClaw;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
+/**
+ * Aligns the robot to the nearest april tag
+ * Intended to be used while the robot is close to the april tag it wants to score at
+ * 
+ * @author Jasper Davidson
+ */
 public class alignToClosestTag {
+
+  /**
+   * Generates a command that encodes how to align the robot to a given april tag and reef level
+   * 
+   * @param photonUnit - photon unit on the robot
+   * @param drivetrain - drivetrain the robot is using
+   * @param odometryPose - current robot position on the field
+   * @param diffClaw - claw the robot is using
+   * @param elevator - elevator the robot is using
+   * @param targetPosition - target reef level to move to (L1, L2, L3, L4); encodes arm rotation and elevator height
+   * @return a command for the robot that encodes the spline/how to move along the spline, as well as move the elevator/arm
+   */
     public static CommandSwerveFollowSpline alignToTag(PhotonUnit photonUnit, SubsystemSwerveDrivetrain drivetrain,
-    Supplier<Pose2d> odometryPose, SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetPosition) {
+    DataManagerEntry<Pose2d> odometryPose, SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetPosition, double tagOffset) {
       // Get a list of the most recent tag positions
       List<PhotonUnit.Measurement> latestTags = photonUnit.getMeasurement();
 
@@ -47,7 +66,7 @@ public class alignToClosestTag {
       Pose2d angleTargetPose = new Pose2d(closestTag.pose.getTranslation(), flippedRotation);
 
       double distanceFromTag = 0.1;
-      Transform2d offset = new Transform2d(new Translation2d(distanceFromTag, 0.0), new Rotation2d());
+      Transform2d offset = new Transform2d(new Translation2d(distanceFromTag, tagOffset), new Rotation2d());
       Pose2d targetPose = angleTargetPose.plus(offset);
 
       // PID controllers for the drivetrain

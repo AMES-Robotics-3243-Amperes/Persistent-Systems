@@ -11,8 +11,9 @@ import frc.robot.Constants.PhotonvisionConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 // import frc.robot.Constants.Setpoints;
 import frc.robot.Constants.Setpoints.LevelAngles;
-import frc.robot.Constants.Setpoints.LevelHeights;
+import frc.robot.Constants.Positions;
 import frc.robot.PhotonUnit.Measurement;
+import frc.robot.commands.elevator.ElevatorMoveToPositionCommand.Position;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.utility.AHRS_IMU;
@@ -86,13 +87,12 @@ public class DataManager {
     }
   }
 
-  // H! TODO Put constants in Constants.java
   public static enum ElevatorSetpoint {
     Between(null),
-    L1(Constants.Elevator.Positions.L1),
-    L2(Constants.Elevator.Positions.L2),
-    L3(Constants.Elevator.Positions.L3),
-    L4(Constants.Elevator.Positions.L4);
+    L1(Positions.L1),
+    L2(Positions.L2),
+    L3(Positions.L3),
+    L4(Positions.L4);
 
     public final Double position;
 
@@ -143,12 +143,12 @@ public class DataManager {
 
   // Setpoints for different positions for the elevator and claw
   public enum Setpoint {
-    Start(LevelHeights.Start, LevelAngles.Start),
-    Intake(LevelHeights.Intake, LevelAngles.Intake),
-    L1(LevelHeights.L1, LevelAngles.L1),
-    L2(LevelHeights.L2, LevelAngles.L23),
-    L3(LevelHeights.L3, LevelAngles.L23),
-    L4(LevelHeights.L4, LevelAngles.L4);
+    Start(Positions.starting, LevelAngles.Start),
+    Intake(Positions.starting, LevelAngles.Intake),
+    L1(Positions.L1, LevelAngles.L1),
+    L2(Positions.L2, LevelAngles.L23),
+    L3(Positions.L3, LevelAngles.L23),
+    L4(Positions.L4, LevelAngles.L4);
 
     public final double height;
     public final double angle;
@@ -162,7 +162,7 @@ public class DataManager {
   @SuppressWarnings("rawtypes")
   private ArrayList<DataManagerEntry> entries = new ArrayList<>();
 
-  public DataManagerEntry<Pose2d> robotPosition;
+  public static DataManagerEntry<Pose2d> robotPosition;
   public ElevatorPosition elevatorPosition;
 
   public void update() {

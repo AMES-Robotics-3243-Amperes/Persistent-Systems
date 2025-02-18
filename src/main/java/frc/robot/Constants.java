@@ -178,20 +178,6 @@ public final class Constants {
       public static final double deltaV = 0.05;
     }
 
-    /** Positions are measured by the pivot position height above minimum. All heights are in meters. */
-    public static class Positions {
-      /** The vertical distance from the ground to the minimum height on the elevator. */
-      private static final double minHeightOffset = Units.inchesToMeters(9.307579);
-      public static final double min = 0.0;
-      public static final double starting = min;
-      public static final double loading = Units.inchesToMeters(28.807579) - minHeightOffset;
-      public static final double L1 = Units.inchesToMeters(28.807579) - minHeightOffset; // Not from CAD, but should be similar to loading.
-      public static final double L2 = Units.inchesToMeters(37.807579) - minHeightOffset;
-      public static final double L3 = Units.inchesToMeters(52.807579) - minHeightOffset;
-      public static final double L4 = Units.inchesToMeters(79.807579) - minHeightOffset;
-      public static final double max = Units.inchesToMeters(79.807579) - minHeightOffset;
-    }
-
     public static class Control {
       public static final double upNudgeVelocity = 0.1;
       public static final double downNudgeVelocity = -0.1;
@@ -202,6 +188,24 @@ public final class Constants {
       public static final double midSpeed = 0.5;
       public static final double lowSpeed = 0.2;
     }
+  }
+
+  /** Positions are measured by the pivot position height above minimum. All heights are in meters. */
+  public static class Positions {
+    /** The vertical distance from the ground to the minimum height on the elevator. */
+    private static final double minHeightOffset = Units.inchesToMeters(9.307579);
+    public static final double min = 0.0;
+    public static final double starting = min;
+    public static final double loading = Units.inchesToMeters(28.807579) - minHeightOffset;
+    public static final double L1 = Units.inchesToMeters(28.807579) - minHeightOffset; // Not from CAD, but should be similar to loading.
+    public static final double L2 = Units.inchesToMeters(37.807579) - minHeightOffset;
+    public static final double L3 = Units.inchesToMeters(52.807579) - minHeightOffset;
+    public static final double L4 = Units.inchesToMeters(79.807579) - minHeightOffset;
+    public static final double max = Units.inchesToMeters(79.807579) - minHeightOffset;
+
+    // Offset left or right, still need to actually find in CAD
+    // Used for alighToReefPosition
+    public static final double tagOffset = 0.5;
   }
 
   public static final class PhotonvisionConstants {
@@ -301,14 +305,14 @@ public final class Constants {
     public static final double intakePower = 0.5;
 
     // Heights of the different pipe deposit levels, and a height for intake
-    public static final class LevelHeights {
-      public static final double Intake = 0;
-      public static final double Start = 0;
-      public static final double L1 = 1;
-      public static final double L2 = 2;
-      public static final double L3 = 3;
-      public static final double L4 = 4;
-    }
+    // public static final class LevelHeights {
+    //   public static final double Intake = 0;
+    //   public static final double Start = 0;
+    //   public static final double L1 = 1;
+    //   public static final double L2 = 2;
+    //   public static final double L3 = 3;
+    //   public static final double L4 = 4;
+    // }
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {

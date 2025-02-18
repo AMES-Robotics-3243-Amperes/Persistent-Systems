@@ -7,6 +7,7 @@ package frc.robot.commands.elevator;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.SubsystemElevator;
 import static frc.robot.Constants.Elevator.*;
+import frc.robot.Constants.Positions;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ElevatorMoveToPositionCommand extends Command {
