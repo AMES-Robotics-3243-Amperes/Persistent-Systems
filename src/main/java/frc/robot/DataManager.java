@@ -162,7 +162,7 @@ public class DataManager {
   @SuppressWarnings("rawtypes")
   private ArrayList<DataManagerEntry> entries = new ArrayList<>();
 
-  public static DataManagerEntry<Pose2d> robotPosition;
+  public DataManagerEntry<Pose2d> robotPosition;
   public ElevatorPosition elevatorPosition;
 
   public void update() {

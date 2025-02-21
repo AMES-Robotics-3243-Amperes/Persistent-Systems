@@ -1,11 +1,10 @@
 package frc.robot.commands.automatics;
 
 import java.util.List;
-import java.util.function.Supplier;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -28,8 +27,7 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
  * 
  * @author Jasper Davidson
  */
-public class alignToClosestTag {
-
+public class AlignToClosestTag {
   /**
    * Generates a command that encodes how to align the robot to a given april tag and reef level
    * 
@@ -50,6 +48,7 @@ public class alignToClosestTag {
       Pose2d currentPose = odometryPose.get();
       Translation2d currentPosition = currentPose.getTranslation();
       double minDistance = Double.MAX_VALUE;
+      // Refactor how we get this
       PhotonUnit.Measurement closestTag = latestTags.get(0);
 
       for (PhotonUnit.Measurement position : latestTags) {
@@ -74,17 +73,51 @@ public class alignToClosestTag {
       PIDController yController = new PIDController(0.1, 0, 0);
       ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0, null);
 
-      return PathFactory.newFactory().addTask(targetPose.getTranslation(),
-      new FinishByTask(
-        new ParallelCommandGroup(
-          new ElevatorMoveToPositionCommand(elevator, targetPosition.height),
-          new InstantCommand(
-            () -> { diffClaw.setOutsidePosition(targetPosition.angle); },
-            diffClaw
-          )
+      PathFactory pathFactory = PathFactory.newFactory();
+
+      buildTask(null /* Once the April tags are loaded, we'll just pass in the matching Pose3d */, tagOffset, elevator, diffClaw, pathFactory, targetPosition);
+
+      return pathFactory.finalRotation(targetPose.getRotation()).interpolateFromStart(true)
+             .buildCommand(drivetrain, xController, yController, thetaController);
+
+      // return PathFactory.newFactory().addTask(targetPose.getTranslation(),
+      // new FinishByTask(
+      //   new ParallelCommandGroup(
+      //     new ElevatorMoveToPositionCommand(elevator, targetPosition.height),
+      //     new InstantCommand(
+      //       () -> { diffClaw.setOutsidePosition(targetPosition.angle); },
+      //       diffClaw
+      //     )
+      //   )
+      // ))
+      // .finalRotation(targetPose.getRotation())
+      // .interpolateFromStart(true).buildCommand(drivetrain, xController, yController, thetaController);
+  }
+
+  public static void alignToTag(PhotonUnit photonUnit, SubsystemSwerveDrivetrain drivetrain, Pose3d position, PathFactory pathFactory,
+                         DataManagerEntry<Pose2d> odometryPose, SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetPosition, double tagOffset) {
+    buildTask(position, tagOffset, elevator, diffClaw, pathFactory, targetPosition);
+  }
+
+  public static void buildTask(Pose3d position, double tagOffset, SubsystemElevator elevator, SubsystemClaw diffClaw, PathFactory pathFactory, Setpoint targetPosition) {
+    Translation2d targetTranslation = new Translation2d(position.getX(), position.getY());
+    Rotation2d targetRotation = new Rotation2d(position.getRotation().getAngle());
+
+    Rotation2d flippedRotation = targetRotation.plus(new Rotation2d(Math.PI));
+    Pose2d angleTargetPose = new Pose2d(targetTranslation, flippedRotation);
+
+    double distanceFromTag = 0.1;
+    Transform2d offset = new Transform2d(new Translation2d(distanceFromTag, tagOffset), new Rotation2d());
+    Pose2d targetPose = angleTargetPose.plus(offset);
+
+    pathFactory.addTask(targetPose.getTranslation(), new FinishByTask(
+      new ParallelCommandGroup(
+        new ElevatorMoveToPositionCommand(elevator, targetPosition.height),
+        new InstantCommand(
+          () -> { diffClaw.setOutsidePosition(targetPosition.angle); },
+          diffClaw
         )
-      ))
-      .finalRotation(targetPose.getRotation())
-      .interpolateFromStart(true).buildCommand(drivetrain, xController, yController, thetaController);
+      )
+    ));
   }
 }
