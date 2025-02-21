@@ -9,6 +9,7 @@ import java.util.List;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -179,6 +180,75 @@ public final class Constants {
     // Offset left or right, still need to actually find in CAD
     // Used for alighToReefPosition
     public static final double tagOffset = 0.5;
+  }
+
+    public static final class FieldConstants {
+
+    /* <3 Like we did last year, I'll define forwards to be facing towards the red alliance
+     * (0,0) is the bottom left corner of the field if you're looking from a top-down perspective with blue alliance on your left-hand side.
+     * Positive x is towards red alliance. Positive Y will be left when you are facing the red alliance.
+     * Measurements are in meters.
+     */
+
+     // <3 The positions of the algae on the ground of the blue alliance side of the field
+     public static Pose2d blueGroundAlgae1 = new Pose2d( -7.555, 1.829, new Rotation2d(0));
+     public static Pose2d blueGroundAlgae2 = new Pose2d( -7.555, 0.000, new Rotation2d(0));
+     public static Pose2d blueGroundAlgae3 = new Pose2d( -7.555, -1.829, new Rotation2d(0));
+
+     // <3 The positions of the algae on the ground of the red alliance side of the field
+     public static Pose2d redGroundAlgae1 = new Pose2d(7.555, 1.829, new Rotation2d(0));
+     public static Pose2d redGroundAlgae2 = new Pose2d(7.555, 0.000, new Rotation2d(0));
+     public static Pose2d redGroundAlgae3 = new Pose2d(7.555, -1.829, new Rotation2d(0));
+
+     // <3 The positions of the blue alliance's reef posts, measured from the bottom left corner of the field to the center of the pole
+     public static Pose2d blueReefPole1 = new Pose2d(6.587, 4.946, new Rotation2d(0));
+     public static Pose2d blueReefPole2 = new Pose2d(6.872, 5.109, new Rotation2d(0));
+     public static Pose2d blueReefPole3 = new Pose2d(7.114, 5.110, new Rotation2d(0));
+     public static Pose2d blueReefPole4 = new Pose2d(7.398, 4.945, new Rotation2d(0));
+     public static Pose2d blueReefPole5 = new Pose2d(7.520, 4.736, new Rotation2d(0));
+     public static Pose2d blueReefPole6 = new Pose2d(7.518, 4.408, new Rotation2d(0));
+     public static Pose2d blueReefPole7 = new Pose2d(7.398, 4.198, new Rotation2d(0));
+     public static Pose2d blueReefPole8 = new Pose2d(7.113, 4.035, new Rotation2d(0));
+     public static Pose2d blueReefPole9 = new Pose2d(6.872, 4.034, new Rotation2d(0));
+     public static Pose2d blueReefPole10 = new Pose2d(6.588, 4.199, new Rotation2d(0));
+     public static Pose2d blueReefPole11 = new Pose2d(6.466, 4.408, new Rotation2d(0));
+     public static Pose2d blueReefPole12 = new Pose2d(6.467, 4.736, new Rotation2d(0));
+
+     // <3 The positions of the red alliance's reef posts, measured from the bottom left corner of the field to the center of the pole
+     public static Pose2d redReefPole1 = new Pose2d(15.157, 4.946, new Rotation2d(0));
+     public static Pose2d redReefPole2 = new Pose2d(15.442, 5.109, new Rotation2d(0));
+     public static Pose2d redReefPole3 = new Pose2d(15.683, 5.110, new Rotation2d(0));
+     public static Pose2d redReefPole4 = new Pose2d(15.967, 4.945, new Rotation2d(0));
+     public static Pose2d redReefPole5 = new Pose2d(16.089, 4.736, new Rotation2d(0));
+     public static Pose2d redReefPole6 = new Pose2d(16.088, 4.408, new Rotation2d(0));
+     public static Pose2d redReefPole7 = new Pose2d(15.968, 4.198, new Rotation2d(0));
+     public static Pose2d redReefPole8 = new Pose2d(15.683, 4.035, new Rotation2d(0));
+     public static Pose2d redReefPole9 = new Pose2d(15.441, 4.034, new Rotation2d(0));
+     public static Pose2d redReefPole10 = new Pose2d(15.157, 4.199, new Rotation2d(0));
+     public static Pose2d redReefPole11 = new Pose2d(15.036, 4.408, new Rotation2d(0));
+     public static Pose2d redReefPole12 = new Pose2d(15.037, 4.736, new Rotation2d(0));
+
+     // <3 The positions of the blue alliance's coral loading stations. There are positions for two of the slots on each station. 
+     // <3 The slot positions for each loading station are labelled with A being the third slot and B being the eighth slot if you were standing on the field, looking at the coral station.
+     public static Pose2d blueCoralLoading1A = new Pose2d(-3.756, -0.890, new Rotation2d(0));
+     public static Pose2d blueCoralLoading1B = new Pose2d(-2.934, -1.487, new Rotation2d(0));
+
+     public static Pose2d blueCoralLoading2A = new Pose2d(-2.934, -7.657, new Rotation2d(0));
+     public static Pose2d blueCoralLoading2B = new Pose2d(-3.756, -8.254, new Rotation2d(0));
+
+     // <3 The positions of the red alliance's coral loading stations. There are positions for two of the slots on each station. 
+     // <3 The slot positions for each loading station are labelled with A being the third slot and B being the eighth slot if you were standing on the field, looking at the coral station.
+     public static Pose2d redCoralLoading1A = new Pose2d(-19.621, -1.487, new Rotation2d(0));
+     public static Pose2d redCoralLoading1B = new Pose2d(-18.799, -0.890, new Rotation2d(0));
+
+     public static Pose2d redCoralLoading2A = new Pose2d(-18.799, -8.254, new Rotation2d(0));
+     public static Pose2d redCoralLoading2B = new Pose2d(-19.621, -7.657, new Rotation2d(0));
+
+     // <3 The position of the blue alliance's algae processor
+     public static Pose2d blueAlgaeProcessor = new Pose2d(-8.497, -0.465, new Rotation2d(0));
+
+     // <3 The position of the red alliance's algae processor
+     public static Pose2d redAlgaeProcessor = new Pose2d(-14.058, -8.679, new Rotation2d(0));
   }
 
   public static final class PhotonvisionConstants {
