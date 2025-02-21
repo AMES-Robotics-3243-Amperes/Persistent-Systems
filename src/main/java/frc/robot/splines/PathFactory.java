@@ -162,6 +162,7 @@ public class PathFactory {
     // since we don't want to assume DataManager.instance() exists
     // if we don't absolutely need to
     if (this.positionEntry.isEmpty()) {
+      DataManager.instance();
       this.positionEntry = Optional.of(DataManager.instance().robotPosition);
     }
 

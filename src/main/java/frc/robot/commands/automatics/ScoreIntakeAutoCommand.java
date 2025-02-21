@@ -31,7 +31,7 @@ public class ScoreIntakeAutoCommand extends SequentialCommandGroup {
     ) {
     addCommands(
       new SequentialCommandGroup(
-        alignToClosestTag.alignToTag(photonCamera, drivetrain, odometry, diffClaw, elevator, reefPosition, tagOffset),
+        AlignToClosestTag.alignToTag(photonCamera, drivetrain, odometry, diffClaw, elevator, reefPosition, tagOffset),
         clawCommand
       )
     );
