@@ -23,16 +23,16 @@ import frc.robot.subsystems.SubsystemClaw;
  * 
  * @author Jasper Davidson
  */
-public class ScoreInReefCommand extends SequentialCommandGroup {
+public class ScoreIntakeAutoCommand extends SequentialCommandGroup {
   /** Creates a new ScoreInReefCommand. */
-  public ScoreInReefCommand(
+  public ScoreIntakeAutoCommand(
       SubsystemSwerveDrivetrain drivetrain, SubsystemClaw diffClaw, SubsystemElevator elevator,
-      Setpoint reefPosition, PhotonUnit photonCamera, DataManagerEntry<Pose2d> odometry, double tagOffset
+      Setpoint reefPosition, PhotonUnit photonCamera, DataManagerEntry<Pose2d> odometry, double tagOffset, IntakeClawCommand clawCommand
     ) {
     addCommands(
       new SequentialCommandGroup(
-        alignToClosestTag.alignToTag(photonCamera, drivetrain, odometry, diffClaw, elevator, reefPosition, tagOffset),
-        new IntakeClawCommand(diffClaw, Setpoints.intakePower)
+        AlignToClosestTag.alignToTag(photonCamera, drivetrain, odometry, diffClaw, elevator, reefPosition, tagOffset),
+        clawCommand
       )
     );
   }

@@ -117,7 +117,7 @@ public class ThriftyModule implements SwerveModule {
     SwerveModuleState offsetState = new SwerveModuleState();
     offsetState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
     offsetState.angle = desiredState.angle.plus(m_wheelOffset);
-    offsetState.optimize(new Rotation2d(m_turningEncoder.get() * Math.PI * 2));
+    offsetState.optimize(new Rotation2d(m_turningEncoder.get() * turningFactor));
 
     // :3 command driving
     m_drivingVelocitySetpoint = offsetState.speedMetersPerSecond;
