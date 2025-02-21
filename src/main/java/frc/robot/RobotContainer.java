@@ -10,6 +10,7 @@ import org.photonvision.PhotonTargetSortMode;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveModulesForward;
 import frc.robot.commands.CommandSwerveTeleopDrive;
+import frc.robot.commands.automatics.MoveToPositionUtility;
 import frc.robot.commands.automatics.ScoreIntakeAutoCommand;
 import frc.robot.commands.claw.IntakeClawCommand;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
@@ -64,6 +66,9 @@ public class RobotContainer {
   // controllers
   private JoyUtil primaryController = new JoyUtil(0);
   private JoyUtil secondaryController = new JoyUtil(1);
+
+  // Path Factory for auto routine
+  PathFactory pathFactory = PathFactory.newFactory();
 
   //
   // Subsystems
@@ -111,7 +116,20 @@ public class RobotContainer {
   private void setAutoCommands() {
     autoSelector
       .add(new InstantCommand(() -> {System.out.println("\n\n\nPRINT COMMAND RUN!\n\n\n");}), "Print Command")
-      .add(new InstantCommand(() -> {System.out.println("\n\n\nOTHER COMMAND RUN!\n\n\n");}), "Other Command");
+      .add(new InstantCommand(() -> {System.out.println("\n\n\nOTHER COMMAND RUN!\n\n\n");}), "Other Command")
+      .add(
+        MoveToPositionUtility.autoOne(
+          null, pathFactory, subsystemClaw, subsystemElevator, subsystemSwerveDrivetrain, null
+        ),
+        "Auto One"
+      );
+      // Figure this out
+      // .add(
+      //   // Idea: Add a bunch of tasks to the path factory, then build to command
+      //   MoveToPositionUtility.moveToPositionTaskBuilder(new Pose3d() /* Grab this value once integrated into code */, pathFactory,
+      //   subsystemClaw, subsystemElevator, null, 0 /* Should figure out an offset here so we can go to the left or right at the intake station */);
+      //   pathFactory.interpolateFromStart(true).buildCommand(subsystemSwerveDrivetrain, null, null, null);
+      // );
   }
 
   /**

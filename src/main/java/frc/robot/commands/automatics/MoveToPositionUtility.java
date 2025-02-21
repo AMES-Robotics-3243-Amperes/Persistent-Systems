@@ -1,5 +1,6 @@
 package frc.robot.commands.automatics;
 
+import java.util.Iterator;
 import java.util.List;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -12,6 +13,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.DataManager.DataManagerEntry;
 import frc.robot.DataManager.Setpoint;
+import frc.robot.Constants;
 import frc.robot.PhotonUnit;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
@@ -27,7 +29,7 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
  * 
  * @author Jasper Davidson
  */
-public class AlignToClosestTag {
+public class MoveToPositionUtility {
   /**
    * Generates a command that encodes how to align the robot to a given april tag and reef level
    * 
@@ -36,11 +38,11 @@ public class AlignToClosestTag {
    * @param odometryPose - current robot position on the field
    * @param diffClaw - claw the robot is using
    * @param elevator - elevator the robot is using
-   * @param targetPosition - target reef level to move to (L1, L2, L3, L4); encodes arm rotation and elevator height
+   * @param targetSetpoint - target reef level to move to (L1, L2, L3, L4); encodes arm rotation and elevator height
    * @return a command for the robot that encodes the spline/how to move along the spline, as well as move the elevator/arm
    */
     public static CommandSwerveFollowSpline alignToTag(PhotonUnit photonUnit, SubsystemSwerveDrivetrain drivetrain,
-    DataManagerEntry<Pose2d> odometryPose, SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetPosition, double tagOffset) {
+    DataManagerEntry<Pose2d> odometryPose, SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetSetpoint, double tagOffset) {
       // Get a list of the most recent tag positions
       List<PhotonUnit.Measurement> latestTags = photonUnit.getMeasurement();
 
@@ -48,7 +50,7 @@ public class AlignToClosestTag {
       Pose2d currentPose = odometryPose.get();
       Translation2d currentPosition = currentPose.getTranslation();
       double minDistance = Double.MAX_VALUE;
-      // Refactor how we get this
+      // Refactor how we get this once April tags are added
       PhotonUnit.Measurement closestTag = latestTags.get(0);
 
       for (PhotonUnit.Measurement position : latestTags) {
@@ -75,7 +77,7 @@ public class AlignToClosestTag {
 
       PathFactory pathFactory = PathFactory.newFactory();
 
-      buildTask(null /* Once the April tags are loaded, we'll just pass in the matching Pose3d */, tagOffset, elevator, diffClaw, pathFactory, targetPosition);
+      moveToPositionTaskBuilder(null /* Once the April tags are loaded, we'll just pass in the matching Pose3d */, pathFactory, diffClaw, elevator, targetSetpoint, tagOffset);
 
       return pathFactory.finalRotation(targetPose.getRotation()).interpolateFromStart(true)
              .buildCommand(drivetrain, xController, yController, thetaController);
@@ -94,14 +96,15 @@ public class AlignToClosestTag {
       // .interpolateFromStart(true).buildCommand(drivetrain, xController, yController, thetaController);
   }
 
-  public static void alignToTag(PhotonUnit photonUnit, SubsystemSwerveDrivetrain drivetrain, Pose3d position, PathFactory pathFactory,
-                         DataManagerEntry<Pose2d> odometryPose, SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetPosition, double tagOffset) {
-    buildTask(position, tagOffset, elevator, diffClaw, pathFactory, targetPosition);
-  }
+//   public static void moveToPositionTask(Pose3d targetPosition, PathFactory pathFactory,
+// SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetSetpoint, double tagOffset) {
+//     moveToPositionTaskBuilder(targetPosition, tagOffset, elevator, diffClaw, pathFactory, targetSetpoint);
+//   }
 
-  public static void buildTask(Pose3d position, double tagOffset, SubsystemElevator elevator, SubsystemClaw diffClaw, PathFactory pathFactory, Setpoint targetPosition) {
-    Translation2d targetTranslation = new Translation2d(position.getX(), position.getY());
-    Rotation2d targetRotation = new Rotation2d(position.getRotation().getAngle());
+  public static void moveToPositionTaskBuilder(Pose2d targetPosition, PathFactory pathFactory,
+  SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetSetpoint, double tagOffset) {
+    Translation2d targetTranslation = new Translation2d(targetPosition.getX(), targetPosition.getY());
+    Rotation2d targetRotation = targetPosition.getRotation();
 
     Rotation2d flippedRotation = targetRotation.plus(new Rotation2d(Math.PI));
     Pose2d angleTargetPose = new Pose2d(targetTranslation, flippedRotation);
@@ -112,12 +115,24 @@ public class AlignToClosestTag {
 
     pathFactory.addTask(targetPose.getTranslation(), new FinishByTask(
       new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(elevator, targetPosition.height),
+        new ElevatorMoveToPositionCommand(elevator, targetSetpoint.height),
         new InstantCommand(
-          () -> { diffClaw.setOutsidePosition(targetPosition.angle); },
+          () -> { diffClaw.setOutsidePosition(targetSetpoint.angle); },
           diffClaw
         )
       )
     ));
+  }
+
+  public static CommandSwerveFollowSpline autoOne(List<Pose2d> targetPositions, PathFactory pathFactory,
+  SubsystemClaw diffClaw, SubsystemElevator elevator, SubsystemSwerveDrivetrain drivetrain, List<Setpoint> targetSetpoints) {
+    Iterator<Pose2d> positions = targetPositions.iterator();
+    Iterator<Setpoint> setpoints = targetSetpoints.iterator();
+
+    while (positions.hasNext() && setpoints.hasNext()) {
+      moveToPositionTaskBuilder(positions.next(), pathFactory, diffClaw, elevator, setpoints.next(), Constants.Positions.tagOffset);
+    }
+    
+    return pathFactory.interpolateFromStart(true).buildCommand(drivetrain, null, null, null);
   }
 }
