@@ -155,54 +155,54 @@ public class RobotContainer {
     secondaryController.leftTrigger().and(secondaryController.a()).and(secondaryController.povLeft())
     .onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L1, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, Positions.tagOffset, intakeClawCommand
+      DataManager.instance().robotPosition, Positions.tagOffset, intakeClawCommand
     ));
     secondaryController.leftTrigger().and(secondaryController.a()).and(secondaryController.povRight())
     .onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L1, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, -Positions.tagOffset, intakeClawCommand
+      DataManager.instance().robotPosition, -Positions.tagOffset, intakeClawCommand
     ));
 
     // Triggers for auto scoring routine for L2
     secondaryController.leftTrigger().and(secondaryController.b()).and(secondaryController.povLeft())
     .onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, Positions.tagOffset, intakeClawCommand
+      DataManager.instance().robotPosition, Positions.tagOffset, intakeClawCommand
     ));
     secondaryController.leftTrigger().and(secondaryController.b()).and(secondaryController.povRight())
     .onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, -Positions.tagOffset, intakeClawCommand
+      DataManager.instance().robotPosition, -Positions.tagOffset, intakeClawCommand
     ));
 
     // Triggers for auto scoring routine for L3
     secondaryController.leftTrigger().and(secondaryController.x()).and(secondaryController.povLeft())
     .onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L3, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, Positions.tagOffset, intakeClawCommand
+      DataManager.instance().robotPosition, Positions.tagOffset, intakeClawCommand
     ));
     secondaryController.leftTrigger().and(secondaryController.x()).and(secondaryController.povRight())
     .onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L3, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, -Positions.tagOffset, intakeClawCommand
+      DataManager.instance().robotPosition, -Positions.tagOffset, intakeClawCommand
     ));
 
     // Triggers for auto scoring routine for L4
     secondaryController.leftTrigger().and(secondaryController.y()).and(secondaryController.povLeft())
     .onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L4, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, Positions.tagOffset, intakeClawCommand
+      DataManager.instance().robotPosition, Positions.tagOffset, intakeClawCommand
     ));
     secondaryController.leftTrigger().and(secondaryController.y()).and(secondaryController.povRight())
     .onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.Intake, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, -Positions.tagOffset, intakeClawCommand
+      DataManager.instance().robotPosition, -Positions.tagOffset, intakeClawCommand
     ));
 
     // Auto intaking from loading station (player will still half to adjust left or right)
     secondaryController.povUp().onTrue(new ScoreIntakeAutoCommand(
       subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L4, PhotonvisionConstants.photonUnits.get(0),
-      DataManager.robotPosition, 0, depositClawCommand
+      DataManager.instance().robotPosition, 0, depositClawCommand
     ));
 
     // Manual intaking/depositing, elevator movement, reef setpoints
