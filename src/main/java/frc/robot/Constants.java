@@ -281,9 +281,9 @@ public final class Constants {
      public static final List<AprilTag> tagList = fieldLayout.getTags();
      public static final double distanceFromTag = 0.1;
 
-     // TODO: Add these from CAD
-     // public static final double reefScoreOffset = ?;
-     // public static final double intakeLoadingOffset = ?;
+     // <3 Measurements taken from CAD--center axis dist. from apriltag to estimated robot center position
+      public static final double reefScoreOffset = 0.181;
+      public static final double intakeLoadingOffset = 0.457;
   }
 
   public static final class PhotonvisionConstants {
