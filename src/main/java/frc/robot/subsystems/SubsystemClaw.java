@@ -9,6 +9,7 @@ import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
@@ -18,7 +19,6 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
-import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import frc.robot.Constants.DifferentialArm;
 import frc.robot.Constants.DifferentialArm.*;
+import frc.robot.DataManager.Setpoint;
 
 public class SubsystemClaw extends SubsystemBase {
   // Some sort of sensor or limit switch to detect the PVC pipe
@@ -43,12 +44,10 @@ public class SubsystemClaw extends SubsystemBase {
   private DifferentialMotorGroup motorGroup;
   private PIDController pivotController;
 
-  private static double startingPivotPosition = DifferentialArm.encoderOffset;
-  private double targetPivotPosition = startingPivotPosition;
+  private double targetPivotPosition = convertRadiansToRotations(Setpoint.Start.angle);
   private double intakePower = 0.0;
 
   private AbsoluteEncoder pivotEncoder;
-  private AbsoluteEncoderConfig pivotEncoderConfig =  new AbsoluteEncoderConfig();
 
   private static class DifferentialMotorGroup {
     private MotorController rightMotor;
@@ -113,13 +112,16 @@ public class SubsystemClaw extends SubsystemBase {
     // Might need to invert this motor
     rightConfig.inverted(true);
     rightConfig.smartCurrentLimit(5);
+    rightConfig.idleMode(IdleMode.kBrake);
+    rightConfig.absoluteEncoder.inverted(true);
+    
     leftConfig.smartCurrentLimit(5);
+    leftConfig.idleMode(IdleMode.kBrake);
 
     rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     leftMotor.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     pivotEncoder = rightMotor.getAbsoluteEncoder();
-    pivotEncoderConfig.positionConversionFactor(intakePower);
     
     motorGroup = new DifferentialMotorGroup(rightMotor, leftMotor);
     pivotController = new PIDController(DifferentialArm.PID.P, DifferentialArm.PID.I, DifferentialArm.PID.D);
@@ -139,6 +141,7 @@ public class SubsystemClaw extends SubsystemBase {
     motorGroup.update();
     SmartDashboard.putNumber("Arm Absolute Encoder Rotations", pivotEncoder.getPosition());
     SmartDashboard.putNumber("Arm PID pivot controller output", pivotControllerCalculate);
+    SmartDashboard.putNumber("Target position", targetPivotPosition);
   }
 
   private static double clamp(double min, double max, double x) {
