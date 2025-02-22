@@ -9,6 +9,7 @@ import java.util.List;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -190,7 +191,7 @@ public final class Constants {
      * Measurements are in meters.
      */
 
-     // <3 The positions of the algae on the ground of the blue alliance side of the field
+     /* <3 The positions of the algae on the ground of the blue alliance side of the field
      public static Pose2d blueGroundAlgae1 = new Pose2d( -7.555, 1.829, new Rotation2d(0));
      public static Pose2d blueGroundAlgae2 = new Pose2d( -7.555, 0.000, new Rotation2d(0));
      public static Pose2d blueGroundAlgae3 = new Pose2d( -7.555, -1.829, new Rotation2d(0));
@@ -243,12 +244,40 @@ public final class Constants {
 
      public static Pose2d redCoralLoading2A = new Pose2d(-18.799, -8.254, new Rotation2d(0));
      public static Pose2d redCoralLoading2B = new Pose2d(-19.621, -7.657, new Rotation2d(0));
+     */
 
-     // <3 The position of the blue alliance's algae processor
-     public static Pose2d blueAlgaeProcessor = new Pose2d(-8.497, -0.465, new Rotation2d(0));
+     // <3 Positions of Apriltags
+     public static final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
+     
+     public static final Pose3d blueCoralLoadingTop = fieldLayout.getTagPose(13).get();
+     public static final Pose3d blueCoralLoadingBottom = fieldLayout.getTagPose(12).get();
 
-     // <3 The position of the red alliance's algae processor
-     public static Pose2d redAlgaeProcessor = new Pose2d(-14.058, -8.679, new Rotation2d(0));
+     public static final Pose3d redCoralLoadingTop = fieldLayout.getTagPose(2).get();
+     public static final Pose3d redCoralLoadingBottom = fieldLayout.getTagPose(1).get();
+
+     public static final Pose3d blueAlgaeProcessor = fieldLayout.getTagPose(3).get();
+     public static final Pose3d redAlgaeProcessor = fieldLayout.getTagPose(16).get();
+
+     public static final Pose3d blueBargeLeft = fieldLayout.getTagPose(14).get();
+     public static final Pose3d blueBargeRight = fieldLayout.getTagPose(4).get();
+
+     public static final Pose3d redBargeLeft = fieldLayout.getTagPose(15).get();
+     public static final Pose3d redBargeRight = fieldLayout.getTagPose(5).get();
+
+     public static final Pose3d blueReef1 = fieldLayout.getTagPose(19).get();
+     public static final Pose3d blueReef2 = fieldLayout.getTagPose(20).get();
+     public static final Pose3d blueReef3 = fieldLayout.getTagPose(21).get();
+     public static final Pose3d blueReef4 = fieldLayout.getTagPose(22).get();
+     public static final Pose3d blueReef5 = fieldLayout.getTagPose(17).get();
+     public static final Pose3d blueReef6 = fieldLayout.getTagPose(18).get();
+
+     public static final Pose3d redReef1 = fieldLayout.getTagPose(8).get();
+     public static final Pose3d redReef2 = fieldLayout.getTagPose(9).get();
+     public static final Pose3d redReef3 = fieldLayout.getTagPose(10).get();
+     public static final Pose3d redReef4 = fieldLayout.getTagPose(11).get();
+     public static final Pose3d redReef5 = fieldLayout.getTagPose(6).get();
+     public static final Pose3d redReef6 = fieldLayout.getTagPose(7).get();
+     
   }
 
   public static final class PhotonvisionConstants {
