@@ -9,10 +9,13 @@ import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Optional;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.Command;
 
 /** Add your docs here. */
 public class TestUtil {
@@ -364,16 +367,12 @@ public class TestUtil {
     }
 
     /**
-     * <h2>WARNING: UNTESTED CODE</h2>
-     * <em>This should work, it's fairly simple, but you never know.</em>
      * A test with multiple phases that execute according to a timer. Created from several methods and timer values 
      */
     public static class TimedTest extends MultiphaseTest {
         protected Timer timer = new Timer();
 
         /**
-         * <h2>WARNING: UNTESTED CODE</h2>
-         * <em>This should work, it's fairly simple, but you never know.</em>
          * Creates a TimedTest.
          * @param phases An array of the functions to run.
          * @param durations An array describing how long each phase should last.
@@ -395,8 +394,6 @@ public class TestUtil {
         }
 
         /**
-         * <h2>WARNING: UNTESTED CODE</h2>
-         * <em>This should work, it's fairly simple, but you never know.</em>
          * Creates a TimedTest.
          * @param phases An array of the functions to run.
          * @param durations An array describing how long each phase should last.
@@ -408,8 +405,6 @@ public class TestUtil {
         }
 
         /**
-         * <h2>WARNING: UNTESTED CODE</h2>
-         * <em>This should work, it's fairly simple, but you never know.</em>
          * Creates a TimedTest.
          * @param phases An array of the functions to run.
          * @param durations An array describing how long each phase should last.
@@ -442,16 +437,12 @@ public class TestUtil {
     }
 
     /**
-     * <h2>WARNING: UNTESTED CODE</h2>
-     * <em>This should work, it's fairly simple, but you never know.</em>
      * Combines multiple tests into one test which runs each in succession. Similar
      * to SequentialCommandGroup.
      */
     public static class CombinedTest extends MultiphaseTest {
         
         /**
-         * <h2>WARNING: UNTESTED CODE</h2>
-         * <em>This should work, it's fairly simple, but you never know.</em>
          * Creates a CombinedTest.
          * @param components The test to be joined together in order.
          * @param name The name of the test.
@@ -463,8 +454,6 @@ public class TestUtil {
         }
 
         /**
-         * <h2>WARNING: UNTESTED CODE</h2>
-         * <em>This should work, it's fairly simple, but you never know.</em>
          * Creates a TimedTest.
          * @param phases An array of the functions to run.
          * @param durations An array describing how long each phase should last.
@@ -476,8 +465,6 @@ public class TestUtil {
         }
 
         /**
-         * <h2>WARNING: UNTESTED CODE</h2>
-         * <em>This should work, it's fairly simple, but you never know.</em>
          * Creates a TimedTest.
          * @param phases An array of the functions to run.
          * @param durations An array describing how long each phase should last.
@@ -510,6 +497,94 @@ public class TestUtil {
             }
 
             return out;
+        }
+    }
+
+    /**
+     * <h2>Warning, untested code!</h2>
+     * Runs a test alongside a command. The test has access to the command, and can run
+     * checks during and after. The test logic is always called just before the command logic
+     * within a cycle.
+     */
+    public static class CommandTest<C extends Command> extends OnePhaseTest {
+
+        private C command;
+        private Consumer<C> startup;
+        //private Consumer<C> during; // Held with closures instead, so unneeded
+        //private Consumer<C> ending;
+
+        public CommandTest(C command, Consumer<C> startup, Consumer<C> during, Consumer<C> ending, String name, Test[] dependencies, boolean[] successRequirements) {
+            super(
+                () -> {
+                    if (command.isFinished()) {
+                        ending.accept(command);
+                    } else {
+                        during.accept(command);
+                    }
+                }, 
+                () -> command.isFinished(), 
+                name, 
+                dependencies, 
+                successRequirements
+            );
+            this.command = command;
+            this.startup = startup;
+        }
+
+        public CommandTest(C command, Consumer<C> startup, Consumer<C> during, Consumer<C> ending, String name, Test[] dependencies) {
+            super(
+                () -> {
+                    if (command.isFinished()) {
+                        ending.accept(command);
+                    } else {
+                        during.accept(command);
+                    }
+                }, 
+                () -> command.isFinished(), 
+                name, 
+                dependencies
+            );
+            this.command = command;
+            this.startup = startup;
+        }
+
+        public CommandTest(C command, Consumer<C> startup, Consumer<C> during, Consumer<C> ending, String name) {
+            super(
+                () -> {
+                    if (command.isFinished()) {
+                        ending.accept(command);
+                    } else {
+                        during.accept(command);
+                    }
+                }, 
+                () -> command.isFinished(), 
+                name
+            );
+            this.command = command;
+            this.startup = startup;
+        }
+
+        public CommandTest(C command, Optional<Consumer<C>> startup, Optional<Consumer<C>> during, Optional<Consumer<C>> ending, String name, Test[] dependencies, boolean[] successRequirements) {
+            this(command, startup.orElse((c) -> {}), during.orElse((c) -> {}), ending.orElse((c) -> {}), name, dependencies, successRequirements);
+        }
+
+        public CommandTest(C command, Optional<Consumer<C>> startup, Optional<Consumer<C>> during, Optional<Consumer<C>> ending, String name, Test[] dependencies) {
+            this(command, startup.orElse((c) -> {}), during.orElse((c) -> {}), ending.orElse((c) -> {}), name, dependencies);
+        }
+
+        public CommandTest(C command, Optional<Consumer<C>> startup, Optional<Consumer<C>> during, Optional<Consumer<C>> ending, String name) {
+            this(command, startup.orElse((c) -> {}), during.orElse((c) -> {}), ending.orElse((c) -> {}), name);
+        }
+
+        @Override
+        public void setup() {
+            command.schedule();
+            startup.accept(command);
+        }
+
+        @Override
+        public void closedown() {
+            command.cancel();
         }
     }
 
