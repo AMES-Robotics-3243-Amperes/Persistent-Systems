@@ -277,7 +277,13 @@ public final class Constants {
      public static final Pose3d redReef4 = fieldLayout.getTagPose(11).get();
      public static final Pose3d redReef5 = fieldLayout.getTagPose(6).get();
      public static final Pose3d redReef6 = fieldLayout.getTagPose(7).get();
-     
+
+     public static final List<AprilTag> tagList = fieldLayout.getTags();
+     public static final double distanceFromTag = 0.1;
+
+     // TODO: Add these from CAD
+     // public static final double reefScoreOffset = ?;
+     // public static final double intakeLoadingOffset = ?;
   }
 
   public static final class PhotonvisionConstants {
