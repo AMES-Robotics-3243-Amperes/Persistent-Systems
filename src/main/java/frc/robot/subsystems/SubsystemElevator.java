@@ -113,6 +113,13 @@ public class SubsystemElevator extends SubsystemBaseTestable {
       .withProperties(Map.of("min", Positions.min, "max", Positions.max))
     ;
 
+    tab.addDouble("AverageCurrent", this::getCurrent)
+      .withPosition(0, 4)
+      .withSize(5, 1)
+      .withWidget(BuiltInWidgets.kNumberBar)
+      .withProperties(Map.of("min", 0, "max", 100))
+    ;
+
     powerSetting.setDefaultOption("Ludicrous Speed (100%)", SpeedSettings.highSpeed);
     powerSetting.addOption("Normal Speed (50%)", SpeedSettings.midSpeed);
     powerSetting.addOption("Slow Speed (20%)", SpeedSettings.lowSpeed);

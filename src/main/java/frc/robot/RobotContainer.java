@@ -174,7 +174,7 @@ public class RobotContainer {
     );
 
     // Keybindings will change
-    primaryController.a().onTrue(followCommand);
+    // primaryController.a().onTrue(followCommand);
 
     // // Triggers for auto scoring routine for L1
     // secondaryController.leftTrigger().and(secondaryController.a()).and(secondaryController.povLeft())
@@ -234,40 +234,40 @@ public class RobotContainer {
     // secondaryController.leftBumper().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
     // TODO: Uncomment this after testing secondaryController.rightBumper().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
 
-    // primaryController.povUp().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity));
-    // primaryController.povDown().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
+    primaryController.povUp().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity));
+    primaryController.povDown().whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
 
-    // primaryController.a().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
-    //   new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1.height),
-    //     new InstantCommand(
-    //     () -> { subsystemClaw.setOutsidePosition(Setpoint.L1.angle); },
-    //     subsystemClaw
-    //   )
-    // ));
+    primaryController.a().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1.height),
+        new InstantCommand(
+        () -> { subsystemClaw.setOutsidePosition(Setpoint.L1.angle); },
+        subsystemClaw
+      )
+    ));
 
-    // primaryController.b().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
-    //   new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2.height),
-    //   new InstantCommand(
-    //     () -> { subsystemClaw.setOutsidePosition(Setpoint.L2.angle); },
-    //     subsystemClaw
-    //   )
-    // ));
+    primaryController.b().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2.height),
+      new InstantCommand(
+        () -> { subsystemClaw.setOutsidePosition(Setpoint.L2.angle); },
+        subsystemClaw
+      )
+    ));
 
-    // primaryController.x().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
-    //   new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3.height),
-    //   new InstantCommand(
-    //     () -> { subsystemClaw.setOutsidePosition(Setpoint.L2.angle); },
-    //     subsystemClaw
-    //   )
-    // ));
+    primaryController.x().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3.height),
+      new InstantCommand(
+        () -> { subsystemClaw.setOutsidePosition(Setpoint.L2.angle); },
+        subsystemClaw
+      )
+    ));
 
-    // primaryController.y().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
-    //   new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4.height),
-    //   new InstantCommand(
-    //     () -> { subsystemClaw.setOutsidePosition(Setpoint.L4.angle); },
-    //     subsystemClaw
-    //   )
-    // ));
+    primaryController.y().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4.height),
+      new InstantCommand(
+        () -> { subsystemClaw.setOutsidePosition(Setpoint.L4.angle); },
+        subsystemClaw
+      )
+    ));
 
     mainTab.add("Zero Elevator", new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
 

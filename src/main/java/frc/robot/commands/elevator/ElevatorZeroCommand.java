@@ -11,7 +11,7 @@ import frc.robot.subsystems.SubsystemElevator;
 public class ElevatorZeroCommand extends Command {
   private SubsystemElevator elevator;
   private final double speed = 0.05;
-  private final double currentThreshold = 15.0;
+  private final double currentThreshold = 10.0;
   private int counter = 0;
   private final int timerLength = 50;
   /** Creates a new ElevatorZeroCommand. */

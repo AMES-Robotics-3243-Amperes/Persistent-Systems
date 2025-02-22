@@ -384,7 +384,7 @@ public final class Constants {
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
-      public static final double Start = 1.5; // 1.75
+      public static final double Start = 1.45; // 1.75
       public static final double Intake = 0.959931;
       public static final double L1 = 0.0;
       public static final double L23 = -0.959931;
