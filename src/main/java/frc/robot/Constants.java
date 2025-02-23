@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -18,6 +19,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.util.Units;
+import frc.robot.DataManager.Setpoint;
 import frc.robot.splines.interpolation.CubicInterpolator;
 import frc.robot.splines.interpolation.SplineInterpolator;
 
@@ -130,16 +132,14 @@ public final class Constants {
       public static final int leaderCanId = 10; // Leader is the right motor, update this if that changes
       public static final int followerCanId = 11; // Follower is the left motor, update this if that changes
 
-      public static final double positionConversionRatio = 
-        Math.pow(18.0/50.0, 2) * // Gear ratio
-        22 * // Number of sprocket teeth
-        Units.inchesToMeters(1.0/4.0) * // Distance between chain links
-        3.0 // Elevator stages
+      public static final double positionConversionRatio = Math.pow(18.0 / 50.0, 2) * // Gear ratio
+          22 * // Number of sprocket teeth
+          Units.inchesToMeters(1.0 / 4.0) * // Distance between chain links
+          3.0 // Elevator stages
       ;
-      
-      public static final double velocityConversionRatio = 
-        (1.0 / 60.0) * // Convert RPM to RPS
-        positionConversionRatio // The normal stuff
+
+      public static final double velocityConversionRatio = (1.0 / 60.0) * // Convert RPM to RPS
+          positionConversionRatio // The normal stuff
       ;
 
       public static final double P = 3;
@@ -165,125 +165,191 @@ public final class Constants {
     }
   }
 
-  /** Positions are measured by the pivot position height above minimum. All heights are in meters. */
+  /**
+   * Positions are measured by the pivot position height above minimum. All
+   * heights are in meters.
+   */
   public static class Positions {
-    /** The vertical distance from the ground to the minimum height on the elevator. */
+    /**
+     * The vertical distance from the ground to the minimum height on the elevator.
+     */
     private static final double minHeightOffset = Units.inchesToMeters(9.307579);
     public static final double min = 0.0;
     public static final double starting = min;
     public static final double loading = Units.inchesToMeters(28.807579) - minHeightOffset;
-    public static final double L1 = Units.inchesToMeters(28.807579) - minHeightOffset; // Not from CAD, but should be similar to loading.
+    public static final double L1 = Units.inchesToMeters(28.807579) - minHeightOffset; // Not from CAD, but should be
+                                                                                       // similar to loading.
     public static final double L2 = Units.inchesToMeters(37.807579) - minHeightOffset;
     public static final double L3 = Units.inchesToMeters(52.807579) - minHeightOffset;
     public static final double L4 = Units.inchesToMeters(79.807579) - minHeightOffset;
     public static final double max = Units.inchesToMeters(79.807579) - minHeightOffset;
-
-    // Offset left or right, still need to actually find in CAD
-    // Used for alighToReefPosition
-    public static final double tagOffset = 0.5;
   }
 
-    public static final class FieldConstants {
+  public static final class FieldConstants {
 
-    /* <3 Like we did last year, I'll define forwards to be facing towards the red alliance
-     * (0,0) is the bottom left corner of the field if you're looking from a top-down perspective with blue alliance on your left-hand side.
-     * Positive x is towards red alliance. Positive Y will be left when you are facing the red alliance.
+    /*
+     * <3 Like we did last year, I'll define forwards to be facing towards the red
+     * alliance
+     * (0,0) is the bottom left corner of the field if you're looking from a
+     * top-down perspective with blue alliance on your left-hand side.
+     * Positive x is towards red alliance. Positive Y will be left when you are
+     * facing the red alliance.
      * Measurements are in meters.
      */
 
-     /* <3 The positions of the algae on the ground of the blue alliance side of the field
-     public static Pose2d blueGroundAlgae1 = new Pose2d( -7.555, 1.829, new Rotation2d(0));
-     public static Pose2d blueGroundAlgae2 = new Pose2d( -7.555, 0.000, new Rotation2d(0));
-     public static Pose2d blueGroundAlgae3 = new Pose2d( -7.555, -1.829, new Rotation2d(0));
-
-     // <3 The positions of the algae on the ground of the red alliance side of the field
-     public static Pose2d redGroundAlgae1 = new Pose2d(7.555, 1.829, new Rotation2d(0));
-     public static Pose2d redGroundAlgae2 = new Pose2d(7.555, 0.000, new Rotation2d(0));
-     public static Pose2d redGroundAlgae3 = new Pose2d(7.555, -1.829, new Rotation2d(0));
-
-     // <3 The positions of the blue alliance's reef posts, measured from the bottom left corner of the field to the center of the pole
-     public static Pose2d blueReefPole1 = new Pose2d(6.587, 4.946, new Rotation2d(0));
-     public static Pose2d blueReefPole2 = new Pose2d(6.872, 5.109, new Rotation2d(0));
-     public static Pose2d blueReefPole3 = new Pose2d(7.114, 5.110, new Rotation2d(0));
-     public static Pose2d blueReefPole4 = new Pose2d(7.398, 4.945, new Rotation2d(0));
-     public static Pose2d blueReefPole5 = new Pose2d(7.520, 4.736, new Rotation2d(0));
-     public static Pose2d blueReefPole6 = new Pose2d(7.518, 4.408, new Rotation2d(0));
-     public static Pose2d blueReefPole7 = new Pose2d(7.398, 4.198, new Rotation2d(0));
-     public static Pose2d blueReefPole8 = new Pose2d(7.113, 4.035, new Rotation2d(0));
-     public static Pose2d blueReefPole9 = new Pose2d(6.872, 4.034, new Rotation2d(0));
-     public static Pose2d blueReefPole10 = new Pose2d(6.588, 4.199, new Rotation2d(0));
-     public static Pose2d blueReefPole11 = new Pose2d(6.466, 4.408, new Rotation2d(0));
-     public static Pose2d blueReefPole12 = new Pose2d(6.467, 4.736, new Rotation2d(0));
-
-     // <3 The positions of the red alliance's reef posts, measured from the bottom left corner of the field to the center of the pole
-     public static Pose2d redReefPole1 = new Pose2d(15.157, 4.946, new Rotation2d(0));
-     public static Pose2d redReefPole2 = new Pose2d(15.442, 5.109, new Rotation2d(0));
-     public static Pose2d redReefPole3 = new Pose2d(15.683, 5.110, new Rotation2d(0));
-     public static Pose2d redReefPole4 = new Pose2d(15.967, 4.945, new Rotation2d(0));
-     public static Pose2d redReefPole5 = new Pose2d(16.089, 4.736, new Rotation2d(0));
-     public static Pose2d redReefPole6 = new Pose2d(16.088, 4.408, new Rotation2d(0));
-     public static Pose2d redReefPole7 = new Pose2d(15.968, 4.198, new Rotation2d(0));
-     public static Pose2d redReefPole8 = new Pose2d(15.683, 4.035, new Rotation2d(0));
-     public static Pose2d redReefPole9 = new Pose2d(15.441, 4.034, new Rotation2d(0));
-     public static Pose2d redReefPole10 = new Pose2d(15.157, 4.199, new Rotation2d(0));
-     public static Pose2d redReefPole11 = new Pose2d(15.036, 4.408, new Rotation2d(0));
-     public static Pose2d redReefPole12 = new Pose2d(15.037, 4.736, new Rotation2d(0));
-
-     // <3 The positions of the blue alliance's coral loading stations. There are positions for two of the slots on each station. 
-     // <3 The slot positions for each loading station are labelled with A being the third slot and B being the eighth slot if you were standing on the field, looking at the coral station.
-     public static Pose2d blueCoralLoading1A = new Pose2d(-3.756, -0.890, new Rotation2d(0));
-     public static Pose2d blueCoralLoading1B = new Pose2d(-2.934, -1.487, new Rotation2d(0));
-
-     public static Pose2d blueCoralLoading2A = new Pose2d(-2.934, -7.657, new Rotation2d(0));
-     public static Pose2d blueCoralLoading2B = new Pose2d(-3.756, -8.254, new Rotation2d(0));
-
-     // <3 The positions of the red alliance's coral loading stations. There are positions for two of the slots on each station. 
-     // <3 The slot positions for each loading station are labelled with A being the third slot and B being the eighth slot if you were standing on the field, looking at the coral station.
-     public static Pose2d redCoralLoading1A = new Pose2d(-19.621, -1.487, new Rotation2d(0));
-     public static Pose2d redCoralLoading1B = new Pose2d(-18.799, -0.890, new Rotation2d(0));
-
-     public static Pose2d redCoralLoading2A = new Pose2d(-18.799, -8.254, new Rotation2d(0));
-     public static Pose2d redCoralLoading2B = new Pose2d(-19.621, -7.657, new Rotation2d(0));
+    /*
+     * <3 The positions of the algae on the ground of the blue alliance side of the
+     * field
+     * public static Pose2d blueGroundAlgae1 = new Pose2d( -7.555, 1.829, new
+     * Rotation2d(0));
+     * public static Pose2d blueGroundAlgae2 = new Pose2d( -7.555, 0.000, new
+     * Rotation2d(0));
+     * public static Pose2d blueGroundAlgae3 = new Pose2d( -7.555, -1.829, new
+     * Rotation2d(0));
+     * 
+     * // <3 The positions of the algae on the ground of the red alliance side of
+     * the field
+     * public static Pose2d redGroundAlgae1 = new Pose2d(7.555, 1.829, new
+     * Rotation2d(0));
+     * public static Pose2d redGroundAlgae2 = new Pose2d(7.555, 0.000, new
+     * Rotation2d(0));
+     * public static Pose2d redGroundAlgae3 = new Pose2d(7.555, -1.829, new
+     * Rotation2d(0));
+     * 
+     * // <3 The positions of the blue alliance's reef posts, measured from the
+     * bottom left corner of the field to the center of the pole
+     * public static Pose2d blueReefPole1 = new Pose2d(6.587, 4.946, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole2 = new Pose2d(6.872, 5.109, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole3 = new Pose2d(7.114, 5.110, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole4 = new Pose2d(7.398, 4.945, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole5 = new Pose2d(7.520, 4.736, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole6 = new Pose2d(7.518, 4.408, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole7 = new Pose2d(7.398, 4.198, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole8 = new Pose2d(7.113, 4.035, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole9 = new Pose2d(6.872, 4.034, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole10 = new Pose2d(6.588, 4.199, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole11 = new Pose2d(6.466, 4.408, new
+     * Rotation2d(0));
+     * public static Pose2d blueReefPole12 = new Pose2d(6.467, 4.736, new
+     * Rotation2d(0));
+     * 
+     * // <3 The positions of the red alliance's reef posts, measured from the
+     * bottom left corner of the field to the center of the pole
+     * public static Pose2d redReefPole1 = new Pose2d(15.157, 4.946, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole2 = new Pose2d(15.442, 5.109, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole3 = new Pose2d(15.683, 5.110, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole4 = new Pose2d(15.967, 4.945, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole5 = new Pose2d(16.089, 4.736, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole6 = new Pose2d(16.088, 4.408, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole7 = new Pose2d(15.968, 4.198, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole8 = new Pose2d(15.683, 4.035, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole9 = new Pose2d(15.441, 4.034, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole10 = new Pose2d(15.157, 4.199, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole11 = new Pose2d(15.036, 4.408, new
+     * Rotation2d(0));
+     * public static Pose2d redReefPole12 = new Pose2d(15.037, 4.736, new
+     * Rotation2d(0));
+     * 
+     * // <3 The positions of the blue alliance's coral loading stations. There are
+     * positions for two of the slots on each station.
+     * // <3 The slot positions for each loading station are labelled with A being
+     * the third slot and B being the eighth slot if you were standing on the field,
+     * looking at the coral station.
+     * public static Pose2d blueCoralLoading1A = new Pose2d(-3.756, -0.890, new
+     * Rotation2d(0));
+     * public static Pose2d blueCoralLoading1B = new Pose2d(-2.934, -1.487, new
+     * Rotation2d(0));
+     * 
+     * public static Pose2d blueCoralLoading2A = new Pose2d(-2.934, -7.657, new
+     * Rotation2d(0));
+     * public static Pose2d blueCoralLoading2B = new Pose2d(-3.756, -8.254, new
+     * Rotation2d(0));
+     * 
+     * // <3 The positions of the red alliance's coral loading stations. There are
+     * positions for two of the slots on each station.
+     * // <3 The slot positions for each loading station are labelled with A being
+     * the third slot and B being the eighth slot if you were standing on the field,
+     * looking at the coral station.
+     * public static Pose2d redCoralLoading1A = new Pose2d(-19.621, -1.487, new
+     * Rotation2d(0));
+     * public static Pose2d redCoralLoading1B = new Pose2d(-18.799, -0.890, new
+     * Rotation2d(0));
+     * 
+     * public static Pose2d redCoralLoading2A = new Pose2d(-18.799, -8.254, new
+     * Rotation2d(0));
+     * public static Pose2d redCoralLoading2B = new Pose2d(-19.621, -7.657, new
+     * Rotation2d(0));
      */
 
-     // <3 Positions of Apriltags
-     public static final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2025ReefscapeWelded);
-     
-     public static final Pose3d blueCoralLoadingTop = fieldLayout.getTagPose(13).get();
-     public static final Pose3d blueCoralLoadingBottom = fieldLayout.getTagPose(12).get();
+    // <3 Positions of Apriltags
+    public static final AprilTagFieldLayout fieldLayout = AprilTagFieldLayout
+        .loadField(AprilTagFields.k2025ReefscapeWelded);
 
-     public static final Pose3d redCoralLoadingTop = fieldLayout.getTagPose(2).get();
-     public static final Pose3d redCoralLoadingBottom = fieldLayout.getTagPose(1).get();
+    public static final Pose3d blueCoralLoadingTop = fieldLayout.getTagPose(13).get();
+    public static final Pose3d blueCoralLoadingBottom = fieldLayout.getTagPose(12).get();
 
-     public static final Pose3d blueAlgaeProcessor = fieldLayout.getTagPose(3).get();
-     public static final Pose3d redAlgaeProcessor = fieldLayout.getTagPose(16).get();
+    public static final Pose3d redCoralLoadingTop = fieldLayout.getTagPose(2).get();
+    public static final Pose3d redCoralLoadingBottom = fieldLayout.getTagPose(1).get();
 
-     public static final Pose3d blueBargeLeft = fieldLayout.getTagPose(14).get();
-     public static final Pose3d blueBargeRight = fieldLayout.getTagPose(4).get();
+    public static final Pose3d blueAlgaeProcessor = fieldLayout.getTagPose(3).get();
+    public static final Pose3d redAlgaeProcessor = fieldLayout.getTagPose(16).get();
 
-     public static final Pose3d redBargeLeft = fieldLayout.getTagPose(15).get();
-     public static final Pose3d redBargeRight = fieldLayout.getTagPose(5).get();
+    public static final Pose3d blueBargeLeft = fieldLayout.getTagPose(14).get();
+    public static final Pose3d blueBargeRight = fieldLayout.getTagPose(4).get();
 
-     public static final Pose3d blueReef1 = fieldLayout.getTagPose(19).get();
-     public static final Pose3d blueReef2 = fieldLayout.getTagPose(20).get();
-     public static final Pose3d blueReef3 = fieldLayout.getTagPose(21).get();
-     public static final Pose3d blueReef4 = fieldLayout.getTagPose(22).get();
-     public static final Pose3d blueReef5 = fieldLayout.getTagPose(17).get();
-     public static final Pose3d blueReef6 = fieldLayout.getTagPose(18).get();
+    public static final Pose3d redBargeLeft = fieldLayout.getTagPose(15).get();
+    public static final Pose3d redBargeRight = fieldLayout.getTagPose(5).get();
 
-     public static final Pose3d redReef1 = fieldLayout.getTagPose(8).get();
-     public static final Pose3d redReef2 = fieldLayout.getTagPose(9).get();
-     public static final Pose3d redReef3 = fieldLayout.getTagPose(10).get();
-     public static final Pose3d redReef4 = fieldLayout.getTagPose(11).get();
-     public static final Pose3d redReef5 = fieldLayout.getTagPose(6).get();
-     public static final Pose3d redReef6 = fieldLayout.getTagPose(7).get();
+    public static final Pose3d blueReef1 = fieldLayout.getTagPose(19).get();
+    public static final Pose3d blueReef2 = fieldLayout.getTagPose(20).get();
+    public static final Pose3d blueReef3 = fieldLayout.getTagPose(21).get();
+    public static final Pose3d blueReef4 = fieldLayout.getTagPose(22).get();
+    public static final Pose3d blueReef5 = fieldLayout.getTagPose(17).get();
+    public static final Pose3d blueReef6 = fieldLayout.getTagPose(18).get();
 
-     public static final List<AprilTag> tagList = fieldLayout.getTags();
-     public static final double distanceFromTag = 0.1;
+    public static final Pose3d redReef1 = fieldLayout.getTagPose(8).get();
+    public static final Pose3d redReef2 = fieldLayout.getTagPose(9).get();
+    public static final Pose3d redReef3 = fieldLayout.getTagPose(10).get();
+    public static final Pose3d redReef4 = fieldLayout.getTagPose(11).get();
+    public static final Pose3d redReef5 = fieldLayout.getTagPose(6).get();
+    public static final Pose3d redReef6 = fieldLayout.getTagPose(7).get();
 
-     // <3 Measurements taken from CAD--center axis dist. from apriltag to estimated robot center position
-      public static final double reefScoreOffset = 0.181;
-      public static final double intakeLoadingOffset = 0.457;
+    public static final List<AprilTag> tagList = fieldLayout.getTags();
+    public static final double distanceFromTag = 0.1;
+
+    // <3 Measurements taken from CAD--center axis dist. from apriltag to estimated
+    // robot center position
+    public static final double reefScoreOffset = 0.181;
+    public static final double intakeLoadingOffset = 0.457;
+
+    public static final class AutonomousPaths {
+      public static final ArrayList<Pose2d> bluePositionOne = new ArrayList<Pose2d>(
+          Arrays.asList(FieldConstants.blueReef1.toPose2d(),
+              FieldConstants.blueCoralLoadingBottom.toPose2d(), FieldConstants.blueReef1.toPose2d(),
+              FieldConstants.blueCoralLoadingBottom.toPose2d()));
+      public static final ArrayList<Setpoint> blueSetpointsOne = new ArrayList<Setpoint>(
+          Arrays.asList(Setpoint.L4Left, Setpoint.IntakeLeft, Setpoint.L4Right, Setpoint.IntakeRight));
+    }
   }
 
   public static final class PhotonvisionConstants {
@@ -293,11 +359,13 @@ public final class Constants {
     public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
     public static final List<PhotonUnit> photonUnits = Arrays.asList();
-        //.asList(new PhotonUnit("FrontCamera", PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-        //    new Transform3d(new Pose3d(),
-        //        new Pose3d(new Translation3d(Units.inchesToMeters(9), Units.inchesToMeters(5), Units.inchesToMeters(0)),
-        //            new Rotation3d(0, Units.degreesToRadians(2), 0))),
-        //    fieldLayout));
+    // .asList(new PhotonUnit("FrontCamera",
+    // PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+    // new Transform3d(new Pose3d(),
+    // new Pose3d(new Translation3d(Units.inchesToMeters(9),
+    // Units.inchesToMeters(5), Units.inchesToMeters(0)),
+    // new Rotation3d(0, Units.degreesToRadians(2), 0))),
+    // fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
     public static final double photonUnitAmbiguityCutoff = 0.05;

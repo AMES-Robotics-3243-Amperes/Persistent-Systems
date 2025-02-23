@@ -51,19 +51,23 @@ public class MoveToPositionUtility {
      */
     public static CommandSwerveFollowSpline alignToTag(SubsystemSwerveDrivetrain drivetrain,
             DataManagerEntry<Pose2d> odometryPose, SubsystemClaw diffClaw, SubsystemElevator elevator,
-            Setpoint targetSetpoint, double tagOffset) {
+            Setpoint targetSetpoint, /*
+                                      * Maybe abstract this away? If I have time I'll make it so it searches to find
+                                      * which offset to use
+                                      */ double tagOffset) {
         // Find the closest tag to the robot's current position
         Pose2d currentPose = odometryPose.get();
         Translation2d currentPosition = currentPose.getTranslation();
         double minDistance = Double.MAX_VALUE;
-        
-        // Initialize to any tag --> It *will* get overran (I hope there's a tag closer than Double.MAX_VALUE...)
+
+        // Initialize to any tag --> It *will* get overran (I hope there's a tag closer
+        // than Double.MAX_VALUE...)
         Pose2d closestTag = FieldConstants.blueReef1.toPose2d();
 
         for (AprilTag tag : FieldConstants.tagList) {
             Pose2d tagPosition = tag.pose.toPose2d();
             double potentialMin = (tagPosition.getTranslation()).getDistance(currentPosition);
-            
+
             if (potentialMin < minDistance) {
                 minDistance = potentialMin;
                 closestTag = tagPosition;
@@ -71,14 +75,17 @@ public class MoveToPositionUtility {
         }
 
         // Calculate a target pose to move to
-        // Double check if this is necessary (if testing goes wrong, first order of business is to manually do vector calculations instead of using Transform2d)
+        // Double check if this is necessary (if testing goes wrong, first order of
+        // business is to manually do vector calculations instead of using Transform2d)
         Rotation2d flippedRotation = closestTag.getRotation().plus(new Rotation2d(Math.PI));
         Pose2d angleTargetPose = new Pose2d(closestTag.getTranslation(), flippedRotation);
 
-        Transform2d offset = new Transform2d(new Translation2d(FieldConstants.distanceFromTag, tagOffset), new Rotation2d());
+        Transform2d offset = new Transform2d(new Translation2d(FieldConstants.distanceFromTag, tagOffset),
+                new Rotation2d());
         Pose2d targetPose = angleTargetPose.plus(offset);
 
-        // PID controllers for the drivetrain (will be put in manually by Bryce - remove at that point)
+        // PID controllers for the drivetrain (will be put in manually by Bryce - remove
+        // at that point)
         PIDController xController = new PIDController(0.1, 0, 0);
         PIDController yController = new PIDController(0.1, 0, 0);
         ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0, null);
@@ -126,15 +133,16 @@ public class MoveToPositionUtility {
                                 diffClaw))));
     }
 
-    public static CommandSwerveFollowSpline autoOne(List<Pose2d> targetPositions, PathFactory pathFactory,
+    public static CommandSwerveFollowSpline autoBuilder(List<Pose2d> targetPositions, PathFactory pathFactory,
             SubsystemClaw diffClaw, SubsystemElevator elevator, SubsystemSwerveDrivetrain drivetrain,
             List<Setpoint> targetSetpoints) {
         Iterator<Pose2d> positions = targetPositions.iterator();
         Iterator<Setpoint> setpoints = targetSetpoints.iterator();
 
         while (positions.hasNext() && setpoints.hasNext()) {
+            Setpoint setpoint = setpoints.next();
             moveToPositionTaskBuilder(positions.next(), pathFactory, diffClaw, elevator, setpoints.next(),
-                    Constants.Positions.tagOffset);
+                    setpoint.offset);
         }
 
         return pathFactory.interpolateFromStart(true).buildCommand(drivetrain, null, null, null);

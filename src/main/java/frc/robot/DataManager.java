@@ -7,6 +7,7 @@ import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PhotonvisionConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 // import frc.robot.Constants.Setpoints;
@@ -143,19 +144,31 @@ public class DataManager {
 
   // Setpoints for different positions for the elevator and claw
   public enum Setpoint {
-    Start(Positions.starting, LevelAngles.Start),
-    Intake(Positions.starting, LevelAngles.Intake),
-    L1(Positions.L1, LevelAngles.L1),
-    L2(Positions.L2, LevelAngles.L23),
-    L3(Positions.L3, LevelAngles.L23),
-    L4(Positions.L4, LevelAngles.L4);
+    Start(Positions.starting, LevelAngles.Start, 0),
+
+    IntakeLeft(Positions.starting, LevelAngles.Intake, FieldConstants.intakeLoadingOffset),
+    IntakeRight(Positions.starting, LevelAngles.Intake, -FieldConstants.intakeLoadingOffset),
+
+    L1Left(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset),
+    L1Right(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset),
+
+    L2Left(Positions.L2, LevelAngles.L23, FieldConstants.reefScoreOffset),
+    L2Right(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset),
+
+    L3Left(Positions.L3, LevelAngles.L23, FieldConstants.reefScoreOffset),
+    L3Right(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset),
+
+    L4Left(Positions.L4, LevelAngles.L4, FieldConstants.reefScoreOffset),
+    L4Right(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset);
 
     public final double height;
     public final double angle;
+    public final double offset;
 
-    private Setpoint(double height, double angle) {
+    private Setpoint(double height, double angle, double offset) {
       this.height = height;
       this.angle = angle;
+      this.offset = offset;
     }
   }
 
