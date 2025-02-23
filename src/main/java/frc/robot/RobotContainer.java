@@ -112,7 +112,7 @@ public class RobotContainer {
             MoveToPositionUtility.autoBuilder(
                 FieldConstants.AutonomousPaths.bluePositionOne,
                 pathFactory, subsystemClaw, subsystemElevator,
-                subsystemSwerveDrivetrain, null),
+                subsystemSwerveDrivetrain, FieldConstants.AutonomousPaths.blueSetpointsOne),
             "Blue Position One");
   }
 
@@ -244,37 +244,41 @@ public class RobotContainer {
     primaryController.povDown()
         .whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
 
-    primaryController.a().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1Left.height),
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(Setpoint.L1Left.angle);
-            },
-            subsystemClaw)));
+    // primaryController.a().and(secondaryController.leftTrigger().negate()).onTrue(new
+    // ParallelCommandGroup(
+    // new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1Left.height),
+    // new InstantCommand(
+    // () -> {
+    // subsystemClaw.setOutsidePosition(Setpoint.L1Left.angle);
+    // },
+    // subsystemClaw)));
 
-    primaryController.b().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2Left.height),
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(Setpoint.L2Left.angle);
-            },
-            subsystemClaw)));
+    // primaryController.b().and(secondaryController.leftTrigger().negate()).onTrue(new
+    // ParallelCommandGroup(
+    // new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2Left.height),
+    // new InstantCommand(
+    // () -> {
+    // subsystemClaw.setOutsidePosition(Setpoint.L2Left.angle);
+    // },
+    // subsystemClaw)));
 
-    primaryController.x().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3Left.height),
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(Setpoint.L2Left.angle);
-            },
-            subsystemClaw)));
+    // primaryController.x().and(secondaryController.leftTrigger().negate()).onTrue(new
+    // ParallelCommandGroup(
+    // new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3Left.height),
+    // new InstantCommand(
+    // () -> {
+    // subsystemClaw.setOutsidePosition(Setpoint.L2Left.angle);
+    // },
+    // subsystemClaw)));
 
-    primaryController.y().and(secondaryController.leftTrigger().negate()).onTrue(new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4Left.height),
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(Setpoint.L4Left.angle);
-            },
-            subsystemClaw)));
+    // primaryController.y().and(secondaryController.leftTrigger().negate()).onTrue(new
+    // ParallelCommandGroup(
+    // new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4Left.height),
+    // new InstantCommand(
+    // () -> {
+    // subsystemClaw.setOutsidePosition(Setpoint.L4Left.angle);
+    // },
+    // subsystemClaw)));
 
     mainTab.add("Zero Elevator", new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
 
