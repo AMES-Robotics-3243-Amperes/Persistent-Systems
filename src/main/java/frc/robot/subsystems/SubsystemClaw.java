@@ -5,9 +5,7 @@
 package frc.robot.subsystems;
 
 import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.spark.SparkBase;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.AbsoluteEncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkMax;
@@ -27,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 // Decide if we want to use switch, or ultrasonic sensor, etc.
 import edu.wpi.first.wpilibj.Ultrasonic;
 import frc.robot.Constants.DifferentialArm;
-import frc.robot.Constants.DifferentialArm.*;
 import frc.robot.DataManager.Setpoint;
 
 public class SubsystemClaw extends SubsystemBase {
@@ -35,8 +32,8 @@ public class SubsystemClaw extends SubsystemBase {
   public Ultrasonic rangeFinder;
 
   // Differential motors
-  private SparkMax rightMotor = new SparkMax(MotorIDs.rightID, MotorType.kBrushless); // Previously forward
-  private SparkMax leftMotor = new SparkMax(MotorIDs.leftID, MotorType.kBrushless); // Previously reverse
+  private SparkMax rightMotor = new SparkMax(DifferentialArm.MotorIDs.rightID, MotorType.kBrushless);
+  private SparkMax leftMotor = new SparkMax(DifferentialArm.MotorIDs.leftID, MotorType.kBrushless);
   
   private SparkMaxConfig rightConfig = new SparkMaxConfig();
   private SparkMaxConfig leftConfig = new SparkMaxConfig();

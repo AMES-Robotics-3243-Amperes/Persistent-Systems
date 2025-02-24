@@ -11,6 +11,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.trajectory.ExponentialProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.DataManager.DataManagerEntry;
@@ -88,7 +90,8 @@ public class MoveToPositionUtility {
         // at that point)
         PIDController xController = new PIDController(0.1, 0, 0);
         PIDController yController = new PIDController(0.1, 0, 0);
-        ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0, null);
+        ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0,
+                new TrapezoidProfile.Constraints(0.1, 0.1));
 
         PathFactory pathFactory = PathFactory.newFactory();
         moveToPositionTaskBuilder(targetPose, pathFactory, diffClaw, elevator, targetSetpoint, tagOffset);
@@ -145,6 +148,14 @@ public class MoveToPositionUtility {
                     setpoint.offset);
         }
 
-        return pathFactory.interpolateFromStart(true).buildCommand(drivetrain, null, null, null);
+        // PID controllers for the drivetrain (will be put in manually by Bryce - remove
+        // at that point)
+        PIDController xController = new PIDController(0.1, 0, 0);
+        PIDController yController = new PIDController(0.1, 0, 0);
+        ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0,
+                new TrapezoidProfile.Constraints(0.1, 0.1));
+
+        return pathFactory.interpolateFromStart(true).buildCommand(drivetrain, xController, yController,
+                thetaController);
     }
 }
