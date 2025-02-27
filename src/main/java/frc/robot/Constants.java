@@ -84,24 +84,24 @@ public final class Constants {
       public static final class ModuleOffsets {
         public static final Rotation2d kFrontLeftOffset = Rotation2d.fromRadians(-2.224);
         public static final Rotation2d kFrontRightOffset = Rotation2d.fromRadians(-0.178);
-        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(-0.0315);
+        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(6.195);
         public static final Rotation2d kBackRightOffset = Rotation2d.fromRadians(-2.763);
       }
     }
 
     public static final class ModuleConstants {
       public static final class PIDF {
-        public static final double kDrivingP = 0.4;
+        public static final double kDrivingP = 0.0;
         public static final double kDrivingI = 0;
         public static final double kDrivingD = 0;
 
-        public static final double kDrivingKs = 0.019237;
+        public static final double kDrivingKs = 0.01;
         public static final double kDrivingKv = 0.11324;
         public static final double kDrivingKa = 0.034615;
 
-        public static final double kTurningP = 3.5;
-        public static final double kTurningI = 0;
-        public static final double kTurningD = 0.0;
+        public static final double kAzimuthP = 3.5;
+        public static final double kAzimuthI = 0;
+        public static final double kAzimuthD = 0.0;
         public static final double kTurningFF = 0;
         public static final double kTurningMinOutput = -1;
         public static final double kTurningMaxOutput = 1;

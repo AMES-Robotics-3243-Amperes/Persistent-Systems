@@ -4,6 +4,10 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Volts;
+
+import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -11,6 +15,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
@@ -105,12 +110,19 @@ public class RobotContainer {
     primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
     primaryController.b().onTrue(new InstantCommand(commandSwerveTeleopDrive::toggleFieldRelative));
 
-    SequentialCommandGroup drivetrainSysIdCommand = new SequentialCommandGroup(
-      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kForward),
-      subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kReverse),
-      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kForward),
-      subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kReverse)
-    );
+    SequentialCommandGroup drivetrainSysIdCommand =
+      Commands.run(() -> subsystemSwerveDrivetrain.setSysID(true), subsystemSwerveDrivetrain)
+      .andThen(() -> subsystemSwerveDrivetrain.sysIdDrive(Volts.of(0)), subsystemSwerveDrivetrain)
+      .andThen(SignalLogger::start)
+      .andThen(Commands.waitSeconds(2))
+      .andThen(subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kForward))
+      .andThen(subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kReverse))
+      .andThen(subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kForward))
+      .andThen(subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kReverse))
+      .andThen(() -> subsystemSwerveDrivetrain.sysIdDrive(Volts.of(0)), subsystemSwerveDrivetrain)
+      .andThen(() -> subsystemSwerveDrivetrain.setSysID(false), subsystemSwerveDrivetrain)
+      .andThen(Commands.waitSeconds(1))
+      .andThen(SignalLogger::stop);
     
     primaryController.start().onTrue(drivetrainSysIdCommand);
     primaryController.back().whileTrue(new CommandSwerveModulesForward(subsystemSwerveDrivetrain));

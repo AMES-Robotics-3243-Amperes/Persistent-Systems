@@ -94,9 +94,8 @@ public class ControlPointList {
       if (!task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem))
           && task.isActive(length)) {
         activeTasks.add(task);
+        activeSubsystems.addAll(task.getRequirements());
       }
-
-      activeSubsystems.addAll(task.getRequirements());
     }
 
     return activeTasks;
