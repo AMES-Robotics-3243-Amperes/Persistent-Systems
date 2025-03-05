@@ -4,39 +4,24 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.DataManager.Setpoint;
-import frc.robot.commands.leds.CommandLedPatternCycle;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CommandSwerveFollowSpline;
-import frc.robot.commands.CommandSwerveModulesForward;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.commands.automatics.MoveToPositionUtility;
-import frc.robot.commands.claw.IntakeClawCommand;
-import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
 import frc.robot.commands.elevator.ElevatorNudgeCommand;
 import frc.robot.commands.elevator.ElevatorZeroCommand;
-import frc.robot.commands.CommandSwerveGetOffset;
+import frc.robot.commands.leds.CommandLedPatternCycle;
 import frc.robot.splines.PathFactory;
-import frc.robot.splines.tasks.PerformAtTask;
-import frc.robot.subsystems.SubsystemLeds;
-import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemClaw;
+import frc.robot.subsystems.SubsystemElevator;
+import frc.robot.subsystems.SubsystemLeds;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.Constants.Setpoints;
 import frc.robot.Constants.FieldConstants;
@@ -123,18 +108,6 @@ public class RobotContainer {
    * testing purposes.
    */
   private void configureBindings() {
-    PIDController xController = new PIDController(1.2, 0, 0.1);
-    PIDController yController = new PIDController(1.2, 0, 0.1);
-    ProfiledPIDController thetaController = new ProfiledPIDController(0.7, 0, 0.0,
-        new Constraints(3 * Math.PI, 6 * Math.PI));
-
-    CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
-        .addPoint(0, 0)
-        .addPoint(2, 0)
-        .addPoint(2, 2)
-        .addTask(0, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
-        .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
-
     // IntakeClawCommand intakeClawCommand = new IntakeClawCommand(subsystemClaw,
     // Setpoints.intakePower);
     // IntakeClawCommand depositClawCommand = new IntakeClawCommand(subsystemClaw,
@@ -298,17 +271,8 @@ public class RobotContainer {
 
     mainTab.add("Zero Elevator", new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
 
-    primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
-    primaryController.b().onTrue(new InstantCommand(commandSwerveTeleopDrive::toggleFieldRelative));
-
-    SequentialCommandGroup drivetrainSysIdCommand = new SequentialCommandGroup(
-        subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kForward),
-        subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kReverse),
-        subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kForward),
-        subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kReverse));
-
-    primaryController.start().onTrue(drivetrainSysIdCommand);
-    primaryController.back().whileTrue(new CommandSwerveModulesForward(subsystemSwerveDrivetrain));
+    // primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
+    primaryController.b().onTrue(Commands.runOnce(commandSwerveTeleopDrive::toggleFieldRelative));
   }
 
   /**

@@ -1,21 +1,23 @@
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Second;
-
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.SignalLogger;
+
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.BaseUnits;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Voltage;
-import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 import frc.robot.Constants.SwerveConstants.DriveTrainConstants;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
 import frc.robot.subsystems.modules.SwerveModule;
@@ -25,19 +27,19 @@ import frc.robot.test.Test;
 import frc.robot.test.TestUtil;
 
 public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
-  private final ThriftyModule m_frontLeft = new ThriftyModule(
+  private final SwerveModule m_frontLeft = new ThriftyModule(
       DriveTrainConstants.IDs.kFrontLeftDrivingCanId,
       DriveTrainConstants.IDs.kFrontLeftTurningCanId, 0, DriveTrainConstants.ModuleOffsets.kFrontLeftOffset);
 
-  private final ThriftyModule m_frontRight = new ThriftyModule(
+  private final SwerveModule m_frontRight = new ThriftyModule(
       DriveTrainConstants.IDs.kFrontRightDrivingCanId,
       DriveTrainConstants.IDs.kFrontRightTurningCanId, 1, DriveTrainConstants.ModuleOffsets.kFrontRightOffset);
 
-  private final ThriftyModule m_rearLeft = new ThriftyModule(
+  private final SwerveModule m_rearLeft = new ThriftyModule(
       DriveTrainConstants.IDs.kRearLeftDrivingCanId,
       DriveTrainConstants.IDs.kRearLeftTurningCanId, 2, DriveTrainConstants.ModuleOffsets.kBackLeftOffset);
 
-  private final ThriftyModule m_rearRight = new ThriftyModule(
+  private final SwerveModule m_rearRight = new ThriftyModule(
       DriveTrainConstants.IDs.kRearRightDrivingCanId,
       DriveTrainConstants.IDs.kRearRightTurningCanId, 3, DriveTrainConstants.ModuleOffsets.kBackRightOffset);
 
@@ -110,38 +112,36 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
     m_rearRight.update();
   }
 
-  public SysIdRoutine driveRoutine = new SysIdRoutine(
-      new Config(BaseUnits.VoltageUnit.of(0.4).per(Second),
+  // #####
+  // SYSID
+  // #####
+
+  private final SysIdRoutine driveRoutine = new SysIdRoutine(
+      new Config(BaseUnits.VoltageUnit.of(1).per(Units.Second),
           BaseUnits.VoltageUnit.of(2),
-          BaseUnits.TimeUnit.of(8),
-          null),
+          BaseUnits.TimeUnit.of(6),
+          (state) -> SignalLogger.writeString("state", state.toString())),
       new Mechanism(
-          this::sysIdDrive,
-          this::sysIdDriveLog,
+          this::turnWithVoltage,
+          null,
           this));
 
   /**
-   * Sets the modules' drive voltages to a specific value
+   * Sets the modules' drive voltxages to a specific value
    * 
    * @param voltage the value to set the drive voltages to
    */
-  public void sysIdDrive(Voltage voltage) {
-    m_frontLeft.driveVoltage(voltage.baseUnitMagnitude());
-    m_frontRight.driveVoltage(voltage.baseUnitMagnitude());
-    m_rearLeft.driveVoltage(voltage.baseUnitMagnitude());
-    m_rearRight.driveVoltage(voltage.baseUnitMagnitude());
-  }
+  public void turnWithVoltage(Voltage voltage) {
+    m_frontLeft.driveVoltage(voltage.in(Units.Volts));
+    m_frontRight.driveVoltage(voltage.in(Units.Volts));
+    m_rearLeft.driveVoltage(voltage.in(Units.Volts));
+    m_rearRight.driveVoltage(voltage.in(Units.Volts));
 
-  /**
-   * Logs the motors' info. For use with SysID.
-   * 
-   * @param log The {@link SysIdRoutineLog} to log to
-   */
-  public void sysIdDriveLog(SysIdRoutineLog log) {
-    m_frontLeft.driveLog(log.motor("front_left_drive"));
-    m_frontRight.driveLog(log.motor("front_right_drive"));
-    m_rearLeft.driveLog(log.motor("rear_left_drive"));
-    m_rearRight.driveLog(log.motor("rear_right_drive"));
+    SwerveModuleState[] states = ChassisKinematics.kDriveKinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0, 1));
+    m_frontLeft.setDesiredRotation(states[0].angle);
+    m_frontRight.setDesiredRotation(states[1].angle);
+    m_rearLeft.setDesiredRotation(states[2].angle);
+    m_rearRight.setDesiredRotation(states[3].angle);
   }
 
   /**
