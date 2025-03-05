@@ -153,13 +153,13 @@ public class DataManager {
     L1Right(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset),
 
     L2Left(Positions.L2, LevelAngles.L23, FieldConstants.reefScoreOffset),
-    L2Right(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset),
+    L2Right(Positions.L1, LevelAngles.L23, FieldConstants.reefScoreOffset),
 
     L3Left(Positions.L3, LevelAngles.L23, FieldConstants.reefScoreOffset),
-    L3Right(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset),
+    L3Right(Positions.L1, LevelAngles.L23, FieldConstants.reefScoreOffset),
 
     L4Left(Positions.L4, LevelAngles.L4, FieldConstants.reefScoreOffset),
-    L4Right(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset);
+    L4Right(Positions.L1, LevelAngles.L4, FieldConstants.reefScoreOffset);
 
     public final double height;
     public final double angle;

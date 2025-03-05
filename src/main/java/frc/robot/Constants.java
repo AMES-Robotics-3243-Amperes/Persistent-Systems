@@ -14,6 +14,8 @@ import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -21,6 +23,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import frc.robot.DataManager.Setpoint;
 import frc.robot.splines.interpolation.CubicInterpolator;
@@ -54,8 +57,8 @@ public final class Constants {
 
   public static final class SwerveConstants {
     public static final class ControlConstants {
-      public static final double movingSpeed = 4.5;
-      public static final double rotationSpeed = 3 * Math.PI;
+      public static final double movingSpeed = 0.7;
+      public static final double rotationSpeed = 1.2 * Math.PI;
     }
 
     public static final class ChassisKinematics {
@@ -87,24 +90,24 @@ public final class Constants {
       public static final class ModuleOffsets {
         public static final Rotation2d kFrontLeftOffset = Rotation2d.fromRadians(-2.224);
         public static final Rotation2d kFrontRightOffset = Rotation2d.fromRadians(-0.178);
-        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(-0.0315);
+        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(6.195);
         public static final Rotation2d kBackRightOffset = Rotation2d.fromRadians(-2.763);
       }
     }
 
     public static final class ModuleConstants {
       public static final class PIDF {
-        public static final double kDrivingP = 0.4;
+        public static final double kDrivingP = 0.0;
         public static final double kDrivingI = 0;
         public static final double kDrivingD = 0;
 
-        public static final double kDrivingKs = 0.019237;
+        public static final double kDrivingKs = 0.01;
         public static final double kDrivingKv = 0.11324;
         public static final double kDrivingKa = 0.034615;
 
-        public static final double kTurningP = 3.5;
-        public static final double kTurningI = 0;
-        public static final double kTurningD = 0.0;
+        public static final double kAzimuthP = 5;
+        public static final double kAzimuthI = 0;
+        public static final double kAzimuthD = 0.0;
         public static final double kTurningFF = 0;
         public static final double kTurningMinOutput = -1;
         public static final double kTurningMaxOutput = 1;
@@ -399,10 +402,24 @@ public final class Constants {
 
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
-      public static final double maxSpeed = 4;
+      public static final double maxSpeed = 2;
       public static final double maxCentrifugalAcceleration = 2;
       public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;
+
+      /**
+       * Returns a sensible default x/y PID controller for spline following
+       */
+      public static final PIDController xyController() {
+        return new PIDController(1.2, 0, 0.1);
+      }
+
+      /**
+       * Returns a sensible default theta PID controller for spline following
+       */
+      public static final ProfiledPIDController thetaController() {
+        return new ProfiledPIDController(0.7, 0, 0.0, new Constraints(3 * Math.PI, 6 * Math.PI));
+      }
 
       /**
        * As the robot drifts from the spline, the speed at
@@ -444,8 +461,11 @@ public final class Constants {
   }
 
   public static final class DifferentialArm {
-    // Test this once claw is finished - absolute encoder value at horizontal
-    public static final double encoderOffset = 0.6;
+    // public static final double encoderOffset = 0.5;
+
+    public static final double currentDifferenceThreshold = 15;
+    public static final double positionDelta = 0.025;
+    public static final double filterTimeConstant = 0.5;
 
     public static final class MotorIDs {
       public static final int leftID = 13;
@@ -453,24 +473,24 @@ public final class Constants {
     }
 
     public static final class PID {
-      public static final double P = 1.5; // 1.5
-      public static final double I = 0.02; // 0.02
-      public static final double D = 0.06; // 0.06
+      public static final double P = 3;
+      public static final double I = 0.02;
+      public static final double D = 0.06;
     }
   }
 
   // Important setpoints for the claw
   public static final class Setpoints {
     // Constant intake power (just invert to deposit)
-    public static final double intakePower = 1.0;
+    public static final double intakePower = 0.5;
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
-      public static final double Start = 1.45; // 1.75
-      public static final double Intake = 0.959931;
+      public static final double Start = 0.8;
+      public static final double Intake = 0.69;
       public static final double L1 = 0.0;
-      public static final double L23 = -0.959931;
-      public static final double L4 = -1.5; // 1.75
+      public static final double L23 = 0.48;
+      public static final double L4 = L23;
     }
   }
 }

@@ -25,6 +25,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog.MotorLog;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
 import frc.robot.Constants.SwerveConstants.ModuleConstants.PIDF;
+import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
  * Represents a single module of an {@link SubsystemSwerveDrivetrain}
@@ -91,7 +92,7 @@ public class REVModule implements SwerveModule {
     turningConfig.closedLoop
         .feedbackSensor(FeedbackSensor.kAbsoluteEncoder)
         // These are example gains you may need to them for your own robot!
-        .pid(PIDF.kTurningP, PIDF.kTurningI, PIDF.kTurningD)
+        .pid(PIDF.kAzimuthP, PIDF.kAzimuthI, PIDF.kAzimuthD)
         .outputRange(-1, 1)
         // Enable PID wrap around for the turning motor. This will allow the PID
         // controller to go through 0 to get to the setpoint i.e. going from 350 degrees
@@ -166,13 +167,25 @@ public class REVModule implements SwerveModule {
   }
 
   /**
-   * @return the {@link SwerveModulePosition} of the module
+   * @return the {@link SwerveModulePosition} of the module without the offset included
    * 
    * @author :3
    */
   public SwerveModulePosition getPosition() {
     double position = m_drivingEncoder.getPosition();
-    Rotation2d rotation = new Rotation2d(m_turningEncoder.getPosition() - m_wheelOffset.getRadians());
+    Rotation2d rotation = Rotation2d.fromRadians(m_turningEncoder.getPosition() - m_wheelOffset.getRadians());
+
+    return new SwerveModulePosition(position, rotation);
+  }
+
+  /**
+   * @return the absolute {@link SwerveModulePosition} of the module (no offset)
+   * 
+   * @author :3
+   */
+  public SwerveModulePosition getAbsolutePosition() {
+    double position = m_drivingEncoder.getPosition();
+    Rotation2d rotation = Rotation2d.fromRadians(m_turningEncoder.getPosition());
 
     return new SwerveModulePosition(position, rotation);
   }

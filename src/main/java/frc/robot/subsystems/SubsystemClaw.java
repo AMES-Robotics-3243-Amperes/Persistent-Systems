@@ -14,7 +14,9 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Vector;
+// import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
@@ -22,30 +24,38 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-// Decide if we want to use switch, or ultrasonic sensor, etc.
-import edu.wpi.first.wpilibj.Ultrasonic;
+
+// import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants.DifferentialArm;
+import frc.robot.Constants.Setpoints.LevelAngles;
 import frc.robot.DataManager.Setpoint;
 
 public class SubsystemClaw extends SubsystemBase {
   // Some sort of sensor or limit switch to detect the PVC pipe
-  public Ultrasonic rangeFinder;
+  // public DigitalInput limitSwitch;
 
   // Differential motors
   private SparkMax rightMotor = new SparkMax(DifferentialArm.MotorIDs.rightID, MotorType.kBrushless);
   private SparkMax leftMotor = new SparkMax(DifferentialArm.MotorIDs.leftID, MotorType.kBrushless);
-  
+
   private SparkMaxConfig rightConfig = new SparkMaxConfig();
   private SparkMaxConfig leftConfig = new SparkMaxConfig();
 
+  // Motor group and PID controller to control movement via Matrix multiplication and PID control
   private DifferentialMotorGroup motorGroup;
   private PIDController pivotController;
 
-  private double targetPivotPosition = convertRadiansToRotations(Setpoint.Start.angle);
+  // Starting values for the arm
+  private double targetPivotPosition = Setpoint.Start.angle;
   private double intakePower = 0.0;
 
-  private AbsoluteEncoder pivotEncoder;
+  // Exponentially smoothing linear filter to smooth the current difference
+  LinearFilter filter = LinearFilter.singlePoleIIR(DifferentialArm.filterTimeConstant, 0.02);
 
+  private AbsoluteEncoder pivotEncoder;
+  // private ArmFeedforward feedforward;
+
+  // Nested class to perform updates to the linear system through matrix multiplication
   private static class DifferentialMotorGroup {
     private MotorController rightMotor;
     private MotorController leftMotor;
@@ -54,10 +64,11 @@ public class SubsystemClaw extends SubsystemBase {
     private double rollerOutput;
 
     // Matrix used to calculate the required inputs
-    private static Matrix<N2, N2> inverseDifferentialMatrix = new Matrix<N2, N2>(N2.instance, N2.instance, new double[] {
-       1.0, 1.0,
-       1.0, -1.0
-    });
+    private static Matrix<N2, N2> inverseDifferentialMatrix = new Matrix<N2, N2>(N2.instance, N2.instance,
+        new double[] {
+            1.0, 1.0,
+            1.0, -1.0
+        });
 
     // Class to represent the differential motors
     public DifferentialMotorGroup(MotorController motorForward, MotorController motorReverse) {
@@ -68,9 +79,10 @@ public class SubsystemClaw extends SubsystemBase {
     // Calculates the rate at which to spin the motors based on where they should be
     // Basically, we calculate the required inputs given outputs
     private void update() {
-      Matrix<N2, N1> mechanismOutputs = new Matrix<N2, N1>(N2.instance, N1.instance, new double[] {pivotOutput, rollerOutput});
+      Matrix<N2, N1> mechanismOutputs = new Matrix<N2, N1>(N2.instance, N1.instance,
+          new double[] { pivotOutput, rollerOutput });
       Vector<N2> mechanismInputs = new Vector<N2>(inverseDifferentialMatrix.times(mechanismOutputs));
-      
+
       // Scales the motor values to be between 0 and 1
       double maxMotorOutput = Math.max(mechanismInputs.get(0), mechanismInputs.get(1));
       if (maxMotorOutput > 1.0) {
@@ -92,53 +104,72 @@ public class SubsystemClaw extends SubsystemBase {
 
   // Sets the target position for the absolute encoder
   public void setOutsidePosition(double angle) {
-    targetPivotPosition = convertRadiansToRotations(angle);
+    targetPivotPosition = angle;
   }
 
+  // You'll never guess...
   public void setIntakePower(double power) {
     intakePower = power;
   }
 
   // Helper function for setOutsidePosition()
-  private double convertRadiansToRotations(double angle) {
-    return (angle / (2 * Math.PI)) + DifferentialArm.encoderOffset;
-  }
+  // private double convertRadiansToRotations(double angle) {
+  //   return (angle / (2 * Math.PI)) + DifferentialArm.encoderOffset;
+  // }
 
   /** Creates a new SubsystemEndAffectorDifferential. */
   public SubsystemClaw(/* Ultrasonic rangeFinder */) {
-    // Might need to invert this motor
     rightConfig.inverted(true);
-    rightConfig.smartCurrentLimit(5);
+    rightConfig.smartCurrentLimit(15);
     rightConfig.idleMode(IdleMode.kBrake);
     rightConfig.absoluteEncoder.inverted(true);
-    
-    leftConfig.smartCurrentLimit(5);
+
+    leftConfig.smartCurrentLimit(15);
     leftConfig.idleMode(IdleMode.kBrake);
 
     rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     leftMotor.configure(leftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     pivotEncoder = rightMotor.getAbsoluteEncoder();
-    
+
     motorGroup = new DifferentialMotorGroup(rightMotor, leftMotor);
     pivotController = new PIDController(DifferentialArm.PID.P, DifferentialArm.PID.I, DifferentialArm.PID.D);
 
-    Shuffleboard.getTab("Tuning").add(pivotController).withWidget(BuiltInWidgets.kPIDController);
+    // limitSwitch = new DigitalInput(0);
 
-    // Decide if we want to use switch, or ultrasonic sensor, etc.
-    // this.rangeFinder = rangeFinder;
+    Shuffleboard.getTab("Tuning").add(pivotController).withWidget(BuiltInWidgets.kPIDController);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
     double pivotControllerCalculate = pivotController.calculate(pivotEncoder.getPosition(), targetPivotPosition);
+
+    double smoothedCurrentDifference = filter.calculate(rightMotor.getOutputCurrent() - leftMotor.getOutputCurrent());
+
+    // if (targetPivotPosition > LevelAngles.Intake - DifferentialArm.positionDelta || targetPivotPosition < LevelAngles.Intake + DifferentialArm.positionDelta) {
+    //   if (smoothedCurrentDifference > DifferentialArm.currentDifferenceThreshold) {
+    //     intakePower = 0;
+    //   }
+    // }
+
     motorGroup.setPivotOutput(pivotControllerCalculate);
     motorGroup.setRollerOutput(intakePower);
     motorGroup.update();
+
     SmartDashboard.putNumber("Arm Absolute Encoder Rotations", pivotEncoder.getPosition());
     SmartDashboard.putNumber("Arm PID pivot controller output", pivotControllerCalculate);
     SmartDashboard.putNumber("Target position", targetPivotPosition);
+
+    SmartDashboard.putNumber("Left motor value", leftMotor.get());
+    SmartDashboard.putNumber("Right motor value", rightMotor.get());
+
+    SmartDashboard.putNumber("Left motor temp", leftMotor.getMotorTemperature());
+    SmartDashboard.putNumber("Right motor temp", rightMotor.getMotorTemperature());
+    
+    SmartDashboard.putNumber("Right Motor current", rightMotor.getOutputCurrent());
+    SmartDashboard.putNumber("Left Motor current", leftMotor.getOutputCurrent());
+    SmartDashboard.putNumber("Smoothed motor difference", smoothedCurrentDifference);
   }
 
   private static double clamp(double min, double max, double x) {
