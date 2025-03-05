@@ -16,6 +16,4 @@ public interface SwerveModule {
     public void update();
 
     public void driveVoltage(double voltage);
-
-    public void setSysID(boolean doingSysID);
 }

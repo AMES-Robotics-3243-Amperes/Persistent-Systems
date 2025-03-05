@@ -4,27 +4,16 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Volts;
-
-import com.ctre.phoenix6.SignalLogger;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.commands.CommandSwerveFollowSpline;
-import frc.robot.commands.CommandSwerveModulesForward;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.commands.CommandSwerveGetOffset;
 import frc.robot.splines.PathFactory;
-import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
@@ -86,46 +75,30 @@ public class RobotContainer {
 
   private void setAutoCommands() {
     autoSelector
-      .add(new InstantCommand(() -> {System.out.println("\n\n\nPRINT COMMAND RUN!\n\n\n");}), "Print Command")
-      .add(new InstantCommand(() -> {System.out.println("\n\n\nOTHER COMMAND RUN!\n\n\n");}), "Other Command");
+        .add(new InstantCommand(() -> {
+          System.out.println("\n\n\nPRINT COMMAND RUN!\n\n\n");
+        }), "Print Command")
+        .add(new InstantCommand(() -> {
+          System.out.println("\n\n\nOTHER COMMAND RUN!\n\n\n");
+        }), "Other Command");
   }
 
   /**
    * Used to configure controller bindings.
    */
   private void configureBindings() {
-    PIDController xController = new PIDController(1.2, 0, 0.1);
-    PIDController yController = new PIDController(1.2, 0, 0.1);
-    ProfiledPIDController thetaController = new ProfiledPIDController(0.7, 0, 0.0,
-        new Constraints(3 * Math.PI, 6 * Math.PI));
-
     CommandSwerveFollowSpline followCommand = PathFactory.newFactory()
         .addPoint(0, 0)
         .addPoint(2, 0)
-        .addPoint(2, 2)
-        .addTask(0, 0, new PerformAtTask(Rotation2d.fromDegrees(180), new InstantCommand()))
-        .buildCommand(subsystemSwerveDrivetrain, xController, yController, thetaController);
+        .addPoint(0, -0.5)
+        .addPoint(-1, 0)
+        .addPoint(0, 0)
+        .buildCommand(subsystemSwerveDrivetrain, FollowConstants.xyController(), FollowConstants.xyController(),
+            FollowConstants.thetaController());
 
     primaryController.a().onTrue(followCommand);
     primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
-    primaryController.b().onTrue(new InstantCommand(commandSwerveTeleopDrive::toggleFieldRelative));
-
-    SequentialCommandGroup drivetrainSysIdCommand =
-      Commands.run(() -> subsystemSwerveDrivetrain.setSysID(true), subsystemSwerveDrivetrain)
-      .andThen(() -> subsystemSwerveDrivetrain.sysIdDrive(Volts.of(0)), subsystemSwerveDrivetrain)
-      .andThen(SignalLogger::start)
-      .andThen(Commands.waitSeconds(2))
-      .andThen(subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kForward))
-      .andThen(subsystemSwerveDrivetrain.sysIdDriveQuasistatic(Direction.kReverse))
-      .andThen(subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kForward))
-      .andThen(subsystemSwerveDrivetrain.sysIdDriveDynamic(Direction.kReverse))
-      .andThen(() -> subsystemSwerveDrivetrain.sysIdDrive(Volts.of(0)), subsystemSwerveDrivetrain)
-      .andThen(() -> subsystemSwerveDrivetrain.setSysID(false), subsystemSwerveDrivetrain)
-      .andThen(Commands.waitSeconds(1))
-      .andThen(SignalLogger::stop);
-    
-    primaryController.start().onTrue(drivetrainSysIdCommand);
-    primaryController.back().whileTrue(new CommandSwerveModulesForward(subsystemSwerveDrivetrain));
+    primaryController.b().onTrue(Commands.runOnce(commandSwerveTeleopDrive::toggleFieldRelative));
   }
 
   /**

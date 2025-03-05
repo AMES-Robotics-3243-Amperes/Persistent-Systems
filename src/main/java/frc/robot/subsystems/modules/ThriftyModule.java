@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.Second;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -20,8 +21,8 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -29,9 +30,10 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Frequency;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.AnalogEncoder;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.SwerveConstants.ModuleConstants.PIDF;
+import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 
 /**
  * Represents a single module of a {@link SubsystemSwerveDrivetrain}
@@ -44,37 +46,37 @@ public class ThriftyModule implements SwerveModule {
 
   private final AnalogEncoder m_azimuthEncoder;
 
-  private final SimpleMotorFeedforward m_drivingFeedforwardController;
-  private final PIDController m_drivingPIDController;
   private final PIDController m_azimuthPIDController;
-  private LinearVelocity m_drivingVelocitySetpoint = LinearVelocity.ofRelativeUnits(0, Units.MetersPerSecond);
+
+  private double m_drivingVelocitySetpointMetersPerSecond = 0;
+  private Rotation2d m_azimuthSetpoint = new Rotation2d();
 
   private final Rotation2d m_azimuthOffset;
 
-  private boolean doingSysID = false;
+  private boolean drivingWithRawVoltage = false;
 
   // TODO: constants!
   private final double wheelRadiusMeters = edu.wpi.first.math.util.Units.inchesToMeters(2);
-  private final double drivingConversionFactor = 1 / 5.14;
+  private final double drivingConversionFactor = 5.14;
+
+  private final boolean doDebug;
 
   /**
    * Constructs a {@link ThriftyModule}
    * 
-   * @param drivingCANId the id of the {@link CANSparkMax} for driving
-   * @param azimuthCANId the id of the {@link CANSparkMax} for azimuth control
-   * @param azimuthOffset  the offset of the encoder's 0 state
+   * @param drivingCANId  the id of the {@link CANSparkMax} for driving
+   * @param azimuthCANId  the id of the {@link CANSparkMax} for azimuth control
+   * @param azimuthOffset the offset of the encoder's 0 state
    * 
    * @author :3
    */
   public ThriftyModule(int drivingCANId, int azimuthCANId, int encoderID, Rotation2d azimuthOffset) {
+    doDebug = encoderID == 1;
+
     // :3 initialize spark maxes
     m_drivingTalonFX = new TalonFX(drivingCANId);
     m_azimuthSparkMax = new SparkMax(azimuthCANId, MotorType.kBrushless);
 
-    // get controllers and encoders
-    m_drivingFeedforwardController = new SimpleMotorFeedforward(PIDF.kDrivingKs, PIDF.kDrivingKv, PIDF.kDrivingKv);
-    m_drivingPIDController = new PIDController(PIDF.kDrivingP, PIDF.kDrivingI, PIDF.kDrivingD);
-    
     m_azimuthEncoder = new AnalogEncoder(encoderID);
     m_azimuthPIDController = new PIDController(PIDF.kAzimuthP, PIDF.kAzimuthI, PIDF.kAzimuthD);
     m_azimuthPIDController.enableContinuousInput(-Math.PI, Math.PI);
@@ -84,26 +86,26 @@ public class ThriftyModule implements SwerveModule {
     SparkMaxConfig azimuthConfig = new SparkMaxConfig();
 
     drivingConfig.CurrentLimits
-      .withSupplyCurrentLimit(70)
-      .withSupplyCurrentLimitEnable(true);
+        .withSupplyCurrentLimit(70) // TODO: constants!
+        .withSupplyCurrentLimitEnable(true);
     drivingConfig.MotorOutput
-      .withNeutralMode(NeutralModeValue.Brake);
+        .withNeutralMode(NeutralModeValue.Coast);
     drivingConfig.Feedback
-      .withSensorToMechanismRatio(drivingConversionFactor)
-      .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor);
+        .withSensorToMechanismRatio(drivingConversionFactor)
+        .withFeedbackSensorSource(FeedbackSensorSourceValue.RotorSensor);
     drivingConfig.MotionMagic
-      .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(400)) // TODO: constants!
-      .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(400));
+        .withMotionMagicAcceleration(RotationsPerSecondPerSecond.of(400)) // TODO: constants!
+        .withMotionMagicJerk(RotationsPerSecondPerSecond.per(Second).of(400));
     drivingConfig.Slot0
-      .withKS(0)
-      .withKV(0.1)
-      .withKA(0)
-      .withKP(0)
-      .withKI(0)
-      .withKD(0);
+        .withKS(0)
+        .withKV(0.6)
+        .withKA(0)
+        .withKP(0.2)
+        .withKI(0)
+        .withKD(0.05);
 
     azimuthConfig
-        .idleMode(IdleMode.kBrake)
+        .idleMode(IdleMode.kCoast)
         .smartCurrentLimit(40);
 
     // finish up configuration
@@ -113,10 +115,11 @@ public class ThriftyModule implements SwerveModule {
     m_drivingTalonFX.clearStickyFaults();
     m_drivingTalonFX.getConfigurator().apply(drivingConfig);
 
-    m_drivingTalonFX.getVelocity().setUpdateFrequency(Frequency.ofRelativeUnits(51, Units.Hertz));
-    m_drivingTalonFX.getPosition().setUpdateFrequency(Frequency.ofRelativeUnits(51, Units.Hertz));
-    m_drivingTalonFX.getSupplyCurrent().setUpdateFrequency(Frequency.ofRelativeUnits(51, Units.Hertz));
-    m_drivingTalonFX.getSupplyVoltage().setUpdateFrequency(Frequency.ofRelativeUnits(51, Units.Hertz));
+    // TODO: constants!
+    m_drivingTalonFX.getVelocity().setUpdateFrequency(Frequency.ofRelativeUnits(200, Units.Hertz));
+    m_drivingTalonFX.getPosition().setUpdateFrequency(Frequency.ofRelativeUnits(200, Units.Hertz));
+    m_drivingTalonFX.getSupplyCurrent().setUpdateFrequency(Frequency.ofRelativeUnits(200, Units.Hertz));
+    m_drivingTalonFX.getSupplyVoltage().setUpdateFrequency(Frequency.ofRelativeUnits(200, Units.Hertz));
     m_drivingTalonFX.optimizeBusUtilization();
 
     // set wheel offset
@@ -124,25 +127,17 @@ public class ThriftyModule implements SwerveModule {
   }
 
   /**
-   * Returns the azimuth encoder value as a {@link Rotaiton2d}.
+   * Returns the azimuth encoder value as a {@link Rotation2d}.
    */
   private Rotation2d azimuthPosition() {
-    return Rotation2d.fromRotations(m_azimuthEncoder.get());
-  }
-
-  /**
-   * Returns the driving velocity as a {@link LinearVelocity}
-   */
-  private LinearVelocity drivingVelocity() {
-    double radiansPerSecond = m_drivingTalonFX.getVelocity().getValue().times(drivingConversionFactor).in(Units.RadiansPerSecond);
-    return LinearVelocity.ofRelativeUnits(radiansPerSecond * wheelRadiusMeters, Units.MetersPerSecond);
+    return Rotation2d.fromRadians(MathUtil.angleModulus(m_azimuthEncoder.get() * 2 * Math.PI));
   }
 
   /**
    * Returns the driving position as a {@link Distance}
    */
   private Distance linearDrivingPosition() {
-    double radians = m_drivingTalonFX.getPosition().getValue().times(drivingConversionFactor).in(Units.Radians);
+    double radians = m_drivingTalonFX.getPosition().getValue().in(Units.Radians);
     return Distance.ofRelativeUnits(radians * wheelRadiusMeters, Units.Meters);
   }
 
@@ -160,11 +155,10 @@ public class ThriftyModule implements SwerveModule {
     offsetState.angle = desiredState.angle.plus(m_azimuthOffset);
     offsetState.optimize(azimuthPosition());
 
-    AngularVelocity desiredAngularVelocity = RadiansPerSecond.of(offsetState.speedMetersPerSecond / wheelRadiusMeters);
-    final MotionMagicVelocityVoltage request = new MotionMagicVelocityVoltage(0);
-    m_drivingTalonFX.setControl(request.withVelocity(desiredAngularVelocity));
-  
-    m_azimuthPIDController.setSetpoint(offsetState.angle.getRadians());
+    m_drivingVelocitySetpointMetersPerSecond = offsetState.speedMetersPerSecond;
+    m_azimuthSetpoint = offsetState.angle;
+
+    this.drivingWithRawVoltage = false;
   }
 
   /**
@@ -176,48 +170,50 @@ public class ThriftyModule implements SwerveModule {
    */
   public void setDesiredRotation(Rotation2d desiredRotation) {
     Rotation2d offsetRotation = desiredRotation.plus(m_azimuthOffset);
-    m_azimuthPIDController.setSetpoint(offsetRotation.getRadians());
+    m_azimuthSetpoint = offsetRotation;
   }
 
   /**
    * Updates the feedforward and PID controllers of the module.
    */
   public void update() {
-    double desiredSpeedMetersPerSecond = m_drivingVelocitySetpoint.in(Units.MetersPerSecond)
-      * Math.cos(m_azimuthPIDController.getSetpoint() - azimuthPosition().getRadians());
+    double desiredSpeedMetersPerSecond = m_drivingVelocitySetpointMetersPerSecond
+        * Math.cos(m_azimuthSetpoint.getRadians() - azimuthPosition().getRadians());
 
-    double drivingPIDOutput = m_drivingPIDController.calculate(drivingVelocity().in(Units.MetersPerSecond),
-        desiredSpeedMetersPerSecond);
-    double drivingFFOutput = m_drivingFeedforwardController.calculate(desiredSpeedMetersPerSecond);
-    
-    double azimuthOutput = m_azimuthPIDController.calculate(azimuthPosition().getRadians());
+    if (!drivingWithRawVoltage) {
+      AngularVelocity desiredAngularVelocity = RadiansPerSecond
+          .of(desiredSpeedMetersPerSecond / wheelRadiusMeters);
+      MotionMagicVelocityVoltage request = new MotionMagicVelocityVoltage(desiredAngularVelocity);
+      m_drivingTalonFX.setControl(request.withSlot(0));
+    }
 
-    if (!doingSysID) m_drivingTalonFX.setVoltage(drivingPIDOutput + drivingFFOutput);
-    m_azimuthSparkMax.setVoltage(azimuthOutput);
+    double azimuthOutput = m_azimuthPIDController.calculate(azimuthPosition().getRadians(),
+        MathUtil.angleModulus(m_azimuthSetpoint.getRadians()));
+    m_azimuthSparkMax.setVoltage(Units.Volts.of(azimuthOutput));
+
+    if (doDebug) {
+      SmartDashboard.putNumber("fr encoder", azimuthPosition().getRadians());
+      SmartDashboard.putNumber("fr goal", m_azimuthSetpoint.getRadians());
+      SmartDashboard.putNumber("fr output", azimuthOutput);
+    }
   }
 
   /**
    * @return the {@link SwerveModulePosition} of the module
-   * 
-   * @author :3
    */
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(linearDrivingPosition().in(Units.Meters), azimuthPosition().minus(m_azimuthOffset));
   }
 
   /**
-   * @return the {@link SwerveModulePosition} of the module without the offset included
-   * 
-   * @author :3
+   * @return the {@link SwerveModulePosition} of the module without the offset
    */
   public SwerveModulePosition getAbsolutePosition() {
     return new SwerveModulePosition(linearDrivingPosition().in(Units.Meters), azimuthPosition());
   }
 
   /**
-   * @return Gets the output motor current of an inputted motor
-   * 
-   * @author :>
+   * @return The supplied motor current of the driving motor
    */
   public double getMotorOutputCurrent() {
     return m_drivingTalonFX.getSupplyCurrent().getValue().in(Units.Amps);
@@ -230,11 +226,10 @@ public class ThriftyModule implements SwerveModule {
    * @param voltage The voltage to set the drive motor to
    */
   public void driveVoltage(double voltage) {
-    m_drivingTalonFX.setVoltage(voltage);
-    setDesiredRotation(new Rotation2d(0));
-  }
+    this.drivingWithRawVoltage = true;
+    m_drivingVelocitySetpointMetersPerSecond = 0;
 
-  public void setSysID(boolean doingSysID) {
-    this.doingSysID = doingSysID;
+    VoltageOut request = new VoltageOut(voltage);
+    m_drivingTalonFX.setControl(request.withOverrideBrakeDurNeutral(true));
   }
 }

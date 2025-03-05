@@ -47,8 +47,6 @@ public class REVModule implements SwerveModule {
 
   private final Rotation2d m_wheelOffset;
 
-  private boolean doingSysID = false;
-
   /**
    * Constructs a {@link ThriftyModule}
    * 
@@ -156,7 +154,7 @@ public class REVModule implements SwerveModule {
     double drivingPIDOutput = m_drivingPIDController.calculate(m_drivingEncoder.getVelocity(),
         m_drivingVelocitySetpoint);
     double drivingFFOutput = m_drivingFeedforwardController.calculate(m_drivingVelocitySetpoint);
-    if (!doingSysID) m_drivingSparkMax.setVoltage(drivingPIDOutput + drivingFFOutput);
+    m_drivingSparkMax.setVoltage(drivingPIDOutput + drivingFFOutput);
   }
 
   /**
@@ -222,9 +220,5 @@ public class REVModule implements SwerveModule {
     motorLog.linearPosition(Units.Meters.of(m_drivingEncoder.getPosition()));
     motorLog.linearVelocity(Units.MetersPerSecond.of(m_drivingEncoder.getVelocity()));
     motorLog.voltage(Units.Volts.of(m_drivingSparkMax.getBusVoltage() * m_drivingSparkMax.getAppliedOutput()));
-  }
-
-  public void setSysID(boolean doingSysID) {
-    this.doingSysID = doingSysID;
   }
 }

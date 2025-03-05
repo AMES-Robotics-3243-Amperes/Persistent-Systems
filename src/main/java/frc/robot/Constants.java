@@ -11,6 +11,8 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -18,6 +20,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import frc.robot.splines.interpolation.CubicInterpolator;
 import frc.robot.splines.interpolation.SplineInterpolator;
@@ -50,8 +53,8 @@ public final class Constants {
 
   public static final class SwerveConstants {
     public static final class ControlConstants {
-      public static final double movingSpeed = 4.5;
-      public static final double rotationSpeed = 3 * Math.PI;
+      public static final double movingSpeed = 0.7;
+      public static final double rotationSpeed = 1.2 * Math.PI;
     }
 
     public static final class ChassisKinematics {
@@ -99,7 +102,7 @@ public final class Constants {
         public static final double kDrivingKv = 0.11324;
         public static final double kDrivingKa = 0.034615;
 
-        public static final double kAzimuthP = 3.5;
+        public static final double kAzimuthP = 5;
         public static final double kAzimuthI = 0;
         public static final double kAzimuthD = 0.0;
         public static final double kTurningFF = 0;
@@ -157,10 +160,24 @@ public final class Constants {
 
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
-      public static final double maxSpeed = 4;
+      public static final double maxSpeed = 2;
       public static final double maxCentrifugalAcceleration = 2;
       public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;
+
+      /**
+       * Returns a sensible default x/y PID controller for spline following
+       */
+      public static final PIDController xyController() {
+        return new PIDController(1.2, 0, 0.1);
+      }
+
+      /**
+       * Returns a sensible default theta PID controller for spline following
+       */
+      public static final ProfiledPIDController thetaController() {
+        return new ProfiledPIDController(0.7, 0, 0.0, new Constraints(3 * Math.PI, 6 * Math.PI));
+      }
 
       /**
        * As the robot drifts from the spline, the speed at

@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 import com.ctre.phoenix6.SignalLogger;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -16,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Config;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
+import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 import frc.robot.Constants.SwerveConstants.DriveTrainConstants;
 import frc.robot.Constants.SwerveConstants.ModuleConstants;
 import frc.robot.subsystems.modules.SwerveModule;
@@ -115,12 +117,12 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
   // #####
 
   private final SysIdRoutine driveRoutine = new SysIdRoutine(
-      new Config(BaseUnits.VoltageUnit.of(0.9).per(Units.Second),
-          BaseUnits.VoltageUnit.of(2.4),
-          BaseUnits.TimeUnit.of(4.5),
+      new Config(BaseUnits.VoltageUnit.of(1).per(Units.Second),
+          BaseUnits.VoltageUnit.of(2),
+          BaseUnits.TimeUnit.of(6),
           (state) -> SignalLogger.writeString("state", state.toString())),
       new Mechanism(
-          this::sysIdDrive,
+          this::turnWithVoltage,
           null,
           this));
 
@@ -129,11 +131,17 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
    * 
    * @param voltage the value to set the drive voltages to
    */
-  public void sysIdDrive(Voltage voltage) {
+  public void turnWithVoltage(Voltage voltage) {
     m_frontLeft.driveVoltage(voltage.in(Units.Volts));
     m_frontRight.driveVoltage(voltage.in(Units.Volts));
     m_rearLeft.driveVoltage(voltage.in(Units.Volts));
     m_rearRight.driveVoltage(voltage.in(Units.Volts));
+
+    SwerveModuleState[] states = ChassisKinematics.kDriveKinematics.toSwerveModuleStates(new ChassisSpeeds(0, 0, 1));
+    m_frontLeft.setDesiredRotation(states[0].angle);
+    m_frontRight.setDesiredRotation(states[1].angle);
+    m_rearLeft.setDesiredRotation(states[2].angle);
+    m_rearRight.setDesiredRotation(states[3].angle);
   }
 
   /**
@@ -150,18 +158,6 @@ public class SubsystemSwerveDrivetrain extends SubsystemBaseTestable {
    */
   public Command sysIdDriveDynamic(SysIdRoutine.Direction direction) {
     return driveRoutine.dynamic(direction);
-  }
-
-  /**
-   * Sets the SysID state. This affects the behavior of the modules,
-   * enabling SysID will remove some functionality that conflicts
-   * with SysID.
-   */
-  public void setSysID(boolean doingSysID) {
-    m_frontLeft.setSysID(doingSysID);
-    m_frontRight.setSysID(doingSysID);
-    m_rearLeft.setSysID(doingSysID);
-    m_rearRight.setSysID(doingSysID);
   }
 
   // #################
