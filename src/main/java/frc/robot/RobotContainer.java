@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.DataManager.Setpoint;
 import frc.robot.commands.leds.CommandLedPatternCycle;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveModulesForward;
@@ -148,17 +149,32 @@ public class RobotContainer {
             subsystemClaw));
 
     secondaryController.rightBumper().onTrue(
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
-            },
-            subsystemClaw));
+      new InstantCommand(
+          () -> {
+            subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
+          },
+          subsystemClaw));
 
     secondaryController.a().onTrue(
-        new IntakeClawCommand(subsystemClaw, Setpoints.intakePower));
+        new InstantCommand(
+          () -> {
+            subsystemClaw.setIntakePower(Setpoints.intakePower);
+          }
+        ));
 
     secondaryController.b().onTrue(
-        new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower));
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setIntakePower(-Setpoints.intakePower);
+        }
+      ));
+
+    secondaryController.x().onTrue(
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setIntakePower(0);
+        }
+      ));
 
     // Keybindings will change
     // primaryController.a().onTrue(followCommand);

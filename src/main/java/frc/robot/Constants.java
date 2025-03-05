@@ -430,8 +430,11 @@ public final class Constants {
   }
 
   public static final class DifferentialArm {
-    // Test this once claw is finished - absolute encoder value at horizontal
-    public static final double encoderOffset = 0.6;
+    // public static final double encoderOffset = 0.5;
+
+    public static final double currentDifferenceThreshold = 15;
+    public static final double positionDelta = 0.025;
+    public static final double filterTimeConstant = 0.5;
 
     public static final class MotorIDs {
       public static final int leftID = 13;
@@ -439,24 +442,24 @@ public final class Constants {
     }
 
     public static final class PID {
-      public static final double P = 1.5; // 1.5
-      public static final double I = 0.02; // 0.02
-      public static final double D = 0.06; // 0.06
+      public static final double P = 3;
+      public static final double I = 0.02;
+      public static final double D = 0.06;
     }
   }
 
   // Important setpoints for the claw
   public static final class Setpoints {
     // Constant intake power (just invert to deposit)
-    public static final double intakePower = 1.0;
+    public static final double intakePower = 0.5;
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
-      public static final double Start = 1.45; // 1.75
-      public static final double Intake = 0.959931;
+      public static final double Start = 0.8;
+      public static final double Intake = 0.69;
       public static final double L1 = 0.0;
-      public static final double L23 = -0.959931;
-      public static final double L4 = -1.5; // 1.75
+      public static final double L23 = 0.48;
+      public static final double L4 = L23;
     }
   }
 }
