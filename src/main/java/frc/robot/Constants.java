@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
@@ -15,6 +17,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
@@ -58,7 +61,6 @@ public final class Constants {
     public static final class ChassisKinematics {
       // :3 distance between centers of right and left wheels on robot
       public static final double kRobotWidth = Units.inchesToMeters(15);
-
       // :3 distance between front and back wheels on robot
       public static final double kRobotLength = Units.inchesToMeters(15);
 
@@ -358,14 +360,26 @@ public final class Constants {
     public static final List<AprilTag> tags = Arrays.asList(tag);
     public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
-    public static final List<PhotonUnit> photonUnits = Arrays.asList();
-    // .asList(new PhotonUnit("FrontCamera",
-    // PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-    // new Transform3d(new Pose3d(),
-    // new Pose3d(new Translation3d(Units.inchesToMeters(9),
-    // Units.inchesToMeters(5), Units.inchesToMeters(0)),
-    // new Rotation3d(0, Units.degreesToRadians(2), 0))),
-    // fieldLayout));
+    public static final List<PhotonUnit> photonUnits = Arrays.asList(new PhotonUnit("FrontCenterCamera",
+      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      new Transform3d(new Pose3d(),
+      new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
+      Units.inchesToMeters(-11), Units.inchesToMeters(7.1875)),
+      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(-5)))),
+      fieldLayout), new PhotonUnit("BackRightCamera",
+      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      new Transform3d(new Pose3d(),
+      new Pose3d(new Translation3d(Units.inchesToMeters(-10.5),
+      Units.inchesToMeters(6.75), Units.inchesToMeters(7.1875)),
+      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(35)))),
+      fieldLayout), //THIS THIRD CAMERA HAS NOT BEEN MEASURED AS IT IS NOT ON THE BOT YET, TODO: MEASURE
+      new PhotonUnit("BackLeftCamera",
+      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      new Transform3d(new Pose3d(),
+      new Pose3d(new Translation3d(Units.inchesToMeters(9),
+      Units.inchesToMeters(5), Units.inchesToMeters(0)),
+      new Rotation3d(0, Units.degreesToRadians(2), 0))),
+      fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
     public static final double photonUnitAmbiguityCutoff = 0.05;
