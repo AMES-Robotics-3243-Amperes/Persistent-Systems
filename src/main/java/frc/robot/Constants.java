@@ -8,16 +8,22 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import frc.robot.DataManager.Setpoint;
 import frc.robot.splines.interpolation.CubicInterpolator;
@@ -51,14 +57,13 @@ public final class Constants {
 
   public static final class SwerveConstants {
     public static final class ControlConstants {
-      public static final double movingSpeed = 4.5;
-      public static final double rotationSpeed = 3 * Math.PI;
+      public static final double movingSpeed = 0.7;
+      public static final double rotationSpeed = 1.2 * Math.PI;
     }
 
     public static final class ChassisKinematics {
       // :3 distance between centers of right and left wheels on robot
       public static final double kRobotWidth = Units.inchesToMeters(15);
-
       // :3 distance between front and back wheels on robot
       public static final double kRobotLength = Units.inchesToMeters(15);
 
@@ -85,24 +90,24 @@ public final class Constants {
       public static final class ModuleOffsets {
         public static final Rotation2d kFrontLeftOffset = Rotation2d.fromRadians(-2.224);
         public static final Rotation2d kFrontRightOffset = Rotation2d.fromRadians(-0.178);
-        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(-0.0315);
+        public static final Rotation2d kBackLeftOffset = Rotation2d.fromRadians(6.195);
         public static final Rotation2d kBackRightOffset = Rotation2d.fromRadians(-2.763);
       }
     }
 
     public static final class ModuleConstants {
       public static final class PIDF {
-        public static final double kDrivingP = 0.4;
+        public static final double kDrivingP = 0.0;
         public static final double kDrivingI = 0;
         public static final double kDrivingD = 0;
 
-        public static final double kDrivingKs = 0.019237;
+        public static final double kDrivingKs = 0.01;
         public static final double kDrivingKv = 0.11324;
         public static final double kDrivingKa = 0.034615;
 
-        public static final double kTurningP = 3.5;
-        public static final double kTurningI = 0;
-        public static final double kTurningD = 0.0;
+        public static final double kAzimuthP = 5;
+        public static final double kAzimuthI = 0;
+        public static final double kAzimuthD = 0.0;
         public static final double kTurningFF = 0;
         public static final double kTurningMinOutput = -1;
         public static final double kTurningMaxOutput = 1;
@@ -358,14 +363,26 @@ public final class Constants {
     public static final List<AprilTag> tags = Arrays.asList(tag);
     public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
-    public static final List<PhotonUnit> photonUnits = Arrays.asList();
-    // .asList(new PhotonUnit("FrontCamera",
-    // PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-    // new Transform3d(new Pose3d(),
-    // new Pose3d(new Translation3d(Units.inchesToMeters(9),
-    // Units.inchesToMeters(5), Units.inchesToMeters(0)),
-    // new Rotation3d(0, Units.degreesToRadians(2), 0))),
-    // fieldLayout));
+    public static final List<PhotonUnit> photonUnits = Arrays.asList(new PhotonUnit("FrontCenterCamera",
+      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      new Transform3d(new Pose3d(),
+      new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
+      Units.inchesToMeters(-11), Units.inchesToMeters(7.1875)),
+      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(-5)))),
+      fieldLayout), new PhotonUnit("BackRightCamera",
+      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      new Transform3d(new Pose3d(),
+      new Pose3d(new Translation3d(Units.inchesToMeters(-10.5),
+      Units.inchesToMeters(6.75), Units.inchesToMeters(7.1875)),
+      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(35)))),
+      fieldLayout), //THIS THIRD CAMERA HAS NOT BEEN MEASURED AS IT IS NOT ON THE BOT YET, TODO: MEASURE
+      new PhotonUnit("BackLeftCamera",
+      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      new Transform3d(new Pose3d(),
+      new Pose3d(new Translation3d(Units.inchesToMeters(9),
+      Units.inchesToMeters(5), Units.inchesToMeters(0)),
+      new Rotation3d(0, Units.degreesToRadians(2), 0))),
+      fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
     public static final double photonUnitAmbiguityCutoff = 0.05;
@@ -385,10 +402,24 @@ public final class Constants {
 
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
-      public static final double maxSpeed = 4;
+      public static final double maxSpeed = 2;
       public static final double maxCentrifugalAcceleration = 2;
       public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;
+
+      /**
+       * Returns a sensible default x/y PID controller for spline following
+       */
+      public static final PIDController xyController() {
+        return new PIDController(1.2, 0, 0.1);
+      }
+
+      /**
+       * Returns a sensible default theta PID controller for spline following
+       */
+      public static final ProfiledPIDController thetaController() {
+        return new ProfiledPIDController(0.7, 0, 0.0, new Constraints(3 * Math.PI, 6 * Math.PI));
+      }
 
       /**
        * As the robot drifts from the spline, the speed at
