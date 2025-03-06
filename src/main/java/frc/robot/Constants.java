@@ -133,6 +133,8 @@ public final class Constants {
   }
 
   public static class Elevator {
+    public static final double manualThreshold = 0.1;
+
     public static class Motors {
       public static final int leaderCanId = 10; // Leader is the right motor, update this if that changes
       public static final int followerCanId = 11; // Follower is the left motor, update this if that changes
@@ -462,6 +464,8 @@ public final class Constants {
 
   public static final class DifferentialArm {
     // public static final double encoderOffset = 0.5;
+    public static final double encoderRange = 0.4;
+    public static final double manualThreshold = 0.1;
 
     public static final double currentDifferenceThreshold = 15;
     public static final double positionDelta = 0.025;

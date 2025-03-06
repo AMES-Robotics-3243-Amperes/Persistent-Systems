@@ -46,11 +46,12 @@ public class SubsystemClaw extends SubsystemBase {
   private PIDController pivotController;
 
   // Starting values for the arm
-  private double targetPivotPosition = Setpoint.Start.angle;
+  public double targetPivotPosition = Setpoint.Start.angle;
   private double intakePower = 0.0;
 
   // Exponentially smoothing linear filter to smooth the current difference
   LinearFilter filter = LinearFilter.singlePoleIIR(DifferentialArm.filterTimeConstant, 0.02);
+  public double smoothedCurrentDifference;
 
   private AbsoluteEncoder pivotEncoder;
   // private ArmFeedforward feedforward;
@@ -112,6 +113,10 @@ public class SubsystemClaw extends SubsystemBase {
     intakePower = power;
   }
 
+  public double getPosition() {
+    return targetPivotPosition;
+  }
+
   // Helper function for setOutsidePosition()
   // private double convertRadiansToRotations(double angle) {
   //   return (angle / (2 * Math.PI)) + DifferentialArm.encoderOffset;
@@ -145,7 +150,7 @@ public class SubsystemClaw extends SubsystemBase {
     // This method will be called once per scheduler run
     double pivotControllerCalculate = pivotController.calculate(pivotEncoder.getPosition(), targetPivotPosition);
 
-    double smoothedCurrentDifference = filter.calculate(rightMotor.getOutputCurrent() - leftMotor.getOutputCurrent());
+    smoothedCurrentDifference = filter.calculate(rightMotor.getOutputCurrent() - leftMotor.getOutputCurrent());
 
     // if (targetPivotPosition > LevelAngles.Intake - DifferentialArm.positionDelta || targetPivotPosition < LevelAngles.Intake + DifferentialArm.positionDelta) {
     //   if (smoothedCurrentDifference > DifferentialArm.currentDifferenceThreshold) {

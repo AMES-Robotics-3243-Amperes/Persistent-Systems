@@ -5,6 +5,8 @@
 package frc.robot.commands.claw;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.DifferentialArm;
+import frc.robot.Constants.Setpoints.LevelAngles;
 import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemClaw;
 
@@ -34,13 +36,19 @@ public class IntakeClawCommand extends Command {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    // differentialArm.setIntakePower(0);
+    differentialArm.setIntakePower(0);
   }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
     // Return true when ultrasonic sensor detects decrease in distance, switch is triggered, etc.
-    return true;
+    if (differentialArm.targetPivotPosition > LevelAngles.Intake - DifferentialArm.positionDelta || differentialArm.targetPivotPosition < LevelAngles.Intake + DifferentialArm.positionDelta) {
+      if (differentialArm.smoothedCurrentDifference > DifferentialArm.currentDifferenceThreshold) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
