@@ -180,16 +180,17 @@ public final class Constants {
     /**
      * The vertical distance from the ground to the minimum height on the elevator.
      */
-    private static final double minHeightOffset = Units.inchesToMeters(9.307579);
+    public static final double angledOffset23 = 6.85; // 35 degrees
+    public static final double angledOffset4 = 10.875; // 65 degrees
+
     public static final double min = 0.0;
     public static final double starting = min;
-    public static final double loading = Units.inchesToMeters(28.807579) - minHeightOffset;
-    public static final double L1 = Units.inchesToMeters(28.807579) - minHeightOffset; // Not from CAD, but should be
-                                                                                       // similar to loading.
-    public static final double L2 = Units.inchesToMeters(37.807579) - minHeightOffset;
-    public static final double L3 = Units.inchesToMeters(52.807579) - minHeightOffset;
-    public static final double L4 = Units.inchesToMeters(79.807579) - minHeightOffset;
-    public static final double max = Units.inchesToMeters(79.807579) - minHeightOffset;
+    public static final double loading = Units.inchesToMeters(37 - angledOffset23);
+    public static final double L1 = Units.inchesToMeters(18 + angledOffset23);
+    public static final double L2 = Units.inchesToMeters(31.2 + angledOffset23);
+    public static final double L3 = Units.inchesToMeters(47.025 + angledOffset23);
+    public static final double L4 = Units.inchesToMeters(72 + angledOffset4);
+    public static final double max = Units.inchesToMeters(85);
   }
 
   public static final class FieldConstants {
@@ -342,7 +343,7 @@ public final class Constants {
     public static final Pose3d redReef6 = fieldLayout.getTagPose(7).get();
 
     public static final List<AprilTag> tagList = fieldLayout.getTags();
-    public static final double distanceFromTag = 0.1;
+    public static final double distanceFromTag = Units.inchesToMeters(26 / 2); // Length of Robot Divided by 2
 
     // <3 Measurements taken from CAD--center axis dist. from apriltag to estimated
     // robot center position
