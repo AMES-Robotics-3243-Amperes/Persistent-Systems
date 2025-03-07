@@ -47,7 +47,7 @@ public class SubsystemClaw extends SubsystemBase {
 
   // Starting values for the arm
   public double targetPivotPosition = Setpoint.Start.angle;
-  private double intakePower = 0.0;
+  private double intakePower = 0;
 
   // Exponentially smoothing linear filter to smooth the current difference
   LinearFilter filter = LinearFilter.singlePoleIIR(DifferentialArm.filterTimeConstant, 0.02);
@@ -94,8 +94,8 @@ public class SubsystemClaw extends SubsystemBase {
       leftMotor.set(mechanismInputs.get(1));
     }
 
-    public void setPivotOutput(double speed) {
-      pivotOutput = clamp(-1.0, 1.0, speed);
+    public void setPivotOutput(double angle) {
+      pivotOutput = clamp(-1.0, 1.0, angle);
     }
 
     public void setRollerOutput(double speed) {
@@ -117,6 +117,10 @@ public class SubsystemClaw extends SubsystemBase {
     return targetPivotPosition;
   }
 
+  public void resetFilter() {
+    filter.reset();
+  }
+
   // Helper function for setOutsidePosition()
   // private double convertRadiansToRotations(double angle) {
   //   return (angle / (2 * Math.PI)) + DifferentialArm.encoderOffset;
@@ -125,11 +129,11 @@ public class SubsystemClaw extends SubsystemBase {
   /** Creates a new SubsystemEndAffectorDifferential. */
   public SubsystemClaw(/* Ultrasonic rangeFinder */) {
     rightConfig.inverted(true);
-    rightConfig.smartCurrentLimit(15);
+    rightConfig.smartCurrentLimit(25);
     rightConfig.idleMode(IdleMode.kBrake);
     rightConfig.absoluteEncoder.inverted(true);
 
-    leftConfig.smartCurrentLimit(15);
+    leftConfig.smartCurrentLimit(25);
     leftConfig.idleMode(IdleMode.kBrake);
 
     rightMotor.configure(rightConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -139,10 +143,11 @@ public class SubsystemClaw extends SubsystemBase {
 
     motorGroup = new DifferentialMotorGroup(rightMotor, leftMotor);
     pivotController = new PIDController(DifferentialArm.PID.P, DifferentialArm.PID.I, DifferentialArm.PID.D);
+    pivotController.reset();
 
     // limitSwitch = new DigitalInput(0);
 
-    Shuffleboard.getTab("Tuning").add(pivotController).withWidget(BuiltInWidgets.kPIDController);
+    // Shuffleboard.getTab("Tuning").add(pivotController).withWidget(BuiltInWidgets.kPIDController);
   }
 
   @Override
@@ -152,12 +157,6 @@ public class SubsystemClaw extends SubsystemBase {
 
     smoothedCurrentDifference = filter.calculate(rightMotor.getOutputCurrent() - leftMotor.getOutputCurrent());
 
-    // if (targetPivotPosition > LevelAngles.Intake - DifferentialArm.positionDelta || targetPivotPosition < LevelAngles.Intake + DifferentialArm.positionDelta) {
-    //   if (smoothedCurrentDifference > DifferentialArm.currentDifferenceThreshold) {
-    //     intakePower = 0;
-    //   }
-    // }
-
     motorGroup.setPivotOutput(pivotControllerCalculate);
     motorGroup.setRollerOutput(intakePower);
     motorGroup.update();
@@ -165,6 +164,7 @@ public class SubsystemClaw extends SubsystemBase {
     SmartDashboard.putNumber("Arm Absolute Encoder Rotations", pivotEncoder.getPosition());
     SmartDashboard.putNumber("Arm PID pivot controller output", pivotControllerCalculate);
     SmartDashboard.putNumber("Target position", targetPivotPosition);
+    SmartDashboard.putNumber("Intake power", intakePower);
 
     SmartDashboard.putNumber("Left motor value", leftMotor.get());
     SmartDashboard.putNumber("Right motor value", rightMotor.get());

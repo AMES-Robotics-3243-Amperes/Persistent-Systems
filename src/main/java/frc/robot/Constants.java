@@ -468,9 +468,11 @@ public final class Constants {
     public static final double encoderRange = 0.4;
     public static final double manualThreshold = 0.1;
 
-    public static final double currentDifferenceThreshold = 15;
-    public static final double positionDelta = 0.025;
+    public static final double currentDifferenceThreshold = 14;
+    public static final double positionDelta = 0.05;
     public static final double filterTimeConstant = 0.5;
+
+    public static final long deployTime = 500; // Milliseconds
 
     public static final class MotorIDs {
       public static final int leftID = 13;
@@ -478,16 +480,16 @@ public final class Constants {
     }
 
     public static final class PID {
-      public static final double P = 3;
-      public static final double I = 0.02;
-      public static final double D = 0.06;
+      public static final double P = 2.7;
+      public static final double I = 0;
+      public static final double D = 0.02;
     }
   }
 
   // Important setpoints for the claw
   public static final class Setpoints {
     // Constant intake power (just invert to deposit)
-    public static final double intakePower = 0.5;
+    public static final double intakePower = 0.7;
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
