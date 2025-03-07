@@ -120,70 +120,71 @@ public class RobotContainer {
    */
   private void configureBindings() {
     // Purely testing purposes
-    secondaryController.leftBumper().onTrue(
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(Setpoint.IntakeLeft.angle);
-            },
-            subsystemClaw));
+    // secondaryController.leftBumper().onTrue(
+    //     new InstantCommand(
+    //         () -> {
+    //           subsystemClaw.setOutsidePosition(Setpoint.IntakeLeft.angle);
+    //         },
+    //         subsystemClaw));
 
-    secondaryController.rightBumper().onTrue(
-      new InstantCommand(
-          () -> {
-            subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
-          },
-          subsystemClaw));
+    // secondaryController.rightBumper().onTrue(
+    //   new InstantCommand(
+    //       () -> {
+    //         subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
+    //       },
+    //       subsystemClaw));
 
-    secondaryController.a().onTrue(new IntakeClawCommand(subsystemClaw, Setpoints.intakePower));
+    // secondaryController.a().onTrue(new IntakeClawCommand(subsystemClaw, Setpoints.intakePower));
 
-    secondaryController.b().onTrue(new DeployClawCommand(subsystemClaw, -Setpoints.intakePower));
+    // secondaryController.b().onTrue(new DeployClawCommand(subsystemClaw, -Setpoints.intakePower));
 
-    secondaryController.x().onTrue(
+    // secondaryController.x().onTrue(
+    //   new InstantCommand(
+    //     () -> {
+    //       subsystemClaw.setIntakePower(0);
+    //     }
+    //   ));
+
+    secondaryController.a().onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1Left.height
+      ),
       new InstantCommand(
         () -> {
-          subsystemClaw.setIntakePower(0);
-        }
-      ));
+          subsystemClaw.setOutsidePosition(Setpoint.L1Left.angle);
+        },
+        subsystemClaw
+      )
+    ));
 
-    // secondaryController.a().onTrue(new ParallelCommandGroup(
-    //   new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1Left.height),
-    //   new InstantCommand(
-    //     () -> {
-    //       subsystemClaw.setOutsidePosition(Setpoint.L1Left.angle);
-    //     },
-    //     subsystemClaw
-    //   )
-    // ));
+    secondaryController.b().onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2Left.height),
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(Setpoint.L2Left.angle);
+        },
+        subsystemClaw
+      )
+    ));
 
-    // secondaryController.b().onTrue(new ParallelCommandGroup(
-    //   new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2Left.height),
-    //   new InstantCommand(
-    //     () -> {
-    //       subsystemClaw.setOutsidePosition(Setpoint.L2Left.angle);
-    //     },
-    //     subsystemClaw
-    //   )
-    // ));
+    secondaryController.x().onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3Left.height),
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
+        },
+        subsystemClaw
+      )
+    ));
 
-    // secondaryController.x().onTrue(new ParallelCommandGroup(
-    //   new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3Left.height),
-    //   new InstantCommand(
-    //     () -> {
-    //       subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
-    //     },
-    //     subsystemClaw
-    //   )
-    // ));
-
-    // secondaryController.y().onTrue(new ParallelCommandGroup(
-    //   new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4Left.height),
-    //   new InstantCommand(
-    //     () -> {
-    //       subsystemClaw.setOutsidePosition(Setpoint.L4Left.angle);
-    //     },
-    //     subsystemClaw
-    //   )
-    // ));
+    secondaryController.y().onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4Left.height),
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(Setpoint.L4Left.angle);
+        },
+        subsystemClaw
+      )
+    ));
 
     // // Auto intaking from loading station (Left or Right selected by D-pad)
     // primaryController.a().and(primaryController.povLeft()).onTrue(
@@ -208,30 +209,30 @@ public class RobotContainer {
     // );
 
     // // Manual intaking/depositing, elevator movement, reef setpoints
-    // secondaryController.leftBumper().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
-    // secondaryController.rightBumper().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.leftBumper().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.rightBumper().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
 
-    // double leftY = secondaryController.getLeftY();
-    // if (leftY > Elevator.manualThreshold) {
-    //   new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity);
-    // } else if (leftY < -Elevator.manualThreshold) {
-    //   new ElevatorNudgeCommand(subsystemElevator, -Constants.Elevator.Control.upNudgeVelocity);
-    // }
+    double leftY = secondaryController.getLeftY();
+    if (leftY > Elevator.manualThreshold) {
+      new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity);
+    } else if (leftY < -Elevator.manualThreshold) {
+      new ElevatorNudgeCommand(subsystemElevator, -Constants.Elevator.Control.upNudgeVelocity);
+    }
 
-    // double rightY = secondaryController.getRightY();
-    // if (rightY > DifferentialArm.manualThreshold) {
-    //   new InstantCommand(
-    //     () -> {
-    //       subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() + convertJoystickToPosition(-leftY));
-    //     },
-    //     subsystemClaw);
-    // } else if (rightY < -DifferentialArm.manualThreshold) {
-    //   new InstantCommand(
-    //     () -> {
-    //       subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() - convertJoystickToPosition(leftY));
-    //     },
-    //     subsystemClaw);
-    // }
+    double rightY = secondaryController.getRightY();
+    if (rightY > DifferentialArm.manualThreshold) {
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() + convertJoystickToPosition(-leftY));
+        },
+        subsystemClaw);
+    } else if (rightY < -DifferentialArm.manualThreshold) {
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() - convertJoystickToPosition(leftY));
+        },
+        subsystemClaw);
+    }
 
     // primaryController.povUp().whileTrue(
     //   new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity)
@@ -244,6 +245,7 @@ public class RobotContainer {
 
     // primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
     primaryController.b().onTrue(Commands.runOnce(commandSwerveTeleopDrive::toggleFieldRelative));
+    primaryController.leftBumper().onTrue(new ElevatorZeroCommand(subsystemElevator));
   }
 
   public static double convertJoystickToPosition(double joystick) {

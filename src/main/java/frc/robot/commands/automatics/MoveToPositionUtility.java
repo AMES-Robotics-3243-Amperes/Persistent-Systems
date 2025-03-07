@@ -20,6 +20,7 @@ import frc.robot.DataManager.Setpoint;
 import frc.robot.Constants;
 import frc.robot.PhotonUnit;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand.Position;
@@ -79,6 +80,7 @@ public class MoveToPositionUtility {
         // Calculate a target pose to move to
         // Double check if this is necessary (if testing goes wrong, first order of
         // business is to manually do vector calculations instead of using Transform2d)
+        
         Rotation2d flippedRotation = closestTag.getRotation().plus(new Rotation2d(Math.PI));
         Pose2d angleTargetPose = new Pose2d(closestTag.getTranslation(), flippedRotation);
 
@@ -86,32 +88,11 @@ public class MoveToPositionUtility {
                 new Rotation2d());
         Pose2d targetPose = angleTargetPose.plus(offset);
 
-        // PID controllers for the drivetrain (will be put in manually by Bryce - remove
-        // at that point)
-        PIDController xController = new PIDController(0.1, 0, 0);
-        PIDController yController = new PIDController(0.1, 0, 0);
-        ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0,
-                new TrapezoidProfile.Constraints(0.1, 0.1));
-
         PathFactory pathFactory = PathFactory.newFactory();
         moveToPositionTaskBuilder(targetPose, pathFactory, diffClaw, elevator, targetSetpoint, tagOffset);
 
         return pathFactory.finalRotation(targetPose.getRotation()).interpolateFromStart(true)
-                .buildCommand(drivetrain, xController, yController, thetaController);
-
-        // return PathFactory.newFactory().addTask(targetPose.getTranslation(),
-        // new FinishByTask(
-        // new ParallelCommandGroup(
-        // new ElevatorMoveToPositionCommand(elevator, targetPosition.height),
-        // new InstantCommand(
-        // () -> { diffClaw.setOutsidePosition(targetPosition.angle); },
-        // diffClaw
-        // )
-        // )
-        // ))
-        // .finalRotation(targetPose.getRotation())
-        // .interpolateFromStart(true).buildCommand(drivetrain, xController,
-        // yController, thetaController);
+                .buildCommand(drivetrain, FollowConstants.xyController(), FollowConstants.xyController(), FollowConstants.thetaController());
     }
 
     public static void moveToPositionTaskBuilder(Pose2d targetPosition, PathFactory pathFactory,
@@ -148,14 +129,8 @@ public class MoveToPositionUtility {
                     setpoint.offset);
         }
 
-        // PID controllers for the drivetrain (will be put in manually by Bryce - remove
-        // at that point)
-        PIDController xController = new PIDController(0.1, 0, 0);
-        PIDController yController = new PIDController(0.1, 0, 0);
-        ProfiledPIDController thetaController = new ProfiledPIDController(0.1, 0, 0,
-                new TrapezoidProfile.Constraints(0.1, 0.1));
-
-        return pathFactory.interpolateFromStart(true).buildCommand(drivetrain, xController, yController,
-                thetaController);
+        return pathFactory.interpolateFromStart(true).buildCommand(
+                drivetrain, FollowConstants.xyController(), FollowConstants.xyController(),
+                FollowConstants.thetaController());
     }
 }

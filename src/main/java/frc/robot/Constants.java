@@ -480,7 +480,7 @@ public final class Constants {
     }
 
     public static final class PID {
-      public static final double P = 2.7;
+      public static final double P = 1.5;
       public static final double I = 0;
       public static final double D = 0.02;
     }
@@ -495,7 +495,7 @@ public final class Constants {
     public static final class LevelAngles {
       public static final double Start = 0.8;
       public static final double Intake = 0.69;
-      public static final double L1 = 0.0;
+      public static final double L1 = 0.48;
       public static final double L23 = 0.48;
       public static final double L4 = L23;
     }
