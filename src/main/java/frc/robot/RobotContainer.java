@@ -147,12 +147,13 @@ public class RobotContainer {
     //     }
     //   ));
 
+    // now goes to intake position, rather than L1
     secondaryController.a().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1Left.height
+      new ElevatorMoveToPositionCommand(subsystemElevator, 0.62
       ),
       new InstantCommand(
         () -> {
-          subsystemClaw.setOutsidePosition(Setpoint.L1Left.angle);
+          subsystemClaw.setOutsidePosition(0.69);
         },
         subsystemClaw
       )
@@ -200,15 +201,15 @@ public class RobotContainer {
     // );
 
     // // Auto score in nearest L4 (Left or Right selected by D-pad)
-    // primaryController.y().and(primaryController.povLeft()).onTrue(
-    //   new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L4Left,
-    //       DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower))
-    // );
+    primaryController.y().and(primaryController.povLeft()).onTrue(
+      new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2Left,
+          DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower))
+    );
 
-    // primaryController.y().and(primaryController.povRight()).onTrue(
-    //   new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L4Right,
-    //       DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower))
-    // );
+    primaryController.y().and(primaryController.povRight()).onTrue(
+      new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2Right,
+          DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower))
+    );
 
     // // Manual intaking/depositing, elevator movement, reef setpoints
     secondaryController.leftBumper().whileTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));

@@ -24,7 +24,7 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
+import frc.robot.Constants;
 // import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants.DifferentialArm;
 import frc.robot.Constants.Setpoints.LevelAngles;
@@ -52,6 +52,9 @@ public class SubsystemClaw extends SubsystemBase {
   // Exponentially smoothing linear filter to smooth the current difference
   LinearFilter filter = LinearFilter.singlePoleIIR(DifferentialArm.filterTimeConstant, 0.02);
   public double smoothedCurrentDifference;
+
+  // Gravity compensation (secretly feedforward)
+  private double gravityCompensation = Constants.DifferentialArm.defaultGravityCompensation;
 
   private AbsoluteEncoder pivotEncoder;
   // private ArmFeedforward feedforward;
@@ -154,15 +157,18 @@ public class SubsystemClaw extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     double pivotControllerCalculate = pivotController.calculate(pivotEncoder.getPosition(), targetPivotPosition);
+    double staticTerm = gravityCompensation * Math.cos((pivotEncoder.getPosition() - 0.5859) * Math.PI * 2);
 
     smoothedCurrentDifference = filter.calculate(rightMotor.getOutputCurrent() - leftMotor.getOutputCurrent());
 
-    motorGroup.setPivotOutput(pivotControllerCalculate);
+    motorGroup.setPivotOutput(pivotControllerCalculate + staticTerm);
     motorGroup.setRollerOutput(intakePower);
     motorGroup.update();
 
     SmartDashboard.putNumber("Arm Absolute Encoder Rotations", pivotEncoder.getPosition());
     SmartDashboard.putNumber("Arm PID pivot controller output", pivotControllerCalculate);
+    SmartDashboard.putNumber("Arm gravity compensation", staticTerm);
+    SmartDashboard.putNumber("Arm applied output", staticTerm + pivotControllerCalculate);
     SmartDashboard.putNumber("Target position", targetPivotPosition);
     SmartDashboard.putNumber("Intake power", intakePower);
 
@@ -179,5 +185,13 @@ public class SubsystemClaw extends SubsystemBase {
 
   private static double clamp(double min, double max, double x) {
     return Math.max(min, Math.min(max, x));
+  }
+
+  public void setGravityCompensation(double newValue) {
+    gravityCompensation = newValue;
+  }
+
+  public double getGravityCompensation() {
+    return gravityCompensation;
   }
 }

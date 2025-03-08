@@ -30,6 +30,7 @@ public class DeployClawCommand extends Command {
   @Override
   public void initialize() {
     time = System.currentTimeMillis();
+    differentialArm.setGravityCompensation(DifferentialArm.defaultGravityCompensation * 2);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -44,6 +45,7 @@ public class DeployClawCommand extends Command {
   @Override
   public void end(boolean interrupted) {
     differentialArm.setIntakePower(0);
+    differentialArm.setGravityCompensation(DifferentialArm.defaultGravityCompensation);
   }
 
   // Returns true when the command should end.

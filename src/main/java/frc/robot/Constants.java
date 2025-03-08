@@ -187,7 +187,7 @@ public final class Constants {
     public static final double starting = min;
     public static final double loading = Units.inchesToMeters(37 - angledOffset23);
     public static final double L1 = Units.inchesToMeters(18 + angledOffset23);
-    public static final double L2 = Units.inchesToMeters(31.2 + angledOffset23);
+    public static final double L2 = 0.692;//Units.inchesToMeters(31.2 + angledOffset23);
     public static final double L3 = Units.inchesToMeters(47.025 + angledOffset23);
     public static final double L4 = Units.inchesToMeters(72 + angledOffset4);
     public static final double max = Units.inchesToMeters(85);
@@ -362,26 +362,28 @@ public final class Constants {
 
   public static final class PhotonvisionConstants {
 
-    public static final List<PhotonUnit> photonUnits = Arrays.asList(new PhotonUnit("FrontCenterCamera",
-      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      new Transform3d(new Pose3d(),
-      new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
-      Units.inchesToMeters(-11), Units.inchesToMeters(7.1875)),
-      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(0)))),
-      FieldConstants.fieldLayout), new PhotonUnit("BackRightCamera",
-      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      new Transform3d(new Pose3d(),
-      new Pose3d(new Translation3d(Units.inchesToMeters(-10.5),
-      Units.inchesToMeters(6.75), Units.inchesToMeters(7.1875)),
-      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(180 + 35)))),
-      FieldConstants.fieldLayout), //THIS THIRD CAMERA HAS NOT BEEN MEASURED AS IT IS NOT ON THE BOT YET, TODO: MEASURE
+    public static final List<PhotonUnit> photonUnits = Arrays.asList(
+      new PhotonUnit("FrontCenterCamera",
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        new Transform3d(new Pose3d(),
+          new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
+              Units.inchesToMeters(11), Units.inchesToMeters(7.1875)),
+            new Rotation3d(0, 0, Units.degreesToRadians(-9)))),
+        FieldConstants.fieldLayout),
+      new PhotonUnit("BackRightCamera",
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        new Transform3d(new Pose3d(),
+          new Pose3d(new Translation3d(Units.inchesToMeters(-12.5),
+              Units.inchesToMeters(-7), Units.inchesToMeters(7.1875)),
+            new Rotation3d(0, 0, Units.degreesToRadians(215)))),
+        FieldConstants.fieldLayout),
       new PhotonUnit("BackLeftCamera",
-      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      new Transform3d(new Pose3d(),
-      new Pose3d(new Translation3d(Units.inchesToMeters(9),
-      Units.inchesToMeters(5), Units.inchesToMeters(0)),
-      new Rotation3d(0, Units.degreesToRadians(2), 70 + 45))),
-      FieldConstants.fieldLayout));
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        new Transform3d(new Pose3d(),
+          new Pose3d(new Translation3d(Units.inchesToMeters(-12.5),
+                Units.inchesToMeters(7), Units.inchesToMeters(7.1875)),
+              new Rotation3d(0, 0, Units.degreesToRadians(145)))),
+        FieldConstants.fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
     public static final double photonUnitAmbiguityCutoff = 0.05;
@@ -468,8 +470,9 @@ public final class Constants {
     public static final double positionDelta = 0.05;
     public static final double filterTimeConstant = 0.5;
 
-    public static final long deployTime = 1000; // Milliseconds
-    public static final long rampTime = 750;
+    public static final long deployTime = 500; // Milliseconds
+    public static final long rampTime = 250;
+    public static final double defaultGravityCompensation = 0.05;
 
     public static final double manualMovementPerSecond = 0.1;
 
@@ -488,14 +491,14 @@ public final class Constants {
   // Important setpoints for the claw
   public static final class Setpoints {
     // Constant intake power (just invert to deposit)
-    public static final double intakePower = 0.7;
+    public static final double intakePower = 0.3;
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
       public static final double Start = 0.8;
       public static final double Intake = 0.69;
       public static final double L1 = 0.48;
-      public static final double L23 = 0.48;
+      public static final double L23 = 0.546;//0.48;
       public static final double L4 = L23;
     }
   }
