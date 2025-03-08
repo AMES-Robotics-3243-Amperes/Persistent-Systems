@@ -212,7 +212,7 @@ public class RobotContainer {
 
     // // Manual intaking/depositing, elevator movement, reef setpoints
     secondaryController.leftBumper().whileTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
-    secondaryController.rightBumper().whileTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.rightBumper().whileTrue(new DeployClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
 
     //   Elevator manual control
     Trigger leftYUp = new Trigger(() -> secondaryController.getLeftY() < -Elevator.manualThreshold);

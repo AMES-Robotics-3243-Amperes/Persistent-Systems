@@ -468,7 +468,8 @@ public final class Constants {
     public static final double positionDelta = 0.05;
     public static final double filterTimeConstant = 0.5;
 
-    public static final long deployTime = 500; // Milliseconds
+    public static final long deployTime = 1000; // Milliseconds
+    public static final long rampTime = 750;
 
     public static final double manualMovementPerSecond = 0.1;
 
