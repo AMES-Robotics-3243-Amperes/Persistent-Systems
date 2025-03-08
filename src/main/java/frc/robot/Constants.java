@@ -361,31 +361,27 @@ public final class Constants {
   }
 
   public static final class PhotonvisionConstants {
-    public static final AprilTag tag = new AprilTag(1,
-        new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
-    public static final List<AprilTag> tags = Arrays.asList(tag);
-    public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
     public static final List<PhotonUnit> photonUnits = Arrays.asList(new PhotonUnit("FrontCenterCamera",
       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       new Transform3d(new Pose3d(),
       new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
       Units.inchesToMeters(-11), Units.inchesToMeters(7.1875)),
-      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(-5)))),
-      fieldLayout), new PhotonUnit("BackRightCamera",
+      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(0)))),
+      FieldConstants.fieldLayout), new PhotonUnit("BackRightCamera",
       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       new Transform3d(new Pose3d(),
       new Pose3d(new Translation3d(Units.inchesToMeters(-10.5),
       Units.inchesToMeters(6.75), Units.inchesToMeters(7.1875)),
-      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(35)))),
-      fieldLayout), //THIS THIRD CAMERA HAS NOT BEEN MEASURED AS IT IS NOT ON THE BOT YET, TODO: MEASURE
+      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(180 + 35)))),
+      FieldConstants.fieldLayout), //THIS THIRD CAMERA HAS NOT BEEN MEASURED AS IT IS NOT ON THE BOT YET, TODO: MEASURE
       new PhotonUnit("BackLeftCamera",
       PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       new Transform3d(new Pose3d(),
       new Pose3d(new Translation3d(Units.inchesToMeters(9),
       Units.inchesToMeters(5), Units.inchesToMeters(0)),
-      new Rotation3d(0, Units.degreesToRadians(2), 0))),
-      fieldLayout));
+      new Rotation3d(0, Units.degreesToRadians(2), 70 + 45))),
+      FieldConstants.fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
     public static final double photonUnitAmbiguityCutoff = 0.05;
