@@ -470,6 +470,8 @@ public final class Constants {
 
     public static final long deployTime = 500; // Milliseconds
 
+    public static final double manualMovementPerSecond = 0.1;
+
     public static final class MotorIDs {
       public static final int leftID = 13;
       public static final int rightID = 14;

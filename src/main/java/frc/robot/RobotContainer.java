@@ -12,7 +12,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.DataManager.Setpoint;
 import frc.robot.commands.CommandSwerveFollowSpline;
@@ -209,30 +211,55 @@ public class RobotContainer {
     // );
 
     // // Manual intaking/depositing, elevator movement, reef setpoints
-    secondaryController.leftBumper().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
-    secondaryController.rightBumper().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.leftBumper().whileTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.rightBumper().whileTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
 
-    double leftY = secondaryController.getLeftY();
-    if (leftY > Elevator.manualThreshold) {
-      new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity);
-    } else if (leftY < -Elevator.manualThreshold) {
-      new ElevatorNudgeCommand(subsystemElevator, -Constants.Elevator.Control.upNudgeVelocity);
-    }
+    //   Elevator manual control
+    Trigger leftYUp = new Trigger(() -> secondaryController.getLeftY() < -Elevator.manualThreshold);
+    Trigger leftYDown = new Trigger(() -> secondaryController.getLeftY() > Elevator.manualThreshold);
 
-    double rightY = secondaryController.getRightY();
-    if (rightY > DifferentialArm.manualThreshold) {
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() + convertJoystickToPosition(-leftY));
-        },
-        subsystemClaw);
-    } else if (rightY < -DifferentialArm.manualThreshold) {
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() - convertJoystickToPosition(leftY));
-        },
-        subsystemClaw);
-    }
+    leftYUp.whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity));
+    leftYDown.whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
+
+    //   Wrist pitch manual control
+    Trigger rightYUp = new Trigger(() -> secondaryController.getRightY() < -DifferentialArm.manualThreshold);
+    Trigger rightYDown = new Trigger(() -> secondaryController.getRightY() > DifferentialArm.manualThreshold);
+    
+    rightYUp.whileTrue
+    (
+      new RepeatCommand
+      (
+        new InstantCommand
+        (
+          () -> {
+            subsystemClaw.setOutsidePosition
+            (
+              subsystemClaw.getPosition() + 
+              DifferentialArm.manualMovementPerSecond / 50.0
+            );
+          },
+          subsystemClaw
+        )
+      )
+    );
+
+    rightYDown.whileTrue
+    (
+      new RepeatCommand
+      (
+        new InstantCommand
+        (
+          () -> {
+            subsystemClaw.setOutsidePosition
+            (
+              subsystemClaw.getPosition() - 
+              DifferentialArm.manualMovementPerSecond / 50.0
+            );
+          },
+          subsystemClaw
+        )
+      )
+    );
 
     // primaryController.povUp().whileTrue(
     //   new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity)
