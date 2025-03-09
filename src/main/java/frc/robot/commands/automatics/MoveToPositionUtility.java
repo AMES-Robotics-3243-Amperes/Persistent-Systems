@@ -95,7 +95,7 @@ public class MoveToPositionUtility {
                         }
                     }
 
-                    Pose2d targetPose = closestTag.pose.toPose2d();
+                    Pose2d targetPose = closestTag;
 
                     PathFactory pathFactory = PathFactory.newFactory();
 
