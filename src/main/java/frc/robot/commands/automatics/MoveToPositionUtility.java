@@ -95,17 +95,6 @@ public class MoveToPositionUtility {
                         }
                     }
 
-                    // Calculate a target pose to move to
-                    // Double check if this is necessary (if testing goes wrong, first order of
-                    // business is to manually do vector calculations instead of using Transform2d)
-                    
-                    Rotation2d flippedRotation = closestTag.getRotation().plus(new Rotation2d(Math.PI));
-                    Pose2d angleTargetPose = new Pose2d(closestTag.getTranslation(), flippedRotation);
-
-                    Transform2d offset = new Transform2d(new Translation2d(FieldConstants.distanceFromTag, tagOffset),
-                            new Rotation2d());
-                    Pose2d targetPose = angleTargetPose.plus(offset);
-
                     PathFactory pathFactory = PathFactory.newFactory();
 
                     moveToPositionTaskBuilder(targetPose, pathFactory, diffClaw, elevator, targetSetpoint, tagOffset);
