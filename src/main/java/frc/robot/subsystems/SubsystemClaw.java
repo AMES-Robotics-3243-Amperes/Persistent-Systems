@@ -22,6 +22,7 @@ import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -33,6 +34,8 @@ import frc.robot.DataManager.Setpoint;
 public class SubsystemClaw extends SubsystemBase {
   // Some sort of sensor or limit switch to detect the PVC pipe
   // public DigitalInput limitSwitch;
+
+  private ShuffleboardTab tab = Shuffleboard.getTab("Deepwater (Claw)");
 
   // Differential motors
   private SparkMax rightMotor = new SparkMax(DifferentialArm.MotorIDs.rightID, MotorType.kBrushless);
@@ -150,37 +153,41 @@ public class SubsystemClaw extends SubsystemBase {
 
     // limitSwitch = new DigitalInput(0);
 
-    // Shuffleboard.getTab("Tuning").add(pivotController).withWidget(BuiltInWidgets.kPIDController);
+    Shuffleboard.getTab("Tuning").add(pivotController).withWidget(BuiltInWidgets.kPIDController);
+
+    tab.addDouble("Arm Absolute Encoder Rotations", () -> pivotEncoder.getPosition());
+    tab.addDouble("Arm PID pivot controller output", () -> pivotControllerCalculate);
+    tab.addDouble("Arm gravity compensation", () -> staticTerm);
+    tab.addDouble("Arm applied output", () -> staticTerm + pivotControllerCalculate);
+    tab.addDouble("Target position", () -> targetPivotPosition);
+    tab.addDouble("Intake power", () -> intakePower);
+
+    tab.addDouble("Left motor value", () -> leftMotor.get());
+    tab.addDouble("Right motor value", () -> rightMotor.get());
+
+    tab.addDouble("Left motor temp", () -> leftMotor.getMotorTemperature());
+    tab.addDouble("Right motor temp", () -> rightMotor.getMotorTemperature());
+    
+    tab.addDouble("Right Motor current", () -> rightMotor.getOutputCurrent());
+    tab.addDouble("Left Motor current", () -> leftMotor.getOutputCurrent());
+    tab.addDouble("Smoothed motor difference", () -> smoothedCurrentDifference);
   }
+
+  // Only not local so that it can be seen by supplied in constructor
+  private double pivotControllerCalculate = 0.0; 
+  private double staticTerm = 0.0;
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    double pivotControllerCalculate = pivotController.calculate(pivotEncoder.getPosition(), targetPivotPosition);
-    double staticTerm = gravityCompensation * Math.cos((pivotEncoder.getPosition() - 0.5859) * Math.PI * 2);
+    pivotControllerCalculate = pivotController.calculate(pivotEncoder.getPosition(), targetPivotPosition);
+    staticTerm = gravityCompensation * Math.cos((pivotEncoder.getPosition() - 0.5859) * Math.PI * 2);
 
     smoothedCurrentDifference = filter.calculate(rightMotor.getOutputCurrent() - leftMotor.getOutputCurrent());
 
     motorGroup.setPivotOutput(pivotControllerCalculate + staticTerm);
     motorGroup.setRollerOutput(intakePower);
     motorGroup.update();
-
-    SmartDashboard.putNumber("Arm Absolute Encoder Rotations", pivotEncoder.getPosition());
-    SmartDashboard.putNumber("Arm PID pivot controller output", pivotControllerCalculate);
-    SmartDashboard.putNumber("Arm gravity compensation", staticTerm);
-    SmartDashboard.putNumber("Arm applied output", staticTerm + pivotControllerCalculate);
-    SmartDashboard.putNumber("Target position", targetPivotPosition);
-    SmartDashboard.putNumber("Intake power", intakePower);
-
-    SmartDashboard.putNumber("Left motor value", leftMotor.get());
-    SmartDashboard.putNumber("Right motor value", rightMotor.get());
-
-    SmartDashboard.putNumber("Left motor temp", leftMotor.getMotorTemperature());
-    SmartDashboard.putNumber("Right motor temp", rightMotor.getMotorTemperature());
-    
-    SmartDashboard.putNumber("Right Motor current", rightMotor.getOutputCurrent());
-    SmartDashboard.putNumber("Left Motor current", leftMotor.getOutputCurrent());
-    SmartDashboard.putNumber("Smoothed motor difference", smoothedCurrentDifference);
   }
 
   private static double clamp(double min, double max, double x) {

@@ -185,12 +185,14 @@ public final class Constants {
 
     public static final double min = 0.0;
     public static final double starting = min;
-    public static final double loading = Units.inchesToMeters(37 - angledOffset23);
-    public static final double L1 = Units.inchesToMeters(18 + angledOffset23);
+    public static final double loading = 0.62;//Units.inchesToMeters(37 - angledOffset23);
+    public static final double L1 = 0.643;//Units.inchesToMeters(18 + angledOffset23);
     public static final double L2 = 0.692;//Units.inchesToMeters(31.2 + angledOffset23);
-    public static final double L3 = Units.inchesToMeters(47.025 + angledOffset23);
-    public static final double L4 = Units.inchesToMeters(72 + angledOffset4);
-    public static final double max = Units.inchesToMeters(85);
+    public static final double L3 = 1.072;//Units.inchesToMeters(47.025 + angledOffset23);
+    public static final double L4 = 1.715;//Units.inchesToMeters(72 + angledOffset4);
+    public static final double A1 = 0.786; // First Algae
+    public static final double A2 = 1.142; // Second Algae
+    public static final double max = 1.725;//Units.inchesToMeters(85);
   }
 
   public static final class FieldConstants {
@@ -466,11 +468,11 @@ public final class Constants {
     public static final double encoderRange = 0.4;
     public static final double manualThreshold = 0.1;
 
-    public static final double currentDifferenceThreshold = 14;
+    public static final double currentDifferenceThreshold = 15;
     public static final double positionDelta = 0.05;
     public static final double filterTimeConstant = 0.5;
 
-    public static final long deployTime = 500; // Milliseconds
+    public static final long deployTime = 850; // Milliseconds
     public static final long rampTime = 250;
     public static final double defaultGravityCompensation = 0.05;
 
@@ -491,15 +493,17 @@ public final class Constants {
   // Important setpoints for the claw
   public static final class Setpoints {
     // Constant intake power (just invert to deposit)
-    public static final double intakePower = 0.3;
+    public static final double intakePower = 0.4;
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
       public static final double Start = 0.8;
       public static final double Intake = 0.69;
       public static final double L1 = 0.48;
-      public static final double L23 = 0.546;//0.48;
+      public static final double L23 = 0.540;//0.48;
       public static final double L4 = L23;
+      public static final double Transit = 0.7;
+      public static final double Algae = 0.554;
     }
   }
 }

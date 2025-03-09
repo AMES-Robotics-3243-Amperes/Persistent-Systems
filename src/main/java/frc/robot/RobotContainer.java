@@ -33,9 +33,11 @@ import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemLeds;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.Constants.Setpoints;
+import frc.robot.Constants.Setpoints.LevelAngles;
 import frc.robot.Constants.DifferentialArm;
 import frc.robot.Constants.Elevator;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.Positions;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -88,7 +90,8 @@ public class RobotContainer {
     // set sensible default commands
     setDefaultCommands();
 
-    SmartDashboard.putData(subsystemClaw);
+    mainTab.add(subsystemClaw);
+    mainTab.add(subsystemSwerveDrivetrain);
 
     // H! Set all commands in auto selector
     setAutoCommands();
@@ -147,13 +150,12 @@ public class RobotContainer {
     //     }
     //   ));
 
-    // now goes to intake position, rather than L1
     secondaryController.a().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, 0.62
+      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1Left.height
       ),
       new InstantCommand(
         () -> {
-          subsystemClaw.setOutsidePosition(0.69);
+          subsystemClaw.setOutsidePosition(Setpoint.L1Left.angle);
         },
         subsystemClaw
       )
@@ -189,6 +191,54 @@ public class RobotContainer {
       )
     ));
 
+    // Transit
+    secondaryController.povDown().onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Positions.min
+      ),
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(LevelAngles.Transit);
+        },
+        subsystemClaw
+      )
+    ));
+
+    // A1
+    secondaryController.povRight().onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Positions.A1
+      ),
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(LevelAngles.Algae);
+        },
+        subsystemClaw
+      )
+    ));
+
+    // A2
+    secondaryController.povLeft().onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Positions.A2
+      ),
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(LevelAngles.Algae);
+        },
+        subsystemClaw
+      )
+    ));
+
+    // Loading
+    secondaryController.povUp().onTrue(new ParallelCommandGroup(
+      new ElevatorMoveToPositionCommand(subsystemElevator, Positions.loading
+      ),
+      new InstantCommand(
+        () -> {
+          subsystemClaw.setOutsidePosition(LevelAngles.Intake);
+        },
+        subsystemClaw
+      )
+    ));
+
     // // Auto intaking from loading station (Left or Right selected by D-pad)
     // primaryController.a().and(primaryController.povLeft()).onTrue(
     //   new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.IntakeLeft,
@@ -203,12 +253,12 @@ public class RobotContainer {
     // // Auto score in nearest L4 (Left or Right selected by D-pad)
     primaryController.y().and(primaryController.povLeft()).onTrue(
       new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2Left,
-          DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower))
+          DataManager.instance().robotPosition, 0, new DeployClawCommand(subsystemClaw, -Setpoints.intakePower))
     );
 
     primaryController.y().and(primaryController.povRight()).onTrue(
       new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2Right,
-          DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower))
+          DataManager.instance().robotPosition, 0, new DeployClawCommand(subsystemClaw, -Setpoints.intakePower))
     );
 
     // // Manual intaking/depositing, elevator movement, reef setpoints

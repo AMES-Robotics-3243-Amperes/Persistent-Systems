@@ -7,6 +7,7 @@ package frc.robot.commands.automatics;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -27,11 +28,11 @@ public class ScoreIntakeAutoCommand extends SequentialCommandGroup {
   /** Creates a new ScoreInReefCommand. */
   public ScoreIntakeAutoCommand(
       SubsystemSwerveDrivetrain drivetrain, SubsystemClaw diffClaw, SubsystemElevator elevator,
-      Setpoint reefPosition, DataManagerEntry<Pose2d> odometry, double tagOffset, IntakeClawCommand clawCommand
+      Setpoint reefPosition, DataManagerEntry<Pose2d> odometry, double tagOffset, Command clawCommand
     ) {
     addCommands(
       new SequentialCommandGroup(
-        MoveToPositionUtility.alignToTag(drivetrain, odometry, diffClaw, elevator, reefPosition, tagOffset),
+        new MoveToPositionUtility.AlignToTagCommand(drivetrain, odometry, diffClaw, elevator, reefPosition, tagOffset),
         clawCommand
       )
     );
