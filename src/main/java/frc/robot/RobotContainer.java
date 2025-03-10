@@ -209,30 +209,30 @@ public class RobotContainer {
     // );
 
     // // Manual intaking/depositing, elevator movement, reef setpoints
-    secondaryController.leftBumper().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
-    secondaryController.rightBumper().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
+    // secondaryController.leftBumper().onTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
+    // secondaryController.rightBumper().onTrue(new IntakeClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
 
-    double leftY = secondaryController.getLeftY();
-    if (leftY > Elevator.manualThreshold) {
-      new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity);
-    } else if (leftY < -Elevator.manualThreshold) {
-      new ElevatorNudgeCommand(subsystemElevator, -Constants.Elevator.Control.upNudgeVelocity);
-    }
+    // double leftY = secondaryController.getLeftY();
+    // if (leftY > Elevator.manualThreshold) {
+    //   new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity);
+    // } else if (leftY < -Elevator.manualThreshold) {
+    //   new ElevatorNudgeCommand(subsystemElevator, -Constants.Elevator.Control.upNudgeVelocity);
+    // }
 
-    double rightY = secondaryController.getRightY();
-    if (rightY > DifferentialArm.manualThreshold) {
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() + convertJoystickToPosition(-leftY));
-        },
-        subsystemClaw);
-    } else if (rightY < -DifferentialArm.manualThreshold) {
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() - convertJoystickToPosition(leftY));
-        },
-        subsystemClaw);
-    }
+    // double rightY = secondaryController.getRightY();
+    // if (rightY > DifferentialArm.manualThreshold) {
+    //   new InstantCommand(
+    //     () -> {
+    //       subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() + convertJoystickToPosition(-leftY));
+    //     },
+    //     subsystemClaw);
+    // } else if (rightY < -DifferentialArm.manualThreshold) {
+    //   new InstantCommand(
+    //     () -> {
+    //       subsystemClaw.setOutsidePosition(subsystemClaw.getPosition() - convertJoystickToPosition(leftY));
+    //     },
+    //     subsystemClaw);
+    // }
 
     // primaryController.povUp().whileTrue(
     //   new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity)
@@ -245,7 +245,7 @@ public class RobotContainer {
 
     // primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
     primaryController.b().onTrue(Commands.runOnce(commandSwerveTeleopDrive::toggleFieldRelative));
-    primaryController.leftBumper().onTrue(new ElevatorZeroCommand(subsystemElevator));
+    primaryController.rightTrigger().onTrue(new ElevatorZeroCommand(subsystemElevator));
   }
 
   public static double convertJoystickToPosition(double joystick) {

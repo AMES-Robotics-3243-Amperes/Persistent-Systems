@@ -20,14 +20,12 @@ import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 // import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants.DifferentialArm;
-import frc.robot.Constants.Setpoints.LevelAngles;
+import frc.robot.Constants.Setpoints;
 import frc.robot.DataManager.Setpoint;
 
 public class SubsystemClaw extends SubsystemBase {
@@ -95,7 +93,7 @@ public class SubsystemClaw extends SubsystemBase {
     }
 
     public void setPivotOutput(double angle) {
-      pivotOutput = clamp(-1.0, 1.0, angle);
+      pivotOutput = clamp(Setpoints.LevelAngles.Min, Setpoints.LevelAngles.Max, angle);
     }
 
     public void setRollerOutput(double speed) {

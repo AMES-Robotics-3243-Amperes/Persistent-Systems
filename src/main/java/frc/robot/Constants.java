@@ -496,8 +496,10 @@ public final class Constants {
       public static final double Start = 0.8;
       public static final double Intake = 0.69;
       public static final double L1 = 0.48;
-      public static final double L23 = 0.48;
+      public static final double L23 = 0.51;
       public static final double L4 = L23;
+      public static final double Max = Start;
+      public static final double Min = 0.4;
     }
   }
 }
