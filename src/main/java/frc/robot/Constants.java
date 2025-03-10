@@ -353,12 +353,57 @@ public final class Constants {
     public static final double intakeLoadingOffset = 0.457;
 
     public static final class AutonomousPaths {
-      public static final ArrayList<Pose2d> bluePositionOne = new ArrayList<Pose2d>(
+      // Scoring/Intake Setpoints
+      public static final ArrayList<Setpoint> intakeScoreBackAndForthSetpoints = new ArrayList<Setpoint>(
+        Arrays.asList(Setpoint.L4Left, Setpoint.IntakeLeft, Setpoint.L4Right, Setpoint.IntakeRight));
+
+      // Top of blue reef to intake auto routine
+      public static final ArrayList<Pose2d> blueTopToIntakePositions = new ArrayList<Pose2d>(
           Arrays.asList(FieldConstants.blueReef1.toPose2d(),
-              FieldConstants.blueCoralLoadingBottom.toPose2d(), FieldConstants.blueReef1.toPose2d(),
-              FieldConstants.blueCoralLoadingBottom.toPose2d()));
-      public static final ArrayList<Setpoint> blueSetpointsOne = new ArrayList<Setpoint>(
-          Arrays.asList(Setpoint.L4Left, Setpoint.IntakeLeft, Setpoint.L4Right, Setpoint.IntakeRight));
+              FieldConstants.blueCoralLoadingTop.toPose2d(), FieldConstants.blueReef1.toPose2d(),
+              FieldConstants.blueCoralLoadingTop.toPose2d()));
+
+      // Middle of blue reef to top intake auto routine
+      public static final ArrayList<Pose2d> blueMiddleToTopIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.blueReef3.toPose2d(),
+            FieldConstants.blueCoralLoadingTop.toPose2d(), FieldConstants.blueReef1.toPose2d(),
+            FieldConstants.blueCoralLoadingTop.toPose2d()));
+
+      // Middle of blue reef to bottom intake auto routine
+      public static final ArrayList<Pose2d> blueMiddleToBottomIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.blueReef3.toPose2d(),
+            FieldConstants.blueCoralLoadingBottom.toPose2d(), FieldConstants.blueReef5.toPose2d(),
+            FieldConstants.blueCoralLoadingBottom.toPose2d()));
+
+      // Bottom of blue reef to intake auto routine
+      public static final ArrayList<Pose2d> blueBottomToIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.blueReef5.toPose2d(),
+            FieldConstants.blueCoralLoadingBottom.toPose2d(), FieldConstants.blueReef5.toPose2d(),
+            FieldConstants.blueCoralLoadingBottom.toPose2d()));
+
+      // Top of red reef to intake auto routine
+      public static final ArrayList<Pose2d> redTopToIntakePositions = new ArrayList<Pose2d>(
+          Arrays.asList(FieldConstants.redReef1.toPose2d(),
+              FieldConstants.redCoralLoadingTop.toPose2d(), FieldConstants.redReef1.toPose2d(),
+              FieldConstants.redCoralLoadingTop.toPose2d()));
+
+      // Middle of blue reef to top intake auto routine
+      public static final ArrayList<Pose2d> redMiddleToTopIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.redReef3.toPose2d(),
+            FieldConstants.redCoralLoadingTop.toPose2d(), FieldConstants.redReef1.toPose2d(),
+            FieldConstants.redCoralLoadingTop.toPose2d()));
+
+      // Middle of blue reef to bottom intake auto routine
+      public static final ArrayList<Pose2d> redMiddleToBottomIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.redReef3.toPose2d(),
+            FieldConstants.redCoralLoadingBottom.toPose2d(), FieldConstants.redReef5.toPose2d(),
+            FieldConstants.redCoralLoadingBottom.toPose2d()));
+
+      // Bottom of blue reef to intake auto routine
+      public static final ArrayList<Pose2d> redBottomToIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.redReef5.toPose2d(),
+            FieldConstants.redCoralLoadingBottom.toPose2d(), FieldConstants.redReef5.toPose2d(),
+            FieldConstants.redCoralLoadingBottom.toPose2d()));
     }
   }
 
