@@ -105,7 +105,7 @@ public final class Constants {
         public static final double kDrivingKv = 0.11324;
         public static final double kDrivingKa = 0.034615;
 
-        public static final double kAzimuthP = 5;
+        public static final double kAzimuthP = 4.2;
         public static final double kAzimuthI = 0;
         public static final double kAzimuthD = 0.0;
         public static final double kTurningFF = 0;
@@ -133,6 +133,8 @@ public final class Constants {
   }
 
   public static class Elevator {
+    public static final double manualThreshold = 0.1;
+
     public static class Motors {
       public static final int leaderCanId = 10; // Leader is the right motor, update this if that changes
       public static final int followerCanId = 11; // Follower is the left motor, update this if that changes
@@ -182,16 +184,19 @@ public final class Constants {
     /**
      * The vertical distance from the ground to the minimum height on the elevator.
      */
-    private static final double minHeightOffset = Units.inchesToMeters(9.307579);
+    public static final double angledOffset23 = 6.85; // 35 degrees
+    public static final double angledOffset4 = 10.875; // 65 degrees
+
     public static final double min = 0.0;
     public static final double starting = min;
-    public static final double loading = Units.inchesToMeters(28.807579) - minHeightOffset;
-    public static final double L1 = Units.inchesToMeters(28.807579) - minHeightOffset; // Not from CAD, but should be
-                                                                                       // similar to loading.
-    public static final double L2 = Units.inchesToMeters(37.807579) - minHeightOffset;
-    public static final double L3 = Units.inchesToMeters(52.807579) - minHeightOffset;
-    public static final double L4 = Units.inchesToMeters(79.807579) - minHeightOffset;
-    public static final double max = Units.inchesToMeters(79.807579) - minHeightOffset;
+    public static final double loading = 0.62;//Units.inchesToMeters(37 - angledOffset23);
+    public static final double L1 = 0.643;//Units.inchesToMeters(18 + angledOffset23);
+    public static final double L2 = 0.605;//Units.inchesToMeters(31.2 + angledOffset23);
+    public static final double L3 = 1.01;//Units.inchesToMeters(47.025 + angledOffset23);
+    public static final double L4 = 1.741;//Units.inchesToMeters(72 + angledOffset4);
+    public static final double A1 = 0.786; // First Algae
+    public static final double A2 = 1.142; // Second Algae
+    public static final double max = 1.741;//Units.inchesToMeters(85);
   }
 
   public static final class FieldConstants {
@@ -344,7 +349,7 @@ public final class Constants {
     public static final Pose3d redReef6 = fieldLayout.getTagPose(7).get();
 
     public static final List<AprilTag> tagList = fieldLayout.getTags();
-    public static final double distanceFromTag = 0.1;
+    public static final double distanceFromTag = Units.inchesToMeters(26 / 2); // Length of Robot Divided by 2
 
     // <3 Measurements taken from CAD--center axis dist. from apriltag to estimated
     // robot center position
@@ -352,41 +357,84 @@ public final class Constants {
     public static final double intakeLoadingOffset = 0.457;
 
     public static final class AutonomousPaths {
-      public static final ArrayList<Pose2d> bluePositionOne = new ArrayList<Pose2d>(
+      // Scoring/Intake Setpoints
+      public static final ArrayList<Setpoint> intakeScoreBackAndForthSetpoints = new ArrayList<Setpoint>(
+        Arrays.asList(Setpoint.L4Left, Setpoint.IntakeLeft, Setpoint.L4Right, Setpoint.IntakeRight));
+
+      // Top of blue reef to intake auto routine
+      public static final ArrayList<Pose2d> blueTopToIntakePositions = new ArrayList<Pose2d>(
           Arrays.asList(FieldConstants.blueReef1.toPose2d(),
-              FieldConstants.blueCoralLoadingBottom.toPose2d(), FieldConstants.blueReef1.toPose2d(),
-              FieldConstants.blueCoralLoadingBottom.toPose2d()));
-      public static final ArrayList<Setpoint> blueSetpointsOne = new ArrayList<Setpoint>(
-          Arrays.asList(Setpoint.L4Left, Setpoint.IntakeLeft, Setpoint.L4Right, Setpoint.IntakeRight));
+              FieldConstants.blueCoralLoadingTop.toPose2d(), FieldConstants.blueReef1.toPose2d(),
+              FieldConstants.blueCoralLoadingTop.toPose2d()));
+
+      // Middle of blue reef to top intake auto routine
+      public static final ArrayList<Pose2d> blueMiddleToTopIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.blueReef3.toPose2d(),
+            FieldConstants.blueCoralLoadingTop.toPose2d(), FieldConstants.blueReef1.toPose2d(),
+            FieldConstants.blueCoralLoadingTop.toPose2d()));
+
+      // Middle of blue reef to bottom intake auto routine
+      public static final ArrayList<Pose2d> blueMiddleToBottomIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.blueReef3.toPose2d(),
+            FieldConstants.blueCoralLoadingBottom.toPose2d(), FieldConstants.blueReef5.toPose2d(),
+            FieldConstants.blueCoralLoadingBottom.toPose2d()));
+
+      // Bottom of blue reef to intake auto routine
+      public static final ArrayList<Pose2d> blueBottomToIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.blueReef5.toPose2d(),
+            FieldConstants.blueCoralLoadingBottom.toPose2d(), FieldConstants.blueReef5.toPose2d(),
+            FieldConstants.blueCoralLoadingBottom.toPose2d()));
+
+      // Top of red reef to intake auto routine
+      public static final ArrayList<Pose2d> redTopToIntakePositions = new ArrayList<Pose2d>(
+          Arrays.asList(FieldConstants.redReef1.toPose2d(),
+              FieldConstants.redCoralLoadingTop.toPose2d(), FieldConstants.redReef1.toPose2d(),
+              FieldConstants.redCoralLoadingTop.toPose2d()));
+
+      // Middle of blue reef to top intake auto routine
+      public static final ArrayList<Pose2d> redMiddleToTopIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.redReef3.toPose2d(),
+            FieldConstants.redCoralLoadingTop.toPose2d(), FieldConstants.redReef1.toPose2d(),
+            FieldConstants.redCoralLoadingTop.toPose2d()));
+
+      // Middle of blue reef to bottom intake auto routine
+      public static final ArrayList<Pose2d> redMiddleToBottomIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.redReef3.toPose2d(),
+            FieldConstants.redCoralLoadingBottom.toPose2d(), FieldConstants.redReef5.toPose2d(),
+            FieldConstants.redCoralLoadingBottom.toPose2d()));
+
+      // Bottom of blue reef to intake auto routine
+      public static final ArrayList<Pose2d> redBottomToIntakePositions = new ArrayList<Pose2d>(
+        Arrays.asList(FieldConstants.redReef5.toPose2d(),
+            FieldConstants.redCoralLoadingBottom.toPose2d(), FieldConstants.redReef5.toPose2d(),
+            FieldConstants.redCoralLoadingBottom.toPose2d()));
     }
   }
 
   public static final class PhotonvisionConstants {
-    public static final AprilTag tag = new AprilTag(1,
-        new Pose3d(new Translation3d(0, 0, 0), new Rotation3d(0, 0, 0)));
-    public static final List<AprilTag> tags = Arrays.asList(tag);
-    public static final AprilTagFieldLayout fieldLayout = new AprilTagFieldLayout(tags, 20, 20);
 
-    public static final List<PhotonUnit> photonUnits = Arrays.asList(new PhotonUnit("FrontCenterCamera",
-      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      new Transform3d(new Pose3d(),
-      new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
-      Units.inchesToMeters(-11), Units.inchesToMeters(7.1875)),
-      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(-5)))),
-      fieldLayout), new PhotonUnit("BackRightCamera",
-      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      new Transform3d(new Pose3d(),
-      new Pose3d(new Translation3d(Units.inchesToMeters(-10.5),
-      Units.inchesToMeters(6.75), Units.inchesToMeters(7.1875)),
-      new Rotation3d(0, Units.degreesToRadians(0), Units.degreesToRadians(35)))),
-      fieldLayout), //THIS THIRD CAMERA HAS NOT BEEN MEASURED AS IT IS NOT ON THE BOT YET, TODO: MEASURE
+    public static final List<PhotonUnit> photonUnits = Arrays.asList(
+      new PhotonUnit("FrontCenterCamera",
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        new Transform3d(new Pose3d(),
+          new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
+              Units.inchesToMeters(11), Units.inchesToMeters(7.1875)),
+            new Rotation3d(0, 0, Units.degreesToRadians(-5)))),
+        FieldConstants.fieldLayout),
+      new PhotonUnit("BackRightCamera",
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        new Transform3d(new Pose3d(),
+          new Pose3d(new Translation3d(Units.inchesToMeters(-12.5),
+              Units.inchesToMeters(-7), Units.inchesToMeters(7.1875)),
+            new Rotation3d(0, 0, Units.degreesToRadians(215)))),
+        FieldConstants.fieldLayout),
       new PhotonUnit("BackLeftCamera",
-      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      new Transform3d(new Pose3d(),
-      new Pose3d(new Translation3d(Units.inchesToMeters(9),
-      Units.inchesToMeters(5), Units.inchesToMeters(0)),
-      new Rotation3d(0, Units.degreesToRadians(2), 0))),
-      fieldLayout));
+        PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        new Transform3d(new Pose3d(),
+          new Pose3d(new Translation3d(Units.inchesToMeters(-12.5),
+                Units.inchesToMeters(7), Units.inchesToMeters(7.1875)),
+              new Rotation3d(0, 0, Units.degreesToRadians(145)))),
+        FieldConstants.fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
     public static final double photonUnitAmbiguityCutoff = 0.05;
@@ -399,17 +447,19 @@ public final class Constants {
     }
 
     public static final class TaskConstants {
-      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(8);
-      public static final double defaultPositionTolerance = 0.05;
-      public static final double defaultPositionBuffer = 0.3;
+      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(3);
+      public static final double defaultPositionTolerance = Units.inchesToMeters(0.5);
+      public static final double defaultPositionBuffer = 0.1;
     }
 
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
-      public static final double maxSpeed = 2;
+      public static final double maxSpeed = 1;
       public static final double maxCentrifugalAcceleration = 2;
       public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;
+
+      public static final double staticThetaVelocity = 0.05;
 
       /**
        * Returns a sensible default x/y PID controller for spline following
@@ -422,7 +472,11 @@ public final class Constants {
        * Returns a sensible default theta PID controller for spline following
        */
       public static final ProfiledPIDController thetaController() {
-        return new ProfiledPIDController(0.7, 0, 0.0, new Constraints(3 * Math.PI, 6 * Math.PI));
+        ProfiledPIDController thetaController =
+          new ProfiledPIDController(1.6, 0.2, 0, new Constraints(3 * Math.PI, 6 * Math.PI));
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        thetaController.setIZone(3 * Math.PI / 16);
+        return thetaController;
       }
 
       /**
@@ -466,10 +520,18 @@ public final class Constants {
 
   public static final class DifferentialArm {
     // public static final double encoderOffset = 0.5;
+    public static final double encoderRange = 0.4;
+    public static final double manualThreshold = 0.1;
 
     public static final double currentDifferenceThreshold = 15;
-    public static final double positionDelta = 0.025;
+    public static final double positionDelta = 0.05;
     public static final double filterTimeConstant = 0.5;
+
+    public static final long deployTime = 850; // Milliseconds
+    public static final long rampTime = 250;
+    public static final double defaultGravityCompensation = 0.08;
+
+    public static final double manualMovementPerSecond = 0.1;
 
     public static final class MotorIDs {
       public static final int leftID = 13;
@@ -477,24 +539,26 @@ public final class Constants {
     }
 
     public static final class PID {
-      public static final double P = 3;
-      public static final double I = 0.02;
-      public static final double D = 0.06;
+      public static final double P = 1.5;
+      public static final double I = 0;
+      public static final double D = 0.02;
     }
   }
 
   // Important setpoints for the claw
   public static final class Setpoints {
     // Constant intake power (just invert to deposit)
-    public static final double intakePower = 0.5;
+    public static final double intakePower = 0.4;
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
-      public static final double Start = 0.8;
+      public static final double Start = 0.75;
       public static final double Intake = 0.69;
-      public static final double L1 = 0.0;
-      public static final double L23 = 0.48;
-      public static final double L4 = L23;
+      public static final double L1 = 0.48;
+      public static final double L23 = 0.502;//0.48;
+      public static final double L4 = 0.49;
+      public static final double Transit = 0.7;
+      public static final double Algae = 0.554;
     }
   }
 }

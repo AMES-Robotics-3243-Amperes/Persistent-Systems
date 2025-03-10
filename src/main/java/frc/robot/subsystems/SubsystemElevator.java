@@ -74,7 +74,7 @@ public class SubsystemElevator extends SubsystemBaseTestable {
     leaderConfig.closedLoop
       .pidf(Motors.P, Motors.I, Motors.D, Motors.FF)
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .outputRange(-1, 1)
+      .outputRange(-0.3, 0.3)
     ;
 
     followerConfig.follow(motorLeader, true);
@@ -120,9 +120,9 @@ public class SubsystemElevator extends SubsystemBaseTestable {
       .withProperties(Map.of("min", 0, "max", 100))
     ;
 
-    powerSetting.setDefaultOption("Ludicrous Speed (100%)", SpeedSettings.highSpeed);
+    powerSetting.setDefaultOption("Slow Speed (20%)", SpeedSettings.lowSpeed);
+    powerSetting.addOption("Ludicrous Speed (100%)", SpeedSettings.highSpeed);
     powerSetting.addOption("Normal Speed (50%)", SpeedSettings.midSpeed);
-    powerSetting.addOption("Slow Speed (20%)", SpeedSettings.lowSpeed);
 
     powerSetting.onChange((speed) -> {
       SparkBaseConfig config = new SparkMaxConfig();
