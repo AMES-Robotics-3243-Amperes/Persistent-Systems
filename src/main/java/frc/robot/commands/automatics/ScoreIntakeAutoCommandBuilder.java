@@ -6,6 +6,7 @@ package frc.robot.commands.automatics;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -13,8 +14,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.DataManager.Setpoint;
@@ -22,7 +23,6 @@ import frc.robot.DataManager;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.Setpoints;
 import frc.robot.Constants.SplineConstants.FollowConstants;
-import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.claw.DeployClawCommand;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
 import frc.robot.splines.PathFactory;
@@ -41,7 +41,7 @@ public class ScoreIntakeAutoCommandBuilder {
   public static Command scoreIntakeAutoCommand(
       SubsystemSwerveDrivetrain drivetrain, SubsystemClaw diffClaw, SubsystemElevator elevator,
       Setpoint reefPosition, double tagOffset) {
-    ProxyCommand command = new ProxyCommand(() -> {
+    return new DeferredCommand(() -> {
       // Find the closest tag to the robot's current position
       Pose2d currentPose = DataManager.instance().robotPosition.get();
       Translation2d currentPosition = currentPose.getTranslation();
@@ -75,9 +75,7 @@ public class ScoreIntakeAutoCommandBuilder {
           FollowConstants.xyController(),
           FollowConstants.xyController(),
           FollowConstants.thetaController());
-    });
-    command.addRequirements(drivetrain, elevator, diffClaw);
-    return command;
+    }, Set.of(drivetrain, elevator, diffClaw));
   }
 
   public static void moveToPositionTaskBuilder(Pose2d tagPosition, PathFactory pathFactory,

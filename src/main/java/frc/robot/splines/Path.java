@@ -119,6 +119,10 @@ public class Path {
     return rotation;
   }
 
+  public Rotation2d getMinimumRotationTolerance() {
+    return controlPoints.getMinimumRotationTolerance();
+  }
+
   public double getDesiredSpeed() {
     double offsetSpeed = maxSpeed
         * offsetDampen.sample(positionEntry.get().getTranslation().getDistance(getGoalPosition()));

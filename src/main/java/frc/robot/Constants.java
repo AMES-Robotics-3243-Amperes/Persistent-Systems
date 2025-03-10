@@ -410,6 +410,8 @@ public final class Constants {
       public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;
 
+      public static final double staticThetaVelocity = 0.05;
+
       /**
        * Returns a sensible default x/y PID controller for spline following
        */
