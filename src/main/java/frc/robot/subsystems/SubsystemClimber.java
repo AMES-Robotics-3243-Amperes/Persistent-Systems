@@ -4,11 +4,20 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.spark.SparkMax;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class SubsystemClimber extends SubsystemBase {
   /** Creates a new SubsystemClimber. */
-  public SubsystemClimber() {}
+  SparkMax climberMotor = new SparkMax(0, null);
+
+  public SubsystemClimber() {
+  }
+
+ public void setVoltage(double volts){
+   climberMotor.setVoltage(volts);
+ }
 
   @Override
   public void periodic() {

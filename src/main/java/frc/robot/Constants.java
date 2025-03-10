@@ -170,6 +170,10 @@ public final class Constants {
     }
   }
 
+  public static class Climber{
+    public static final int climberCanId = 0;
+  }
+
   /**
    * Positions are measured by the pivot position height above minimum. All
    * heights are in meters.
