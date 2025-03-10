@@ -74,7 +74,7 @@ public class SubsystemElevator extends SubsystemBaseTestable {
     leaderConfig.closedLoop
       .pidf(Motors.P, Motors.I, Motors.D, Motors.FF)
       .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-      .outputRange(-1, 1)
+      .outputRange(-0.3, 0.3)
     ;
 
     followerConfig.follow(motorLeader, true);

@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -19,8 +20,7 @@ import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.DataManager.Setpoint;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
-import frc.robot.commands.automatics.MoveToPositionUtility;
-import frc.robot.commands.automatics.ScoreIntakeAutoCommand;
+import frc.robot.commands.automatics.ScoreIntakeAutoCommandBuilder;
 import frc.robot.commands.claw.DeployClawCommand;
 import frc.robot.commands.claw.IntakeClawCommand;
 import frc.robot.commands.elevator.ElevatorMoveToPositionCommand;
@@ -111,7 +111,7 @@ public class RobotContainer {
   private void setAutoCommands() {
     autoSelector
         .add(
-            MoveToPositionUtility.autoBuilder(
+            ScoreIntakeAutoCommandBuilder.buildAuto(
                 FieldConstants.AutonomousPaths.bluePositionOne,
                 pathFactory, subsystemClaw, subsystemElevator,
                 subsystemSwerveDrivetrain, FieldConstants.AutonomousPaths.blueSetpointsOne),
@@ -126,202 +126,190 @@ public class RobotContainer {
   private void configureBindings() {
     // Purely testing purposes
     // secondaryController.leftBumper().onTrue(
-    //     new InstantCommand(
-    //         () -> {
-    //           subsystemClaw.setOutsidePosition(Setpoint.IntakeLeft.angle);
-    //         },
-    //         subsystemClaw));
+    // new InstantCommand(
+    // () -> {
+    // subsystemClaw.setOutsidePosition(Setpoint.IntakeLeft.angle);
+    // },
+    // subsystemClaw));
 
     // secondaryController.rightBumper().onTrue(
-    //   new InstantCommand(
-    //       () -> {
-    //         subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
-    //       },
-    //       subsystemClaw));
+    // new InstantCommand(
+    // () -> {
+    // subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
+    // },
+    // subsystemClaw));
 
-    // secondaryController.a().onTrue(new IntakeClawCommand(subsystemClaw, Setpoints.intakePower));
+    // secondaryController.a().onTrue(new IntakeClawCommand(subsystemClaw,
+    // Setpoints.intakePower));
 
-    // secondaryController.b().onTrue(new DeployClawCommand(subsystemClaw, -Setpoints.intakePower));
+    // secondaryController.b().onTrue(new DeployClawCommand(subsystemClaw,
+    // -Setpoints.intakePower));
 
     // secondaryController.x().onTrue(
-    //   new InstantCommand(
-    //     () -> {
-    //       subsystemClaw.setIntakePower(0);
-    //     }
-    //   ));
+    // new InstantCommand(
+    // () -> {
+    // subsystemClaw.setIntakePower(0);
+    // }
+    // ));
 
     secondaryController.a().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1Left.height
-      ),
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(Setpoint.L1Left.angle);
-        },
-        subsystemClaw
-      )
-    ));
+        new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L1Left.height),
+        new InstantCommand(
+            () -> {
+              subsystemClaw.setOutsidePosition(Setpoint.L1Left.angle);
+            },
+            subsystemClaw)));
 
     secondaryController.b().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2Left.height),
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(Setpoint.L2Left.angle);
-        },
-        subsystemClaw
-      )
-    ));
+        new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2Left.height),
+        new InstantCommand(
+            () -> {
+              subsystemClaw.setOutsidePosition(Setpoint.L2Left.angle);
+            },
+            subsystemClaw)));
 
     secondaryController.x().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3Left.height),
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
-        },
-        subsystemClaw
-      )
-    ));
+        new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3Left.height),
+        new InstantCommand(
+            () -> {
+              subsystemClaw.setOutsidePosition(Setpoint.L3Left.angle);
+            },
+            subsystemClaw)));
 
     secondaryController.y().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4Left.height),
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(Setpoint.L4Left.angle);
-        },
-        subsystemClaw
-      )
-    ));
+        new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4Left.height),
+        new InstantCommand(
+            () -> {
+              subsystemClaw.setOutsidePosition(Setpoint.L4Left.angle);
+            },
+            subsystemClaw)));
 
     // Transit
     secondaryController.povDown().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Positions.min
-      ),
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(LevelAngles.Transit);
-        },
-        subsystemClaw
-      )
-    ));
+        new ElevatorMoveToPositionCommand(subsystemElevator, Positions.min),
+        new InstantCommand(
+            () -> {
+              subsystemClaw.setOutsidePosition(LevelAngles.Transit);
+            },
+            subsystemClaw)));
 
     // A1
     secondaryController.povRight().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Positions.A1
-      ),
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(LevelAngles.Algae);
-        },
-        subsystemClaw
-      )
-    ));
+        new ElevatorMoveToPositionCommand(subsystemElevator, Positions.A1),
+        new InstantCommand(
+            () -> {
+              subsystemClaw.setOutsidePosition(LevelAngles.Algae);
+            },
+            subsystemClaw)));
 
     // A2
     secondaryController.povLeft().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Positions.A2
-      ),
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(LevelAngles.Algae);
-        },
-        subsystemClaw
-      )
-    ));
+        new ElevatorMoveToPositionCommand(subsystemElevator, Positions.A2),
+        new InstantCommand(
+            () -> {
+              subsystemClaw.setOutsidePosition(LevelAngles.Algae);
+            },
+            subsystemClaw)));
 
     // Loading
     secondaryController.povUp().onTrue(new ParallelCommandGroup(
-      new ElevatorMoveToPositionCommand(subsystemElevator, Positions.loading
-      ),
-      new InstantCommand(
-        () -> {
-          subsystemClaw.setOutsidePosition(LevelAngles.Intake);
-        },
-        subsystemClaw
-      )
-    ));
+        new ElevatorMoveToPositionCommand(subsystemElevator, Positions.loading),
+        new InstantCommand(
+            () -> {
+              subsystemClaw.setOutsidePosition(LevelAngles.Intake);
+            },
+            subsystemClaw)));
 
     // // Auto intaking from loading station (Left or Right selected by D-pad)
     // primaryController.a().and(primaryController.povLeft()).onTrue(
-    //   new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.IntakeLeft,
-    //       DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower))
+    // new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
+    // subsystemElevator, Setpoint.IntakeLeft,
+    // DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw,
+    // -Setpoints.intakePower))
     // );
 
     // primaryController.a().and(primaryController.povRight()).onTrue(
-    //   new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.IntakeRight,
-    //       DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw, -Setpoints.intakePower))
+    // new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
+    // subsystemElevator, Setpoint.IntakeRight,
+    // DataManager.instance().robotPosition, 0, new IntakeClawCommand(subsystemClaw,
+    // -Setpoints.intakePower))
     // );
 
     // // Auto score in nearest L4 (Left or Right selected by D-pad)
-    primaryController.y().and(primaryController.povLeft()).onTrue(
-      new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2Left,
-          DataManager.instance().robotPosition, 0, new DeployClawCommand(subsystemClaw, -Setpoints.intakePower))
-    );
+    primaryController.y().and(primaryController.pov(225)).onTrue(
+        ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
+            subsystemElevator, Setpoint.L2Left, Units.inchesToMeters(6.5)));
 
-    primaryController.y().and(primaryController.povRight()).onTrue(
-      new ScoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw, subsystemElevator, Setpoint.L2Right,
-          DataManager.instance().robotPosition, 0, new DeployClawCommand(subsystemClaw, -Setpoints.intakePower))
-    );
+    primaryController.y().and(primaryController.pov(135)).onTrue(
+        ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
+            subsystemElevator, Setpoint.L2Right, -Units.inchesToMeters(6.5)));
+
+    primaryController.y().and(primaryController.pov(270)).onTrue(
+        ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
+            subsystemElevator, Setpoint.L3Left, Units.inchesToMeters(6.5)));
+
+    primaryController.y().and(primaryController.pov(90)).onTrue(
+        ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
+            subsystemElevator, Setpoint.L3Right, -Units.inchesToMeters(6.5)));
+
+    primaryController.y().and(primaryController.pov(315)).onTrue(
+        ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
+            subsystemElevator, Setpoint.L4Left, Units.inchesToMeters(6.5)));
+
+    primaryController.y().and(primaryController.pov(45)).onTrue(
+        ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
+            subsystemElevator, Setpoint.L4Right, -Units.inchesToMeters(6.5)));
 
     // // Manual intaking/depositing, elevator movement, reef setpoints
-    secondaryController.leftBumper().whileTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
-    secondaryController.rightBumper().whileTrue(new DeployClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.leftBumper().or(secondaryController.start())
+        .whileTrue(new IntakeClawCommand(subsystemClaw, frc.robot.Constants.Setpoints.intakePower));
+    secondaryController.rightBumper()
+        .whileTrue(new DeployClawCommand(subsystemClaw, -frc.robot.Constants.Setpoints.intakePower));
 
-    //   Elevator manual control
+    // Elevator manual control
     Trigger leftYUp = new Trigger(() -> secondaryController.getLeftY() < -Elevator.manualThreshold);
     Trigger leftYDown = new Trigger(() -> secondaryController.getLeftY() > Elevator.manualThreshold);
 
     leftYUp.whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity));
     leftYDown.whileTrue(new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.downNudgeVelocity));
 
-    //   Wrist pitch manual control
+    // Wrist pitch manual control
     Trigger rightYUp = new Trigger(() -> secondaryController.getRightY() < -DifferentialArm.manualThreshold);
     Trigger rightYDown = new Trigger(() -> secondaryController.getRightY() > DifferentialArm.manualThreshold);
-    
-    rightYUp.whileTrue
-    (
-      new RepeatCommand
-      (
-        new InstantCommand
-        (
-          () -> {
-            subsystemClaw.setOutsidePosition
-            (
-              subsystemClaw.getPosition() + 
-              DifferentialArm.manualMovementPerSecond / 50.0
-            );
-          },
-          subsystemClaw
-        )
-      )
-    );
 
-    rightYDown.whileTrue
-    (
-      new RepeatCommand
-      (
-        new InstantCommand
-        (
-          () -> {
-            subsystemClaw.setOutsidePosition
-            (
-              subsystemClaw.getPosition() - 
-              DifferentialArm.manualMovementPerSecond / 50.0
-            );
-          },
-          subsystemClaw
-        )
-      )
-    );
+    rightYUp.whileTrue(
+        new RepeatCommand(
+            new InstantCommand(
+                () -> {
+                  subsystemClaw.setOutsidePosition(
+                      subsystemClaw.getPosition() +
+                          DifferentialArm.manualMovementPerSecond / 50.0);
+                },
+                subsystemClaw)));
+
+    rightYDown.whileTrue(
+        new RepeatCommand(
+            new InstantCommand(
+                () -> {
+                  subsystemClaw.setOutsidePosition(
+                      subsystemClaw.getPosition() -
+                          DifferentialArm.manualMovementPerSecond / 50.0);
+                },
+                subsystemClaw)));
 
     // primaryController.povUp().whileTrue(
-    //   new ElevatorNudgeCommand(subsystemElevator, Constants.Elevator.Control.upNudgeVelocity)
+    // new ElevatorNudgeCommand(subsystemElevator,
+    // Constants.Elevator.Control.upNudgeVelocity)
     // );
     // primaryController.povDown().whileTrue(
-    //   new ElevatorNudgeCommand(subsystemElevator, -Constants.Elevator.Control.upNudgeVelocity)
+    // new ElevatorNudgeCommand(subsystemElevator,
+    // -Constants.Elevator.Control.upNudgeVelocity)
     // );
 
     mainTab.add("Zero Elevator", new ElevatorZeroCommand(subsystemElevator)).withWidget(BuiltInWidgets.kCommand);
 
-    // primaryController.x().toggleOnTrue(new CommandSwerveGetOffset(subsystemSwerveDrivetrain));
+    // primaryController.x().toggleOnTrue(new
+    // CommandSwerveGetOffset(subsystemSwerveDrivetrain));
     primaryController.b().onTrue(Commands.runOnce(commandSwerveTeleopDrive::toggleFieldRelative));
     primaryController.leftBumper().onTrue(new ElevatorZeroCommand(subsystemElevator));
   }

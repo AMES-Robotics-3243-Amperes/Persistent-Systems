@@ -105,7 +105,7 @@ public final class Constants {
         public static final double kDrivingKv = 0.11324;
         public static final double kDrivingKa = 0.034615;
 
-        public static final double kAzimuthP = 5;
+        public static final double kAzimuthP = 4.2;
         public static final double kAzimuthI = 0;
         public static final double kAzimuthD = 0.0;
         public static final double kTurningFF = 0;
@@ -187,12 +187,12 @@ public final class Constants {
     public static final double starting = min;
     public static final double loading = 0.62;//Units.inchesToMeters(37 - angledOffset23);
     public static final double L1 = 0.643;//Units.inchesToMeters(18 + angledOffset23);
-    public static final double L2 = 0.692;//Units.inchesToMeters(31.2 + angledOffset23);
-    public static final double L3 = 1.072;//Units.inchesToMeters(47.025 + angledOffset23);
-    public static final double L4 = 1.715;//Units.inchesToMeters(72 + angledOffset4);
+    public static final double L2 = 0.605;//Units.inchesToMeters(31.2 + angledOffset23);
+    public static final double L3 = 1.01;//Units.inchesToMeters(47.025 + angledOffset23);
+    public static final double L4 = 1.741;//Units.inchesToMeters(72 + angledOffset4);
     public static final double A1 = 0.786; // First Algae
     public static final double A2 = 1.142; // Second Algae
-    public static final double max = 1.725;//Units.inchesToMeters(85);
+    public static final double max = 1.741;//Units.inchesToMeters(85);
   }
 
   public static final class FieldConstants {
@@ -370,7 +370,7 @@ public final class Constants {
         new Transform3d(new Pose3d(),
           new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
               Units.inchesToMeters(11), Units.inchesToMeters(7.1875)),
-            new Rotation3d(0, 0, Units.degreesToRadians(-9)))),
+            new Rotation3d(0, 0, Units.degreesToRadians(-5)))),
         FieldConstants.fieldLayout),
       new PhotonUnit("BackRightCamera",
         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
@@ -398,14 +398,14 @@ public final class Constants {
     }
 
     public static final class TaskConstants {
-      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(8);
-      public static final double defaultPositionTolerance = 0.05;
-      public static final double defaultPositionBuffer = 0.3;
+      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(3);
+      public static final double defaultPositionTolerance = Units.inchesToMeters(0.5);
+      public static final double defaultPositionBuffer = 0.1;
     }
 
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
-      public static final double maxSpeed = 2;
+      public static final double maxSpeed = 1;
       public static final double maxCentrifugalAcceleration = 2;
       public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;
@@ -421,7 +421,11 @@ public final class Constants {
        * Returns a sensible default theta PID controller for spline following
        */
       public static final ProfiledPIDController thetaController() {
-        return new ProfiledPIDController(0.7, 0, 0.0, new Constraints(3 * Math.PI, 6 * Math.PI));
+        ProfiledPIDController thetaController =
+          new ProfiledPIDController(1.6, 0.2, 0, new Constraints(3 * Math.PI, 6 * Math.PI));
+        thetaController.enableContinuousInput(-Math.PI, Math.PI);
+        thetaController.setIZone(3 * Math.PI / 16);
+        return thetaController;
       }
 
       /**
@@ -474,7 +478,7 @@ public final class Constants {
 
     public static final long deployTime = 850; // Milliseconds
     public static final long rampTime = 250;
-    public static final double defaultGravityCompensation = 0.05;
+    public static final double defaultGravityCompensation = 0.08;
 
     public static final double manualMovementPerSecond = 0.1;
 
@@ -497,11 +501,11 @@ public final class Constants {
 
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
-      public static final double Start = 0.8;
+      public static final double Start = 0.75;
       public static final double Intake = 0.69;
       public static final double L1 = 0.48;
-      public static final double L23 = 0.540;//0.48;
-      public static final double L4 = L23;
+      public static final double L23 = 0.502;//0.48;
+      public static final double L4 = 0.49;
       public static final double Transit = 0.7;
       public static final double Algae = 0.554;
     }
