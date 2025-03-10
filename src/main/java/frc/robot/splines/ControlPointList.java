@@ -8,6 +8,8 @@ import java.util.ListIterator;
 import java.util.Optional;
 import java.util.function.Function;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.splines.tasks.Task;
@@ -63,6 +65,16 @@ public class ControlPointList {
 
   public List<Translation2d> getTranslations() {
     return Collections.unmodifiableList(uniqueTranslations);
+  }
+
+  public Rotation2d getMinimumRotationTolerance() {
+    double maxToleranceRadians = Double.MAX_VALUE;
+    for (Task task : getTasks()) {
+      maxToleranceRadians = Math.min(maxToleranceRadians,
+          Math.abs(MathUtil.angleModulus(task.getRotaitonTolerance().getRadians())));
+    }
+
+    return Rotation2d.fromRadians(maxToleranceRadians);
   }
 
   public List<Translation2d> getInterpolationTranslations(Optional<Translation2d> interpolateFromStartTranslation) {

@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
 import frc.robot.splines.Path;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -15,6 +16,7 @@ import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 public class CommandSwerveFollowSpline extends Command {
   private SubsystemSwerveDrivetrain drivetrain;
   private Path path;
+  private Rotation2d minimumRotationTolerance;
 
   private PIDController xController;
   private PIDController yController;
@@ -39,6 +41,7 @@ public class CommandSwerveFollowSpline extends Command {
   @Override
   public void initialize() {
     path.initialize();
+    this.minimumRotationTolerance = path.getMinimumRotationTolerance();
   }
 
   @Override
@@ -55,6 +58,10 @@ public class CommandSwerveFollowSpline extends Command {
     if (path.getDesiredRotation().isPresent()) {
       rotationSpeed = thetaController.calculate(MathUtil.angleModulus(robotRotation.getRadians()),
           MathUtil.angleModulus(path.getDesiredRotation().get().getRadians()));
+
+      if (Math.abs(MathUtil.angleModulus(
+          path.getDesiredRotation().get().minus(robotRotation).getRadians())) > minimumRotationTolerance.getRadians())
+        rotationSpeed += FollowConstants.staticThetaVelocity * Math.signum(rotationSpeed);
     }
 
     Translation2d speeds = path.getDesiredVelocity().plus(pidAdjustment).rotateBy(robotRotation.times(-1));

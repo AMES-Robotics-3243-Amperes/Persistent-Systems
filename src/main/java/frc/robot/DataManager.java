@@ -5,16 +5,15 @@ import java.util.List;
 
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.PhotonvisionConstants;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
-// import frc.robot.Constants.Setpoints;
 import frc.robot.Constants.Setpoints.LevelAngles;
 import frc.robot.Constants.Positions;
 import frc.robot.PhotonUnit.Measurement;
-import frc.robot.commands.elevator.ElevatorMoveToPositionCommand.Position;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.utility.AHRS_IMU;
@@ -26,10 +25,10 @@ public class DataManager {
 
   // PROPOSAL: Deprecate or remove this method.
   // REASON: Maintaining Dependency Inversion (the D in SOLID) to avoid
-  //   DataManager being used before it is configured, or used in places
-  //   another system would be better. The DataManager instance should always
-  //   be accessed through dependency injection (passing a thing into a constructor)
-  //   to this end.
+  // DataManager being used before it is configured, or used in places
+  // another system would be better. The DataManager instance should always
+  // be accessed through dependency injection (passing a thing into a constructor)
+  // to this end.
   // H!
   public static DataManager instance() {
     return instance;
@@ -68,10 +67,16 @@ public class DataManager {
 
       for (var unit : photonUnits) {
         for (Measurement measurement : unit.getMeasurement()) {
+          Pose3d threeDPose = new Pose3d(poseEstimator.getEstimatedPosition());
+          double distance = threeDPose.plus(unit.getRobotToCamera()).toPose2d().getTranslation()
+              .getDistance(measurement.targetPosition);
+
+          if (distance < 0.6)
+            continue;
+
           poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds,
               measurement.ambiguity.times(PhotonvisionConstants.poseEstimatorAmbiguityScaleFactor
-                  * (poseEstimator.getEstimatedPosition().getTranslation().getDistance(measurement.targetPosition)
-                      + 1)));
+                  * (distance + 1)));
         }
       }
 
@@ -118,7 +123,9 @@ public class DataManager {
       ElevatorSetpoint generalPosToBeSet = ElevatorSetpoint.Between;
       double minPositionDif = DELTAP; // Position dif must always be than DELTAP
       for (ElevatorSetpoint value : ElevatorSetpoint.values()) {
-        if (value.position == null) {continue;} // Skip over ElevatorSetpoint.Between
+        if (value.position == null) {
+          continue;
+        } // Skip over ElevatorSetpoint.Between
         if (Math.abs(velocity) < DELTAV && Math.abs(value.position - position) < minPositionDif) {
           generalPosToBeSet = value;
           minPositionDif = Math.abs(value.position - position);
@@ -132,6 +139,7 @@ public class DataManager {
 
   public class ElevatorPosition extends DataManagerEntry<ElevatorPositionData> {
     private SubsystemElevator elevator;
+
     public ElevatorPosition(RobotContainer robotContainer) {
       elevator = robotContainer.subsystemElevator;
     }
@@ -153,7 +161,7 @@ public class DataManager {
     L1Right(Positions.L1, LevelAngles.L1, -FieldConstants.reefScoreOffset),
 
     L2Left(Positions.L2, LevelAngles.L23, FieldConstants.reefScoreOffset),
-    L2Right(Positions.L1, LevelAngles.L23, -FieldConstants.reefScoreOffset),
+    L2Right(Positions.L2, LevelAngles.L23, -FieldConstants.reefScoreOffset),
 
     L3Left(Positions.L3, LevelAngles.L23, FieldConstants.reefScoreOffset),
     L3Right(Positions.L3, LevelAngles.L23, -FieldConstants.reefScoreOffset),

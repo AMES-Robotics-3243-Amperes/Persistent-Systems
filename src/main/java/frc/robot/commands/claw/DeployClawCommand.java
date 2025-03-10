@@ -4,9 +4,11 @@
 
 package frc.robot.commands.claw;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DifferentialArm;
 import frc.robot.Constants.Setpoints.LevelAngles;
+import frc.robot.Constants;
 import frc.robot.DataManager;
 import frc.robot.subsystems.SubsystemClaw;
 
@@ -27,18 +29,23 @@ public class DeployClawCommand extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    differentialArm.setIntakePower(power);
     time = System.currentTimeMillis();
+    differentialArm.setGravityCompensation(DifferentialArm.defaultGravityCompensation * 2);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+    double duration = System.currentTimeMillis() - time;
+    double percentRamp = MathUtil.clamp(duration / Constants.DifferentialArm.rampTime, 0, 1);
+    differentialArm.setIntakePower(percentRamp * power);
+  }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     differentialArm.setIntakePower(0);
+    differentialArm.setGravityCompensation(DifferentialArm.defaultGravityCompensation);
   }
 
   // Returns true when the command should end.

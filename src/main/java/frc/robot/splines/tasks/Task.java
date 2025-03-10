@@ -83,6 +83,10 @@ public abstract class Task {
     return this.endLength - length;
   }
 
+  public final Rotation2d getRotaitonTolerance() {
+    return this.rotationTolerance;
+  }
+
   public final boolean isValidRotation(Rotation2d rotation) {
     if (this.targetRotation.isEmpty()) {
       return true;
