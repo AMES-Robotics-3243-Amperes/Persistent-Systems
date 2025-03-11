@@ -19,6 +19,8 @@ public class CommandClimber extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     this.controller = controller;
     this.climber = climber;
+
+    addRequirements(climber);
   }
     
   // Called when the command is initially scheduled.
@@ -31,10 +33,10 @@ public class CommandClimber extends Command {
   public void execute() {
     
     if(controller.getPOVUp()){
-      climber.setVoltage(0.2);
+      climber.setVoltage(5);
     }
     else if(controller.getPOVDown()){
-      climber.setVoltage(-0.2);
+      climber.setVoltage(-5);
     }
     else{
       climber.setVoltage(0);

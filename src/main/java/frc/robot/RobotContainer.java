@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.SplineConstants.FollowConstants;
 import frc.robot.DataManager.Setpoint;
+import frc.robot.commands.CommandClimber;
 import frc.robot.commands.CommandSwerveFollowSpline;
 import frc.robot.commands.CommandSwerveTeleopDrive;
 import frc.robot.commands.automatics.ScoreIntakeAutoCommandBuilder;
@@ -30,6 +31,7 @@ import frc.robot.commands.elevator.ElevatorZeroCommand;
 import frc.robot.commands.leds.CommandLedPatternCycle;
 import frc.robot.splines.PathFactory;
 import frc.robot.subsystems.SubsystemClaw;
+import frc.robot.subsystems.SubsystemClimber;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemLeds;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
@@ -71,6 +73,7 @@ public class RobotContainer {
   public SubsystemLeds subsystemLeds = new SubsystemLeds();
   public SubsystemElevator subsystemElevator = new SubsystemElevator();
   public SubsystemClaw subsystemClaw = new SubsystemClaw();
+  public SubsystemClimber subsystemClimber = new SubsystemClimber();
 
   //
   // Commands
@@ -107,6 +110,7 @@ public class RobotContainer {
   private void setDefaultCommands() {
     subsystemLeds.setDefaultCommand(commandLedPatternCycle);
     subsystemSwerveDrivetrain.setDefaultCommand(commandSwerveTeleopDrive);
+    subsystemClimber.setDefaultCommand(new CommandClimber(secondaryController, subsystemClimber));
   }
 
   private void setAutoCommands() {
