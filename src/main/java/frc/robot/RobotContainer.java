@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RepeatCommand;
@@ -278,29 +279,30 @@ public class RobotContainer {
     // );
 
     // // Auto score in nearest L4 (Left or Right selected by D-pad)
+    double offsetInches = 7;
     primaryController.y().and(primaryController.pov(225)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L2Left, Units.inchesToMeters(6.5)));
+            subsystemElevator, Setpoint.L2Left, Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(135)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L2Right, -Units.inchesToMeters(6.5)));
+            subsystemElevator, Setpoint.L2Right, -Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(270)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L3Left, Units.inchesToMeters(6.5)));
+            subsystemElevator, Setpoint.L3Left, Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(90)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L3Right, -Units.inchesToMeters(6.5)));
+            subsystemElevator, Setpoint.L3Right, -Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(315)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L4Left, Units.inchesToMeters(6.5)));
+            subsystemElevator, Setpoint.L4Left, Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(45)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L4Right, -Units.inchesToMeters(6.5)));
+            subsystemElevator, Setpoint.L4Right, -Units.inchesToMeters(offsetInches)));
 
     // // Manual intaking/depositing, elevator movement, reef setpoints
     secondaryController.leftBumper().or(secondaryController.start())
@@ -353,7 +355,7 @@ public class RobotContainer {
     // primaryController.x().toggleOnTrue(new
     // CommandSwerveGetOffset(subsystemSwerveDrivetrain));
     primaryController.b().onTrue(Commands.runOnce(commandSwerveTeleopDrive::toggleFieldRelative));
-    primaryController.rightTrigger().onTrue(new ElevatorZeroCommand(subsystemElevator));
+    primaryController.leftBumper().onTrue(new ElevatorZeroCommand(subsystemElevator));
   }
 
   public static double convertJoystickToPosition(double joystick) {

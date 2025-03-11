@@ -14,8 +14,8 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import frc.robot.subsystems.SubsystemElevator;
 import frc.robot.subsystems.SubsystemSwerveDrivetrain;
 import frc.robot.DataManager.Setpoint;
@@ -41,7 +41,7 @@ public class ScoreIntakeAutoCommandBuilder {
   public static Command scoreIntakeAutoCommand(
       SubsystemSwerveDrivetrain drivetrain, SubsystemClaw diffClaw, SubsystemElevator elevator,
       Setpoint reefPosition, double tagOffset) {
-    return new DeferredCommand(() -> {
+    Command command = new ProxyCommand(() -> {
       // Find the closest tag to the robot's current position
       Pose2d currentPose = DataManager.instance().robotPosition.get();
       Translation2d currentPosition = currentPose.getTranslation();
@@ -51,7 +51,11 @@ public class ScoreIntakeAutoCommandBuilder {
       // than Double.MAX_VALUE...)
       Pose2d closestTag = FieldConstants.blueReef1.toPose2d();
 
+      Set<Integer> reefTagIDs = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
       for (AprilTag tag : FieldConstants.tagList) {
+        if (!reefTagIDs.contains(tag.ID))
+          continue;
+
         Pose2d tagPosition = tag.pose.toPose2d();
         double potentialMin = (tagPosition.getTranslation()).getDistance(currentPosition);
 
@@ -66,7 +70,7 @@ public class ScoreIntakeAutoCommandBuilder {
       pathFactory
           .interpolateFromStart(true)
           .interpolator(new LinearInterpolator())
-          .taskDampen((remainingLength) -> 2 * remainingLength + 0.05);
+          .taskDampen((remainingLength) -> 2.2 * remainingLength + 0.05);
       moveToPositionTaskBuilder(closestTag, pathFactory, diffClaw, elevator, reefPosition,
           tagOffset);
 
@@ -75,12 +79,14 @@ public class ScoreIntakeAutoCommandBuilder {
           FollowConstants.xyController(),
           FollowConstants.xyController(),
           FollowConstants.thetaController());
-    }, Set.of(drivetrain, elevator, diffClaw));
+    });
+    command.addRequirements(drivetrain, diffClaw, elevator);
+    return command;
   }
 
   public static void moveToPositionTaskBuilder(Pose2d tagPosition, PathFactory pathFactory,
       SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetSetpoint, double tagOffset) {
-    double distanceFromTag = 0.55;
+    double distanceFromTag = 0.5;
     Transform2d offset = new Transform2d(new Translation2d(distanceFromTag, tagOffset), new Rotation2d());
     Translation2d targetPosition = tagPosition.plus(offset).getTranslation();
     Rotation2d targetRotation = tagPosition.getRotation().plus(Rotation2d.fromDegrees(180));

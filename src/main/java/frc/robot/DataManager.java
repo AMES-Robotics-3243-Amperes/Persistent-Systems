@@ -3,9 +3,11 @@ package frc.robot;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.wpi.first.math.MathSharedStore;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.FieldConstants;
@@ -48,6 +50,10 @@ public class DataManager {
     /** used to combine vision and odometry data */
     private SwerveDrivePoseEstimator poseEstimator;
 
+    private double previousTimestamp = 0;
+    private Translation2d previousPosition = new Translation2d();
+    private Translation2d velocity = new Translation2d();
+
     private SubsystemSwerveDrivetrain subsystemSwerveDrivetrain;
     private List<PhotonUnit> photonUnits = new ArrayList<PhotonUnit>();
     private IMU imu = new AHRS_IMU();
@@ -71,14 +77,20 @@ public class DataManager {
           double distance = threeDPose.plus(unit.getRobotToCamera()).toPose2d().getTranslation()
               .getDistance(measurement.targetPosition);
 
-          if (distance < 0.6)
+          if (distance < PhotonvisionConstants.photonUnitMinDistance)
             continue;
 
           poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds,
               measurement.ambiguity.times(PhotonvisionConstants.poseEstimatorAmbiguityScaleFactor
-                  * (distance + 1)));
+                  * (distance + velocity.getNorm() + 1)));
         }
       }
+
+      double currentTimestamp = MathSharedStore.getTimestamp();
+      Translation2d currentPosition = poseEstimator.getEstimatedPosition().getTranslation();
+      velocity = currentPosition.minus(previousPosition).times(currentTimestamp - previousTimestamp);
+      previousTimestamp = currentTimestamp;
+      previousPosition = currentPosition;
 
       field2d.setRobotPose(get());
       SmartDashboard.putData(field2d);
@@ -86,6 +98,10 @@ public class DataManager {
 
     public void set(Pose2d newPose) {
       poseEstimator.resetPosition(imu.getRotationModulus(), subsystemSwerveDrivetrain.getModulePositions(), newPose);
+    }
+
+    public Translation2d getVelocity() {
+      return velocity;
     }
 
     public Pose2d get() {

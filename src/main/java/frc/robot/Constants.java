@@ -161,8 +161,8 @@ public final class Constants {
     }
 
     public static class Control {
-      public static final double upNudgeVelocity = 0.1;
-      public static final double downNudgeVelocity = -0.1;
+      public static final double upNudgeVelocity = 0.2;
+      public static final double downNudgeVelocity = -0.2;
     }
 
     public static class SpeedSettings {
@@ -190,8 +190,8 @@ public final class Constants {
     public static final double min = 0.0;
     public static final double starting = min;
     public static final double loading = 0.62;//Units.inchesToMeters(37 - angledOffset23);
-    public static final double L1 = 0.643;//Units.inchesToMeters(18 + angledOffset23);
-    public static final double L2 = 0.605;//Units.inchesToMeters(31.2 + angledOffset23);
+    public static final double L1 = 0.4;//Units.inchesToMeters(18 + angledOffset23);
+    public static final double L2 = 0.74;//Units.inchesToMeters(31.2 + angledOffset23);
     public static final double L3 = 1.01;//Units.inchesToMeters(47.025 + angledOffset23);
     public static final double L4 = 1.741;//Units.inchesToMeters(72 + angledOffset4);
     public static final double A1 = 0.786; // First Algae
@@ -417,9 +417,9 @@ public final class Constants {
       new PhotonUnit("FrontCenterCamera",
         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
         new Transform3d(new Pose3d(),
-          new Pose3d(new Translation3d(Units.inchesToMeters(6.375),
+          new Pose3d(new Translation3d(Units.inchesToMeters(6.7),
               Units.inchesToMeters(11), Units.inchesToMeters(7.1875)),
-            new Rotation3d(0, 0, Units.degreesToRadians(-5)))),
+            new Rotation3d(0, 0, Units.degreesToRadians(4)))),
         FieldConstants.fieldLayout),
       new PhotonUnit("BackRightCamera",
         PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
@@ -436,8 +436,9 @@ public final class Constants {
               new Rotation3d(0, 0, Units.degreesToRadians(145)))),
         FieldConstants.fieldLayout));
 
-    public static final double poseEstimatorAmbiguityScaleFactor = 1.5;
+    public static final double poseEstimatorAmbiguityScaleFactor = 2;
     public static final double photonUnitAmbiguityCutoff = 0.05;
+    public static final double photonUnitMinDistance = 0.6;
   }
 
   public static final class SplineConstants {
@@ -447,19 +448,19 @@ public final class Constants {
     }
 
     public static final class TaskConstants {
-      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(3);
-      public static final double defaultPositionTolerance = Units.inchesToMeters(0.5);
+      public static final Rotation2d defaultRotationTolerance = Rotation2d.fromDegrees(1);
+      public static final double defaultPositionTolerance = Units.inchesToMeters(0.3);
       public static final double defaultPositionBuffer = 0.1;
     }
 
     public static final class FollowConstants {
       public static final SplineInterpolator defaultInterpolator = new CubicInterpolator();
-      public static final double maxSpeed = 1;
+      public static final double maxSpeed = 4;
       public static final double maxCentrifugalAcceleration = 2;
       public static final double maxAccelAfterTask = 1.5;
       public static final boolean interpolateFromStart = true;
 
-      public static final double staticThetaVelocity = 0.05;
+      public static final double staticThetaVelocity = 0.4;
 
       /**
        * Returns a sensible default x/y PID controller for spline following
@@ -473,7 +474,7 @@ public final class Constants {
        */
       public static final ProfiledPIDController thetaController() {
         ProfiledPIDController thetaController =
-          new ProfiledPIDController(1.6, 0.2, 0, new Constraints(3 * Math.PI, 6 * Math.PI));
+          new ProfiledPIDController(1.8, 0.2, 0, new Constraints(3 * Math.PI, 6 * Math.PI));
         thetaController.enableContinuousInput(-Math.PI, Math.PI);
         thetaController.setIZone(3 * Math.PI / 16);
         return thetaController;
@@ -529,9 +530,9 @@ public final class Constants {
 
     public static final long deployTime = 850; // Milliseconds
     public static final long rampTime = 250;
-    public static final double defaultGravityCompensation = 0.08;
+    public static final double defaultGravityCompensation = 0.1;
 
-    public static final double manualMovementPerSecond = 0.1;
+    public static final double manualMovementPerSecond = 0.15;
 
     public static final class MotorIDs {
       public static final int leftID = 13;
@@ -539,7 +540,7 @@ public final class Constants {
     }
 
     public static final class PID {
-      public static final double P = 1.5;
+      public static final double P = 1.8;
       public static final double I = 0;
       public static final double D = 0.02;
     }
@@ -555,7 +556,7 @@ public final class Constants {
       public static final double Start = 0.75;
       public static final double Intake = 0.69;
       public static final double L1 = 0.48;
-      public static final double L23 = 0.502;//0.48;
+      public static final double L23 = 0.49;//0.48;
       public static final double L4 = 0.49;
       public static final double Transit = 0.7;
       public static final double Algae = 0.554;

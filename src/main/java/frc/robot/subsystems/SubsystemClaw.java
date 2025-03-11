@@ -12,9 +12,9 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Vector;
-// import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.numbers.N1;
@@ -23,12 +23,9 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-// import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants.DifferentialArm;
-import frc.robot.Constants.Setpoints;
 import frc.robot.DataManager.Setpoint;
 
 public class SubsystemClaw extends SubsystemBase {
@@ -101,11 +98,11 @@ public class SubsystemClaw extends SubsystemBase {
     }
 
     public void setPivotOutput(double angle) {
-      pivotOutput = clamp(Setpoints.LevelAngles.L1, Setpoints.LevelAngles.Start, angle);
+      pivotOutput = MathUtil.clamp(angle, -0.4, 0.4);
     }
 
     public void setRollerOutput(double speed) {
-      rollerOutput = clamp(-1.0, 1.0, speed);
+      rollerOutput = MathUtil.clamp(speed, -1.0, 1.0);
     }
   }
 
@@ -188,10 +185,6 @@ public class SubsystemClaw extends SubsystemBase {
     motorGroup.setPivotOutput(pivotControllerCalculate + staticTerm);
     motorGroup.setRollerOutput(intakePower);
     motorGroup.update();
-  }
-
-  private static double clamp(double min, double max, double x) {
-    return Math.max(min, Math.min(max, x));
   }
 
   public void setGravityCompensation(double newValue) {
