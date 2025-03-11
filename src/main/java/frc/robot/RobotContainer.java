@@ -203,7 +203,7 @@ public class RobotContainer {
             },
             subsystemClaw)));
 
-    secondaryController.b().onTrue(new ParallelCommandGroup(
+    secondaryController.x().onTrue(new ParallelCommandGroup(
         new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L2Left.height),
         new InstantCommand(
             () -> {
@@ -211,7 +211,7 @@ public class RobotContainer {
             },
             subsystemClaw)));
 
-    secondaryController.x().onTrue(new ParallelCommandGroup(
+    secondaryController.y().onTrue(new ParallelCommandGroup(
         new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L3Left.height),
         new InstantCommand(
             () -> {
@@ -219,47 +219,11 @@ public class RobotContainer {
             },
             subsystemClaw)));
 
-    secondaryController.y().onTrue(new ParallelCommandGroup(
+    secondaryController.b().onTrue(new ParallelCommandGroup(
         new ElevatorMoveToPositionCommand(subsystemElevator, Setpoint.L4Left.height),
         new InstantCommand(
             () -> {
               subsystemClaw.setOutsidePosition(Setpoint.L4Left.angle);
-            },
-            subsystemClaw)));
-
-    // Transit
-    secondaryController.povDown().onTrue(new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(subsystemElevator, Positions.min),
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(LevelAngles.Transit);
-            },
-            subsystemClaw)));
-
-    // A1
-    secondaryController.povRight().onTrue(new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(subsystemElevator, Positions.A1),
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(LevelAngles.Algae);
-            },
-            subsystemClaw)));
-
-    // A2
-    secondaryController.povLeft().onTrue(new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(subsystemElevator, Positions.A2),
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(LevelAngles.Algae);
-            },
-            subsystemClaw)));
-
-    // Loading
-    secondaryController.povUp().onTrue(new ParallelCommandGroup(
-        new ElevatorMoveToPositionCommand(subsystemElevator, Positions.loading),
-        new InstantCommand(
-            () -> {
-              subsystemClaw.setOutsidePosition(LevelAngles.Intake);
             },
             subsystemClaw)));
 
@@ -282,27 +246,27 @@ public class RobotContainer {
     double offsetInches = 7;
     primaryController.y().and(primaryController.pov(225)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L2Left, Units.inchesToMeters(offsetInches)));
+            subsystemElevator, Setpoint.L2Right, -Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(135)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L2Right, -Units.inchesToMeters(offsetInches)));
+            subsystemElevator, Setpoint.L2Left, Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(270)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L3Left, Units.inchesToMeters(offsetInches)));
+            subsystemElevator, Setpoint.L3Right, -Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(90)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L3Right, -Units.inchesToMeters(offsetInches)));
+            subsystemElevator, Setpoint.L3Left, Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(315)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L4Left, Units.inchesToMeters(offsetInches)));
+            subsystemElevator, Setpoint.L4Right, -Units.inchesToMeters(offsetInches)));
 
     primaryController.y().and(primaryController.pov(45)).onTrue(
         ScoreIntakeAutoCommandBuilder.scoreIntakeAutoCommand(subsystemSwerveDrivetrain, subsystemClaw,
-            subsystemElevator, Setpoint.L4Right, -Units.inchesToMeters(offsetInches)));
+            subsystemElevator, Setpoint.L4Left, Units.inchesToMeters(offsetInches)));
 
     // // Manual intaking/depositing, elevator movement, reef setpoints
     secondaryController.leftBumper().or(secondaryController.start())
