@@ -10,6 +10,6 @@ public class AHRS_IMU implements IMU {
 
   @Override
   public Rotation2d getRotation() {
-    return Rotation2d.fromDegrees(ahrs.getYaw());
+    return Rotation2d.fromDegrees(-ahrs.getYaw());
   }
 }

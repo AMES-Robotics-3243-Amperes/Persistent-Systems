@@ -23,6 +23,7 @@ import frc.robot.Constants.PhotonvisionConstants;
 
 public class PhotonUnit extends PhotonCamera {
   private PhotonPoseEstimator poseEstimator;
+  private Transform3d robotToCamera;
 
   public class Measurement {
     public Pose2d pose;
@@ -44,6 +45,11 @@ public class PhotonUnit extends PhotonCamera {
 
     poseEstimator = new PhotonPoseEstimator(fieldLayout, strategy, robotToCamera);
     poseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+    this.robotToCamera = robotToCamera;
+  }
+
+  public Transform3d getRobotToCamera() {
+    return robotToCamera;
   }
 
   public List<Measurement> getMeasurement() {

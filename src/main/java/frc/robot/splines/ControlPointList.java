@@ -8,6 +8,8 @@ import java.util.ListIterator;
 import java.util.Optional;
 import java.util.function.Function;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import frc.robot.splines.tasks.Task;
@@ -65,10 +67,20 @@ public class ControlPointList {
     return Collections.unmodifiableList(uniqueTranslations);
   }
 
+  public Rotation2d getMinimumRotationTolerance() {
+    double maxToleranceRadians = Double.MAX_VALUE;
+    for (Task task : getTasks()) {
+      maxToleranceRadians = Math.min(maxToleranceRadians,
+          Math.abs(MathUtil.angleModulus(task.getRotaitonTolerance().getRadians())));
+    }
+
+    return Rotation2d.fromRadians(maxToleranceRadians);
+  }
+
   public List<Translation2d> getInterpolationTranslations(Optional<Translation2d> interpolateFromStartTranslation) {
-    if (interpolateFromStartTranslation.isEmpty()) {
-      return getTranslations();
-    } else if (interpolateFromStartTranslation.get().getDistance(getTranslations().get(0)) < 1e-2) {
+    if (interpolateFromStartTranslation.isEmpty()
+        || (interpolateFromStartTranslation.get().getDistance(getTranslations().get(0)) < 1e-2
+            && getTranslations().size() > 1)) {
       return getTranslations();
     }
 
@@ -91,11 +103,11 @@ public class ControlPointList {
     List<Task> activeTasks = new ArrayList<Task>();
     HashSet<Subsystem> activeSubsystems = new HashSet<Subsystem>();
     for (Task task : upcomingTasks) {
-      if (!task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem)) && task.isActive(length)) {
+      if (!task.getRequirements().stream().anyMatch(subsystem -> activeSubsystems.contains(subsystem))
+          && task.isActive(length)) {
         activeTasks.add(task);
+        activeSubsystems.addAll(task.getRequirements());
       }
-
-      activeSubsystems.addAll(task.getRequirements());
     }
 
     return activeTasks;
