@@ -45,15 +45,15 @@ import frc.robot.splines.interpolation.SplineInterpolator;
 public final class Constants {
   public static final class JoyUtilConstants {
     public static final double kDeadzone = 0.05;
-    public static final double kRateLimitLeft = 20;
-    public static final double kRateLimitRight = 20;
+    public static final double kRateLimitLeft = 65;
+    public static final double kRateLimitRight = 65;
     public static final double exponent1 = 3;
     public static final double exponent2 = 1;
     public static final double coeff1 = 0.2;
     public static final double coeff2 = 0.8;
 
-    public static final double leftTriggerSpeedMultiplier = 2.0;
-    public static final double rightTriggerSpeedMultiplier = 0.3;
+    public static final double leftTriggerSpeedMultiplier = 0.2;
+    public static final double rightTriggerSpeedMultiplier = 5.0;
   }
 
   public static final class SwerveConstants {
@@ -162,8 +162,8 @@ public final class Constants {
     }
 
     public static class Control {
-      public static final double upNudgeVelocity = 0.2;
-      public static final double downNudgeVelocity = -0.2;
+      public static final double upNudgeVelocity = 0.6;
+      public static final double downNudgeVelocity = -0.6;
     }
 
     public static class SpeedSettings {
@@ -190,7 +190,8 @@ public final class Constants {
 
     public static final double min = 0.0;
     public static final double starting = min;
-    public static final double loading = 0.62;//Units.inchesToMeters(37 - angledOffset23);
+    public static final double store = 0.05;
+    public static final double loading = 0.528;//Units.inchesToMeters(37 - angledOffset23);
     public static final double L1 = 0.4;//Units.inchesToMeters(18 + angledOffset23);
     public static final double L2 = 0.74;//Units.inchesToMeters(31.2 + angledOffset23);
     public static final double L3 = 1.01;//Units.inchesToMeters(47.025 + angledOffset23);
@@ -559,7 +560,8 @@ public final class Constants {
     // Angles for the different pipe deposit levels, and an angle for intake
     public static final class LevelAngles {
       public static final double Start = 0.75;
-      public static final double Intake = 0.69;
+      public static final double Intake = 0.658;
+      public static final double Store = 0.7;
       public static final double L1 = 0.48;
       public static final double L23 = 0.49;//0.48;
       public static final double L4 = 0.49;

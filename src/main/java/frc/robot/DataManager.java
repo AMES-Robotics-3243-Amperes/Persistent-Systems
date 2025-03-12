@@ -169,6 +169,7 @@ public class DataManager {
   // Setpoints for different positions for the elevator and claw
   public enum Setpoint {
     Start(Positions.starting, LevelAngles.Start, 0),
+    Store(Positions.store, LevelAngles.Store, 0),
 
     IntakeLeft(Positions.loading, LevelAngles.Intake, FieldConstants.intakeLoadingOffset),
     IntakeRight(Positions.loading, LevelAngles.Intake, -FieldConstants.intakeLoadingOffset),
