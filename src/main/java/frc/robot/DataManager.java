@@ -170,8 +170,8 @@ public class DataManager {
   public enum Setpoint {
     Start(Positions.starting, LevelAngles.Start, 0),
 
-    IntakeLeft(Positions.starting, LevelAngles.Intake, FieldConstants.intakeLoadingOffset),
-    IntakeRight(Positions.starting, LevelAngles.Intake, -FieldConstants.intakeLoadingOffset),
+    IntakeLeft(Positions.loading, LevelAngles.Intake, FieldConstants.intakeLoadingOffset),
+    IntakeRight(Positions.loading, LevelAngles.Intake, -FieldConstants.intakeLoadingOffset),
 
     L1Left(Positions.L1, LevelAngles.L1, FieldConstants.reefScoreOffset),
     L1Right(Positions.L1, LevelAngles.L1, -FieldConstants.reefScoreOffset),

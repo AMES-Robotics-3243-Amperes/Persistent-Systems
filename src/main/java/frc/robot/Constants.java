@@ -358,6 +358,8 @@ public final class Constants {
     public static final double intakeLoadingOffset = 0.457;
 
     public static final class AutonomousPaths {
+      // Testing autonomous
+
       // Scoring/Intake Setpoints
       public static final ArrayList<Pair<Setpoint, Boolean>> intakeScoreBackAndForthSetpoints = new ArrayList<Pair<Setpoint, Boolean>>(
         Arrays.asList(Pair.of(Setpoint.L4Left, true), Pair.of(Setpoint.IntakeLeft, false),
