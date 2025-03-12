@@ -4,6 +4,7 @@
 
 package frc.robot.commands.automatics;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +31,7 @@ import frc.robot.splines.interpolation.LinearInterpolator;
 import frc.robot.splines.tasks.FinishByTask;
 import frc.robot.splines.tasks.PerformAtTask;
 import frc.robot.subsystems.SubsystemClaw;
+import edu.wpi.first.math.Pair;
 
 /**
  * Scores a coral in the reef automatically
@@ -40,7 +42,7 @@ public class ScoreIntakeAutoCommandBuilder {
   /** Creates a new ScoreInReefCommand. */
   public static Command scoreIntakeAutoCommand(
       SubsystemSwerveDrivetrain drivetrain, SubsystemClaw diffClaw, SubsystemElevator elevator,
-      Setpoint reefPosition, double tagOffset) {
+      Setpoint reefPosition, double tagOffset, boolean scoring) {
     Command command = new ProxyCommand(() -> {
       // Find the closest tag to the robot's current position
       Pose2d currentPose = DataManager.instance().robotPosition.get();
@@ -51,9 +53,16 @@ public class ScoreIntakeAutoCommandBuilder {
       // than Double.MAX_VALUE...)
       Pose2d closestTag = FieldConstants.blueReef1.toPose2d();
 
-      Set<Integer> reefTagIDs = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
+      Set<Integer> filterTagIDs;
+
+      if (scoring) {
+        filterTagIDs = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22);
+      } else {
+        filterTagIDs = Set.of(1, 2, 12, 13);
+      }
+
       for (AprilTag tag : FieldConstants.tagList) {
-        if (!reefTagIDs.contains(tag.ID))
+        if (!filterTagIDs.contains(tag.ID))
           continue;
 
         Pose2d tagPosition = tag.pose.toPose2d();
@@ -72,7 +81,7 @@ public class ScoreIntakeAutoCommandBuilder {
           .interpolator(new LinearInterpolator())
           .taskDampen((remainingLength) -> 2.2 * remainingLength + 0.05);
       moveToPositionTaskBuilder(closestTag, pathFactory, diffClaw, elevator, reefPosition,
-          tagOffset);
+          tagOffset, scoring);
 
       return pathFactory.buildCommand(
           drivetrain,
@@ -85,11 +94,16 @@ public class ScoreIntakeAutoCommandBuilder {
   }
 
   public static void moveToPositionTaskBuilder(Pose2d tagPosition, PathFactory pathFactory,
-      SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetSetpoint, double tagOffset) {
+      SubsystemClaw diffClaw, SubsystemElevator elevator, Setpoint targetSetpoint, double tagOffset, boolean scoring) {
     double distanceFromTag = 0.5;
     Transform2d offset = new Transform2d(new Translation2d(distanceFromTag, tagOffset), new Rotation2d());
     Translation2d targetPosition = tagPosition.plus(offset).getTranslation();
     Rotation2d targetRotation = tagPosition.getRotation().plus(Rotation2d.fromDegrees(180));
+
+    double intakePower = Setpoints.intakePower;
+    if (!scoring) {
+      intakePower = -Setpoints.intakePower;
+    }
 
     pathFactory
         .addTask(targetPosition, new FinishByTask(new ElevatorMoveToPositionCommand(elevator, targetSetpoint.height)))
@@ -99,19 +113,19 @@ public class ScoreIntakeAutoCommandBuilder {
             },
             diffClaw)))
         .addTask(targetPosition,
-            new PerformAtTask(targetRotation, new DeployClawCommand(diffClaw, -Setpoints.intakePower)));
+            new PerformAtTask(targetRotation, new DeployClawCommand(diffClaw, intakePower)));
   }
 
   public static Command buildAuto(List<Pose2d> targetPositions, PathFactory pathFactory,
       SubsystemClaw diffClaw, SubsystemElevator elevator, SubsystemSwerveDrivetrain drivetrain,
-      List<Setpoint> targetSetpoints) {
+      List<Pair<Setpoint, Boolean>> targetSetpoints) {
     Iterator<Pose2d> positions = targetPositions.iterator();
-    Iterator<Setpoint> setpoints = targetSetpoints.iterator();
+    Iterator<Pair<Setpoint, Boolean>> setpoints = targetSetpoints.iterator();
 
     while (positions.hasNext() && setpoints.hasNext()) {
-      Setpoint setpoint = setpoints.next();
-      moveToPositionTaskBuilder(positions.next(), pathFactory, diffClaw, elevator, setpoints.next(),
-          setpoint.offset);
+      Pair<Setpoint, Boolean> setpoint = setpoints.next();
+      moveToPositionTaskBuilder(positions.next(), pathFactory, diffClaw, elevator, setpoint.getFirst(),
+          setpoint.getFirst().offset, setpoint.getSecond());
     }
 
     return pathFactory.interpolateFromStart(true).buildCommand(

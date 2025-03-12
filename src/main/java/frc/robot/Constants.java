@@ -14,6 +14,7 @@ import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -358,8 +359,10 @@ public final class Constants {
 
     public static final class AutonomousPaths {
       // Scoring/Intake Setpoints
-      public static final ArrayList<Setpoint> intakeScoreBackAndForthSetpoints = new ArrayList<Setpoint>(
-        Arrays.asList(Setpoint.L4Left, Setpoint.IntakeLeft, Setpoint.L4Right, Setpoint.IntakeRight));
+      public static final ArrayList<Pair<Setpoint, Boolean>> intakeScoreBackAndForthSetpoints = new ArrayList<Pair<Setpoint, Boolean>>(
+        Arrays.asList(Pair.of(Setpoint.L4Left, true), Pair.of(Setpoint.IntakeLeft, false),
+        Pair.of(Setpoint.L4Right, true), Pair.of(Setpoint.IntakeRight, true))
+      );
 
       // Top of blue reef to intake auto routine
       public static final ArrayList<Pose2d> blueTopToIntakePositions = new ArrayList<Pose2d>(

@@ -4,9 +4,14 @@
 
 package frc.robot.commands;
 
+import java.util.Optional;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.JoyUtil;
 import frc.robot.Constants.SwerveConstants.ChassisKinematics;
@@ -26,6 +31,7 @@ public class CommandSwerveTeleopDrive extends Command {
   private boolean reverse = false;
 
   private boolean fieldRelative = true;
+  private boolean redAlliance = false;
 
   /**
    * Creates a new SwerveTeleopCommand.
@@ -45,12 +51,19 @@ public class CommandSwerveTeleopDrive extends Command {
 
   @Override
   public void initialize() {
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      redAlliance = (alliance.get() == Alliance.Red);
+    }
   }
 
   @Override
   public void execute() {
     Translation2d speeds = controller.getLeftAxis().times(ControlConstants.movingSpeed).times(reverse ? 1 : -1);
     speeds = new Translation2d(speeds.getY(), speeds.getX()); // :3 convert to robot coordinates
+
+    if (fieldRelative && redAlliance)
+      speeds = speeds.rotateBy(Rotation2d.fromDegrees(180));
     if (fieldRelative)
       speeds = speeds.rotateBy(DataManager.instance().robotPosition.get().getRotation().times(-1));
 
