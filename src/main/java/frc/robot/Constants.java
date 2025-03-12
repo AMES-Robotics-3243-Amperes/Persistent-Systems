@@ -443,8 +443,9 @@ public final class Constants {
         FieldConstants.fieldLayout));
 
     public static final double poseEstimatorAmbiguityScaleFactor = 2;
-    public static final double photonUnitAmbiguityCutoff = 0.05;
-    public static final double photonUnitMinDistance = 0.6;
+    public static final double photonUnitAmbiguityCutoff = 0.1;
+    public static final double photonUnitVelocityCutoff = 1.0;
+    public static final double photonUnitMinDistance = 0.4;
   }
 
   public static final class SplineConstants {

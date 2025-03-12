@@ -77,7 +77,8 @@ public class DataManager {
           double distance = threeDPose.plus(unit.getRobotToCamera()).toPose2d().getTranslation()
               .getDistance(measurement.targetPosition);
 
-          if (distance < PhotonvisionConstants.photonUnitMinDistance)
+          if (distance < PhotonvisionConstants.photonUnitMinDistance 
+              || velocity.getNorm() > PhotonvisionConstants.photonUnitVelocityCutoff)
             continue;
 
           poseEstimator.addVisionMeasurement(measurement.pose, measurement.timestampSeconds,
@@ -98,10 +99,6 @@ public class DataManager {
 
     public void set(Pose2d newPose) {
       poseEstimator.resetPosition(imu.getRotationModulus(), subsystemSwerveDrivetrain.getModulePositions(), newPose);
-    }
-
-    public Translation2d getVelocity() {
-      return velocity;
     }
 
     public Pose2d get() {
